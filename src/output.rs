@@ -1,15 +1,16 @@
 use crate::stream_read::{PipeStreamReader, PipedLine};
+use crate::process::Process;
+use crate::log;
 use crossbeam_channel::Select;
 use std::sync::{Arc, Mutex};
-use std::process::{Child};
 
-pub fn handle_output(child: &Arc<Mutex<Child>>) {
+pub fn handle_output(proc: &Arc<Mutex<Process>>) {
     let mut channels: Vec<PipeStreamReader> = Vec::new();
     channels.push(PipeStreamReader::new(Box::new(
-        child.lock().unwrap().stdout.take().expect("!stdout"),
+        proc.lock().unwrap().child.stdout.take().expect("!stdout"),
     )));
     channels.push(PipeStreamReader::new(Box::new(
-        child.lock().unwrap().stderr.take().expect("!stderr"),
+        proc.lock().unwrap().child.stderr.take().expect("!stderr"),
     )));
 
     let mut select = Select::new();
@@ -28,7 +29,7 @@ pub fn handle_output(child: &Arc<Mutex<Child>>) {
             Ok(remote_result) => match remote_result {
                 Ok(piped_line) => match piped_line {
                     PipedLine::Line(line) => {
-                        println!("{}", line);
+                        log::output(&proc.lock().unwrap().name, &line);
                     }
                     PipedLine::EOF => {
                         stream_eof = true;
@@ -47,17 +48,11 @@ pub fn handle_output(child: &Arc<Mutex<Child>>) {
         }
     }
 
-    let status = child.lock().unwrap().wait().expect("!wait");
-    let child_name = String::from("child name");
+    let status = proc.lock().unwrap().child.wait().expect("!wait");
+    let proc_name = &proc.lock().unwrap().name;
     if status.success() {
-        let onsucceed = String::from("on succeeed");
-        let annotated_message = format!("[{}] onsucceed: {}", child_name, &onsucceed);
-        println!("{}", annotated_message);
-        println!("Triggering onsucceed");
+        log::output(proc_name, "onsucceed handler");
     } else {
-        let onfail = String::from("on failed");
-        let annotated_message = format!("[{}] onfail: {}", child_name, &onfail);
-        println!("{}", annotated_message);
-        println!("Triggering onfail.");
+        log::output(proc_name, "onfailed handler");
     }
 }
