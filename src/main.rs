@@ -7,6 +7,7 @@ mod output;
 mod stream_read;
 mod process;
 mod log;
+mod signal;
 
 struct Script {
     cmd: String,
@@ -15,6 +16,7 @@ struct Script {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut proc_handles = vec![];
+    let mut procs: Vec<Arc<Mutex<process::Process>>> = vec![];
     
     let mut scripts = HashMap::<&str, Script>::new();
     scripts.insert("loop", Script {
@@ -43,6 +45,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             };
 
             let proc = Arc::new(Mutex::new(tmp_proc));
+            let proc2 = Arc::clone(&proc);
 
             let handle_output = thread::Builder::new()
                 .name(String::from("handling output"))
@@ -51,9 +54,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 })?;
         
             proc_handles.push(handle_output);
-
+            procs.push(proc2);
         }
     }
+
+    let handle_signal = thread::Builder::new()
+        .name(String::from("handling signal"))
+        .spawn(move || {
+            signal::handle_signal(procs).expect("fail to handle signal")
+        })?;
+    
+    proc_handles.push(handle_signal);
 
     for handle in proc_handles {
         handle.join().expect("failed join");
