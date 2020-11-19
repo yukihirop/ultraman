@@ -48,11 +48,11 @@ pub fn handle_output(proc: &Arc<Mutex<Process>>) {
         }
     }
 
-    let status = proc.lock().unwrap().child.wait().expect("!wait");
-    let proc_name = &proc.lock().unwrap().name;
-    if status.success() {
-        log::output(proc_name, "onsucceed handler");
-    } else {
-        log::output(proc_name, "onfailed handler");
-    }
+    // let status = proc.lock().unwrap().child.wait().expect("!wait");
+    // let proc_name = &proc.lock().unwrap().name;
+    // if status.success() {
+    //     log::output(proc_name, "onsucceed handler");
+    // } else {
+    //     log::output(proc_name, "onfailed handler");
+    // }
 }
