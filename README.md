@@ -13,7 +13,7 @@ The processes that can be executed are as follows.
 |---|-----------|-------|
 |exit_0|1| `sleep 5 && echo 'success' && exit 0;`|
 |exit_1|1| `sleep 5 && echo 'failed' && exit 1;`|
-|loop|2|`loop: while :; do sleep 1 && echo 'hello world'; done;`|
+|loop|2|`while :; do sleep 1 && echo 'hello world'; done;`|
 
 
 The behavior is that when exit_0 or exit_1 exits after 5 seconds, the remaining child processes will be signaled with a `SIGTERM` and killed.
