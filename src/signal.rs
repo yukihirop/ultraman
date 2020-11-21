@@ -1,35 +1,41 @@
-use crate::process::{Process};
 use crate::log;
-use std::sync::{Arc, Mutex};
-use signal_hook::{iterator::Signals, SIGINT, SIGALRM, SIGHUP, SIGTERM};
+use crate::process::Process;
 use nix::sys::signal::{self, Signal};
 use nix::unistd::Pid;
-use std::process::{exit};
+use signal_hook::{iterator::Signals, SIGALRM, SIGHUP, SIGINT, SIGTERM};
+use std::process::exit;
+use std::sync::{Arc, Mutex};
 
-pub fn handle_signal(procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>) -> Result<(), Box<dyn std::error::Error>> {
-  let signals = Signals::new(&[SIGALRM, SIGHUP, SIGINT, SIGTERM])?;
+pub fn handle_signal(
+    procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let signals = Signals::new(&[SIGALRM, SIGHUP, SIGINT, SIGTERM])?;
 
-  for sig in signals.forever() {
-    match sig {
-      SIGINT => {
-        log::output("system", "ctrl-c detected");
-        log::output("system", "sending SIGTERM for children");
-        for proc in procs.lock().unwrap().iter() {
-          let proc = proc.lock().unwrap();
-          let child = &proc.child;
+    for sig in signals.forever() {
+        match sig {
+            SIGINT => {
+                log::output("system", "ctrl-c detected");
+                log::output("system", "sending SIGTERM for children");
+                for proc in procs.lock().unwrap().iter() {
+                    let proc = proc.lock().unwrap();
+                    let child = &proc.child;
 
-          log::output("system", &format!("sending SIGTERM for {} at pid {}", &proc.name, &child.id()));
+                    log::output(
+                        "system",
+                        &format!("sending SIGTERM for {} at pid {}", &proc.name, &child.id()),
+                    );
 
-          if let Err(e) = signal::kill(Pid::from_raw(child.id() as i32), Signal::SIGTERM) {
-            log::error("system", &e);
-            log::output("system", "exit 1");
-            exit(1);
-          }
+                    if let Err(e) = signal::kill(Pid::from_raw(child.id() as i32), Signal::SIGTERM)
+                    {
+                        log::error("system", &e);
+                        log::output("system", "exit 1");
+                        exit(1);
+                    }
+                }
+            }
+            _ => (),
         }
-      },
-      _ => ()
     }
-  }
 
-  Ok(())
+    Ok(())
 }

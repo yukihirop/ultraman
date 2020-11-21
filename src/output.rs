@@ -1,6 +1,6 @@
-use crate::stream_read::{PipeStreamReader, PipedLine};
-use crate::process::Process;
 use crate::log;
+use crate::process::Process;
+use crate::stream_read::{PipeStreamReader, PipedLine};
 use crossbeam_channel::Select;
 use std::sync::{Arc, Mutex};
 
@@ -39,7 +39,7 @@ pub fn handle_output(proc: &Arc<Mutex<Process>>) {
                 Err(error) => {
                     let err = format!("error: {:?}", error);
                     println!("{}", err);
-                },
+                }
             },
             Err(_) => {
                 stream_eof = true;
@@ -49,7 +49,7 @@ pub fn handle_output(proc: &Arc<Mutex<Process>>) {
     }
 
     // MEMO
-    // 
+    //
     // An error occurs in a child process that was terminated by sending a SIGTERM
     // It is necessary to be able to send a signal after successfully executing the termination process.
     //
