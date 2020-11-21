@@ -59,7 +59,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "eg_multi_process_pipe"
+name = "eg_foreman"
 version = "0.1.0"
 dependencies = [
  "crossbeam-channel",

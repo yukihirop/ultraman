@@ -20,25 +20,25 @@ The behavior is that when exit_0 or exit_1 exits after 5 seconds, the remaining 
 
 ```bash
 $ cargo run
-    Finished dev [unoptimized + debuginfo] target(s) in 0.08s
-     Running `target/debug/eg_multi_process_pipe`
-exit_1.1   | start at pid: 35413
-loop.1     | start at pid: 35414
-loop.2     | start at pid: 35415
-exit_0.1   | start at pid: 35416
-loop.2     | hello world
-loop.1     | hello world
-loop.2     | hello world
-loop.1     | hello world
+    Finished dev [unoptimized + debuginfo] target(s) in 0.01s
+     Running `target/debug/eg_foreman`
+exit_0.1   | start at pid: 42256
+exit_1.1   | start at pid: 42257
+loop.2     | start at pid: 42258
+loop.1     | start at pid: 42259
 loop.1     | hello world
 loop.2     | hello world
 loop.1     | hello world
 loop.2     | hello world
-exit_0.1   | success
+loop.2     | hello world
+loop.1     | hello world
+loop.1     | hello world
+loop.2     | hello world
 exit_1.1   | failed
-system     | sending SIGTERM for exit_1.1 at pid 35413
-system     | sending SIGTERM for loop.1 at pid 35414
-system     | sending SIGTERM for loop.2 at pid 35415
+exit_0.1   | success
+system     | sending SIGTERM for exit_1.1 at pid 42257
+system     | sending SIGTERM for loop.2 at pid 42258
+system     | sending SIGTERM for loop.1 at pid 42259
 system     | exit 0
 ```
 
@@ -47,21 +47,23 @@ If <kbd>ctrl-c</kbd> is detected within 5 seconds, `SIGTERM` will be sent to all
 ```bash
 $ cargo run
     Finished dev [unoptimized + debuginfo] target(s) in 0.01s
-     Running `target/debug/eg_multi_process_pipe`
-exit_0.1   | start at pid: 37340
-loop.1     | start at pid: 37341
-loop.2     | start at pid: 37342
-exit_1.1   | start at pid: 37343
-loop.1     | hello world
+     Running `target/debug/eg_foreman`
+exit_0.1   | start at pid: 42170
+exit_1.1   | start at pid: 42171
+loop.1     | start at pid: 42172
+loop.2     | start at pid: 42173
 loop.2     | hello world
 loop.1     | hello world
 loop.2     | hello world
+loop.1     | hello world
+loop.2     | hello world
+loop.1     | hello world
 ^Csystem     | ctrl-c detected
 system     | sending SIGTERM for children
-system     | sending SIGTERM for exit_0.1 at pid 37340
-system     | sending SIGTERM for loop.1 at pid 37341
-system     | sending SIGTERM for loop.2 at pid 37342
-system     | sending SIGTERM for exit_1.1 at pid 37343
+system     | sending SIGTERM for exit_0.1 at pid 42170
+system     | sending SIGTERM for exit_1.1 at pid 42171
+system     | sending SIGTERM for loop.1 at pid 42172
+system     | sending SIGTERM for loop.2 at pid 42173
 system     | exit 0
 ```
 
