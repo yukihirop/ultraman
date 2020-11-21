@@ -32,6 +32,8 @@ pub fn handle_signal(
                         exit(1);
                     }
                 }
+                log::output("system", "exit 0");
+                exit(0)
             }
             _ => (),
         }
