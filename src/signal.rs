@@ -15,14 +15,15 @@ pub fn handle_signal(procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>) -> Result<(), 
         log::output("system", "ctrl-c detected");
         log::output("system", "sending SIGTERM for children");
         for proc in procs.lock().unwrap().iter() {
-          let child = &proc.lock().unwrap().child;
+          let proc = proc.lock().unwrap();
+          let child = &proc.child;
 
-          log::output("system", &format!("child pid: {}", child.id()));
+          log::output("system", &format!("sending SIGTERM for {} at pid {}", &proc.name, &child.id()));
 
           if let Err(e) = signal::kill(Pid::from_raw(child.id() as i32), Signal::SIGTERM) {
             log::error("system", &e);
             log::output("system", "exit 1");
-            exit(0);
+            exit(1);
           }
         }
       },

@@ -79,6 +79,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     barrier.wait();
+
+    // use handle_signal
+    let procs_2 = Arc::clone(&procs);
+
     let check_child_terminated = thread::Builder::new()
         .name(String::from(format!("check child terminated")))
         .spawn(move || {
@@ -97,7 +101,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 let proc = proc.lock().unwrap();
                                 let child_id = proc.child.id();
                                 
-                                log::output("system", &format!("sending SIGTERM to {} at pid {}", &proc.name, &child_id));
+                                log::output("system", &format!("sending SIGTERM for {} at pid {}", &proc.name, &child_id));
                                 nix_signal::kill(
                                     Pid::from_raw(child_id as i32),
                                     Signal::SIGTERM,
@@ -110,20 +114,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         },
                         _ => ()
                     },
-                    Err(e) => log::error("system", &e)
+                    Err(e) => {
+                        if let nix::Error::Sys(nix::errno::Errno::ECHILD) = e {
+                            // close loop (thread finished)
+                            exit(0);
+                        }
+                    },
                 };
             }
         })?;
     proc_handles.push(check_child_terminated);
     
 
-    // let procs = Arc::clone(&procs);
-    // let handle_signal = thread::Builder::new()
-    //     .name(String::from("handling signal"))
-    //     .spawn(move || {
-    //         signal::handle_signal(procs).expect("fail to handle signal")
-    //     })?;
-    // proc_handles.push(handle_signal);
+    let procs = Arc::clone(&procs_2);
+    let handle_signal = thread::Builder::new()
+        .name(String::from("handling signal"))
+        .spawn(move || {
+            signal::handle_signal(procs).expect("fail to handle signal")
+        })?;
+    proc_handles.push(handle_signal);
 
     for handle in proc_handles {
         handle.join().expect("failed join");

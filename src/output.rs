@@ -48,6 +48,13 @@ pub fn handle_output(proc: &Arc<Mutex<Process>>) {
         }
     }
 
+    // MEMO
+    // 
+    // An error occurs in a child process that was terminated by sending a SIGTERM
+    // It is necessary to be able to send a signal after successfully executing the termination process.
+    //
+
+    // blocking
     // let status = proc.lock().unwrap().child.wait().expect("!wait");
     // let proc_name = &proc.lock().unwrap().name;
     // if status.success() {
