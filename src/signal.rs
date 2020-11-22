@@ -5,8 +5,19 @@ use nix::unistd::Pid;
 use signal_hook::{iterator::Signals, SIGALRM, SIGHUP, SIGINT, SIGTERM};
 use std::process::exit;
 use std::sync::{Arc, Mutex};
+use std::thread::{self, JoinHandle};
 
-pub fn handle_signal(
+pub fn handle_signal(procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>, padding: usize) -> JoinHandle<()> {
+    let result = thread::Builder::new()
+        .name(String::from("handling signal"))
+        .spawn(move || trap_signal(procs, padding)
+        .expect("failed trap signals")
+    ).expect("failed handle signals");
+
+    result
+}
+
+pub fn trap_signal(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
     padding: usize
 ) -> Result<(), Box<dyn std::error::Error>> {
