@@ -7,19 +7,21 @@ use std::process::exit;
 use std::sync::{Arc, Mutex};
 use std::thread::{self, JoinHandle};
 
-pub fn handle_signal(procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>, padding: usize) -> JoinHandle<()> {
+pub fn handle_signal(
+    procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
+    padding: usize,
+) -> JoinHandle<()> {
     let result = thread::Builder::new()
         .name(String::from("handling signal"))
-        .spawn(move || trap_signal(procs, padding)
-        .expect("failed trap signals")
-    ).expect("failed handle signals");
+        .spawn(move || trap_signal(procs, padding).expect("failed trap signals"))
+        .expect("failed handle signals");
 
     result
 }
 
 pub fn trap_signal(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
-    padding: usize
+    padding: usize,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let signals = Signals::new(&[SIGALRM, SIGHUP, SIGINT, SIGTERM])?;
 
@@ -35,7 +37,7 @@ pub fn trap_signal(
                     log::output(
                         "system",
                         &format!("sending SIGTERM for {} at pid {}", &proc.name, &child.id()),
-                        0
+                        0,
                     );
 
                     if let Err(e) = signal::kill(Pid::from_raw(child.id() as i32), Signal::SIGTERM)

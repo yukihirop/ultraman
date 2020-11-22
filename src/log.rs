@@ -19,7 +19,7 @@ const COLORS: [&str; 12] = [
     "bright_cyan",
     "bright_white",
     "bright_red",
-    "bright_green"
+    "bright_green",
 ];
 
 impl Log {
@@ -29,14 +29,14 @@ impl Log {
                 return Log {
                     index,
                     padding,
-                    is_color: c == "true"
+                    is_color: c == "true",
                 }
-            },
+            }
             Err(_) => {
                 return Log {
                     index,
                     padding,
-                    is_color: true
+                    is_color: true,
                 }
             }
         }
@@ -44,7 +44,8 @@ impl Log {
 
     pub fn output(&self, proc_name: &str, content: &str) {
         if self.is_color {
-            self.color_output(proc_name, content).expect("failed color output");
+            self.color_output(proc_name, content)
+                .expect("failed color output");
         } else {
             println!("{0:1$} | {2}", proc_name, self.padding, content);
         }
@@ -57,7 +58,12 @@ impl Log {
 
     fn color_output(&self, name: &str, content: &str) -> Result<(), Box<dyn std::error::Error>> {
         let color = COLORS[self.index % COLORS.len()];
-        println!("{0:1$} | {2}", name.color(color), self.padding, content.color(color));
+        println!(
+            "{0:1$} | {2}",
+            name.color(color),
+            self.padding,
+            content.color(color)
+        );
         Ok(())
     }
 }

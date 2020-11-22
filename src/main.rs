@@ -3,9 +3,9 @@ use std::sync::{Arc, Barrier, Mutex};
 mod log;
 mod output;
 mod process;
+mod procfile;
 mod signal;
 mod stream_read;
-mod procfile;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut proc_handles = vec![];
@@ -29,7 +29,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let output = output.clone();
 
             let each_fn = process::each_handle_exec_and_output(procs, padding, barrier, output);
-            let each_handle_exec_and_output = each_fn(String::from(key), n, String::from(&script.cmd));
+            let each_handle_exec_and_output =
+                each_fn(String::from(key), n, String::from(&script.cmd));
             proc_handles.push(each_handle_exec_and_output);
         }
     }

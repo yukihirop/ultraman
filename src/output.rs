@@ -1,6 +1,6 @@
 use crate::log::Log;
 use crate::process::Process;
-use crate::stream_read::{PipeStreamReader, PipedLine, PipeError};
+use crate::stream_read::{PipeError, PipeStreamReader, PipedLine};
 use crossbeam_channel::Select;
 use std::sync::{Arc, Mutex};
 
@@ -11,7 +11,7 @@ pub struct Output {
 impl Output {
     pub fn new(index: usize, padding: usize) -> Self {
         Output {
-            log: Log::new(index, padding)
+            log: Log::new(index, padding),
         }
     }
 
@@ -48,12 +48,10 @@ impl Output {
                             select.remove(index);
                         }
                     },
-                    Err(error) => {
-                        match error {
-                            PipeError::IO(err) => log.error(&proc.lock().unwrap().name, &err),
-                            PipeError::NotUtf8(err) => log.error(&proc.lock().unwrap().name, &err),
-                        }
-                    }
+                    Err(error) => match error {
+                        PipeError::IO(err) => log.error(&proc.lock().unwrap().name, &err),
+                        PipeError::NotUtf8(err) => log.error(&proc.lock().unwrap().name, &err),
+                    },
                 },
                 Err(_) => {
                     stream_eof = true;
@@ -62,19 +60,19 @@ impl Output {
             }
         }
 
-    // MEMO
-    //
-    // An error occurs in a child process that was terminated by sending a SIGTERM
-    // It is necessary to be able to send a signal after successfully executing the termination process.
-    //
+        // MEMO
+        //
+        // An error occurs in a child process that was terminated by sending a SIGTERM
+        // It is necessary to be able to send a signal after successfully executing the termination process.
+        //
 
-    // blocking
-    // let status = proc.lock().unwrap().child.wait().expect("!wait");
-    // let proc_name = &proc.lock().unwrap().name;
-    // if status.success() {
-    //     log::output(proc_name, "onsucceed handler");
-    // } else {
-    //     log::output(proc_name, "onfailed handler");
-    // }
+        // blocking
+        // let status = proc.lock().unwrap().child.wait().expect("!wait");
+        // let proc_name = &proc.lock().unwrap().name;
+        // if status.success() {
+        //     log::output(proc_name, "onsucceed handler");
+        // } else {
+        //     log::output(proc_name, "onfailed handler");
+        // }
     }
 }
