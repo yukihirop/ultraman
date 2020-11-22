@@ -9,9 +9,9 @@ pub struct Output {
 }
 
 impl Output {
-    pub fn new(index: usize, padding: usize, is_color: bool) -> Self {
+    pub fn new(index: usize, padding: usize) -> Self {
         Output {
-            log: Log::new(index, padding, is_color)
+            log: Log::new(index, padding)
         }
     }
 

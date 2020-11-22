@@ -58,7 +58,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for (key, script) in scripts {
         let con = script.concurrency;
         let script = Arc::new(script);
-        let output = Arc::new(output::Output::new(index, padding, true));
+        let output = Arc::new(output::Output::new(index, padding));
         index += 1;
 
         for n in 0..con {

@@ -1,4 +1,5 @@
 use colored::*;
+use std::env;
 
 pub struct Log {
     index: usize,
@@ -22,11 +23,22 @@ const COLORS: [&str; 12] = [
 ];
 
 impl Log {
-    pub fn new(index: usize, padding: usize, is_color: bool) -> Self {
-        Log {
-            index,
-            padding,
-            is_color
+    pub fn new(index: usize, padding: usize) -> Self {
+        match env::var("COLOR") {
+            Ok(c) => {
+                return Log {
+                    index,
+                    padding,
+                    is_color: c == "true"
+                }
+            },
+            Err(_) => {
+                return Log {
+                    index,
+                    padding,
+                    is_color: true
+                }
+            }
         }
     }
 
