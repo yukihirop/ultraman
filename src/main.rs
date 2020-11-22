@@ -51,15 +51,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let process_len = concurrencies.iter().fold(0, |sum, a| sum + a);
 
     let barrier = Arc::new(Barrier::new(process_len + 1));
+    // e.g) <name>.<concurrency> |
+    let padding = scripts.keys().map(|name| name.len()).max().unwrap() + 3;
+    let mut index = 0;
 
     for (key, script) in scripts {
         let con = script.concurrency;
         let script = Arc::new(script);
+        let output = Arc::new(output::Output::new(index, padding, true));
 
         for n in 0..con {
             let barrier = barrier.clone();
             let script = script.clone();
             let procs = procs.clone();
+            let output = output.clone();
 
             let handle_output = thread::Builder::new()
                 .name(String::from("handling output"))
@@ -76,19 +81,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     let proc2 = Arc::clone(&proc);
 
                     let child_id = proc.lock().unwrap().child.id() as i32;
-                    log::output(
-                        &proc.lock().unwrap().name,
-                        &format!("start at pid: {}", &child_id),
+                    output.log.output(
+                        "system",
+                        &format!("{0:1$} start at pid: {2}", &proc.lock().unwrap().name, padding, &child_id),
                     );
 
                     procs.lock().unwrap().push(proc);
                     barrier.wait();
 
-                    output::handle_output(&proc2);
+                    output.handle_output(&proc2);
                 })?;
 
             proc_handles.push(handle_output);
         }
+
+        index += 1;
     }
 
     barrier.wait();
@@ -123,11 +130,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                         "sending SIGTERM for {} at pid {}",
                                         &proc.name, &child_id
                                     ),
+                                    padding
                                 );
                                 nix_signal::kill(Pid::from_raw(child_id as i32), Signal::SIGTERM)
                                     .unwrap();
                             }
-                            log::output("system", &format!("exit {}", &code));
+                            log::output("system", &format!("exit {}", &code), padding);
                             // close loop (thread finished)
                             exit(code);
                         }
@@ -147,7 +155,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let procs = Arc::clone(&procs_2);
     let handle_signal = thread::Builder::new()
         .name(String::from("handling signal"))
-        .spawn(move || signal::handle_signal(procs).expect("fail to handle signal"))?;
+        .spawn(move || signal::handle_signal(procs, padding).expect("fail to handle signal"))?;
     proc_handles.push(handle_signal);
 
     for handle in proc_handles {

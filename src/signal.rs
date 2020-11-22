@@ -8,14 +8,15 @@ use std::sync::{Arc, Mutex};
 
 pub fn handle_signal(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
+    padding: usize
 ) -> Result<(), Box<dyn std::error::Error>> {
     let signals = Signals::new(&[SIGALRM, SIGHUP, SIGINT, SIGTERM])?;
 
     for sig in signals.forever() {
         match sig {
             SIGINT => {
-                log::output("system", "ctrl-c detected");
-                log::output("system", "sending SIGTERM for children");
+                log::output("system", "ctrl-c detected", padding);
+                log::output("system", "sending SIGTERM for children", padding);
                 for proc in procs.lock().unwrap().iter() {
                     let proc = proc.lock().unwrap();
                     let child = &proc.child;
@@ -23,16 +24,17 @@ pub fn handle_signal(
                     log::output(
                         "system",
                         &format!("sending SIGTERM for {} at pid {}", &proc.name, &child.id()),
+                        0
                     );
 
                     if let Err(e) = signal::kill(Pid::from_raw(child.id() as i32), Signal::SIGTERM)
                     {
-                        log::error("system", &e);
-                        log::output("system", "exit 1");
+                        log::error("system", &e, padding);
+                        log::output("system", "exit 1", padding);
                         exit(1);
                     }
                 }
-                log::output("system", "exit 0");
+                log::output("system", "exit 0", padding);
                 exit(0)
             }
             _ => (),
