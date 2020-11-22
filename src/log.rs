@@ -1,26 +1,24 @@
-use term;
-use std::sync::{Arc, Mutex};
+use colored::*;
 
 pub struct Log {
     index: usize,
     padding: usize,
     is_color: bool,
-    terminal: Arc<Mutex<Box<term::StdoutTerminal>>>,
 }
 
-const COLORS: [u32; 12] = [
-    term::color::MAGENTA,
-    term::color::CYAN,
-    term::color::YELLOW,
-    term::color::GREEN,
-    term::color::BLUE,
-    term::color::RED,
-    term::color::BRIGHT_CYAN,
-    term::color::BRIGHT_YELLOW,
-    term::color::BRIGHT_GREEN,
-    term::color::BRIGHT_MAGENTA,
-    term::color::BRIGHT_RED,
-    term::color::BRIGHT_BLUE
+const COLORS: [&str; 12] = [
+    "yellow",
+    "cyan",
+    "magenta",
+    "white",
+    "red",
+    "green",
+    "bright_yellow",
+    "bright_magenta",
+    "bright_cyan",
+    "bright_white",
+    "bright_red",
+    "bright_green"
 ];
 
 impl Log {
@@ -28,8 +26,7 @@ impl Log {
         Log {
             index,
             padding,
-            is_color,
-            terminal: Arc::new(Mutex::new(term::stdout().unwrap())),
+            is_color
         }
     }
 
@@ -48,11 +45,7 @@ impl Log {
 
     fn color_output(&self, name: &str, content: &str) -> Result<(), Box<dyn std::error::Error>> {
         let color = COLORS[self.index % COLORS.len()];
-        let mut terminal = self.terminal.lock().unwrap();
-        terminal.fg(color)?;
-        write!(terminal, "{0:1$} | {2}\n", name, self.padding, content)?;
-        terminal.reset()?;
-        terminal.flush()?;
+        println!("{0:1$} | {2}", name.color(color), self.padding, content.color(color));
         Ok(())
     }
 }

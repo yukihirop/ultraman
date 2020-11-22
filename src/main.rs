@@ -59,6 +59,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let con = script.concurrency;
         let script = Arc::new(script);
         let output = Arc::new(output::Output::new(index, padding, true));
+        index += 1;
 
         for n in 0..con {
             let barrier = barrier.clone();
@@ -94,8 +95,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             proc_handles.push(handle_output);
         }
-
-        index += 1;
     }
 
     barrier.wait();
