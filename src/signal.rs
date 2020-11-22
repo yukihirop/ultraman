@@ -28,7 +28,8 @@ pub fn trap_signal(
     for sig in signals.forever() {
         match sig {
             SIGINT => {
-                log::output("system", "ctrl-c detected", padding);
+                // 2 is 「^C」 of 「^Csystem   | ctrl-c detected」
+                log::output("system", "ctrl-c detected", padding - 2);
                 log::output("system", "sending SIGTERM for children", padding);
                 for proc in procs.lock().unwrap().iter() {
                     let proc = proc.lock().unwrap();
@@ -36,8 +37,8 @@ pub fn trap_signal(
 
                     log::output(
                         "system",
-                        &format!("sending SIGTERM for {} at pid {}", &proc.name, &child.id()),
-                        0,
+                        &format!("sending SIGTERM for {0:1$} at pid {2}", &proc.name, padding, &child.id()),
+                        padding,
                     );
 
                     if let Err(e) = signal::kill(Pid::from_raw(child.id() as i32), Signal::SIGTERM)

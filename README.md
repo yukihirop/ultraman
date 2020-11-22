@@ -18,30 +18,31 @@ The processes that can be executed are as follows.
 
 The behavior is that when exit_0 or exit_1 exits after 5 seconds, the remaining child processes will be signaled with a `SIGTERM` and killed.
 
-![image](https://user-images.githubusercontent.com/11146767/99902534-d794c300-2d01-11eb-9de3-6c4c973f7c0a.png)
+![image](https://user-images.githubusercontent.com/11146767/99907357-bd69dd80-2d1f-11eb-8bb0-aa67d604baee.png)
 
 <details>
 
 ```
 $ cargo run
-    Finished dev [unoptimized + debuginfo] target(s) in 0.01s
+    Finished dev [unoptimized + debuginfo] target(s) in 0.09s
      Running `target/debug/eg_foreman`
-system    | loop.1    start at pid: 23182
-system    | exit_0.1  start at pid: 23183
-system    | exit_1.1  start at pid: 23184
-system    | loop.2    start at pid: 23185
-loop.2    | hello world
-loop.1    | hello world
+system    | exit_0.1  start at pid: 42932
+system    | exit_1.1  start at pid: 42933
+system    | loop.2    start at pid: 42934
+system    | loop.1    start at pid: 42935
 loop.1    | hello world
 loop.2    | hello world
 loop.2    | hello world
 loop.1    | hello world
+loop.2    | hello world
 loop.1    | hello world
 loop.2    | hello world
+loop.1    | hello world
 exit_1.1  | failed
-system    | sending SIGTERM for loop.1 at pid 23182
-system    | sending SIGTERM for exit_0.1 at pid 23183
-system    | sending SIGTERM for loop.2 at pid 23185
+exit_0.1  | success
+system    | sending SIGTERM for exit_0.1 at pid 42932
+system    | sending SIGTERM for loop.2 at pid 42934
+system    | sending SIGTERM for loop.1 at pid 42935
 system    | exit 1
 ```
 
@@ -49,28 +50,28 @@ system    | exit 1
 
 If <kbd>ctrl-c</kbd> is detected within 5 seconds, `SIGTERM` will be sent to all child processes and the process will be killed.
 
-![image](https://user-images.githubusercontent.com/11146767/99902591-3d814a80-2d02-11eb-982c-b40147d464c1.png)
+![image](https://user-images.githubusercontent.com/11146767/99907366-c9ee3600-2d1f-11eb-809f-7ab562ee3698.png)
 
 <details>
 
 ```
 $ cargo run
-    Finished dev [unoptimized + debuginfo] target(s) in 0.01s
+    Finished dev [unoptimized + debuginfo] target(s) in 0.09s
      Running `target/debug/eg_foreman`
-system    | exit_1.1  start at pid: 23294
-system    | loop.1    start at pid: 23295
-system    | exit_0.1  start at pid: 23296
-system    | loop.2    start at pid: 23297
+system    | exit_0.1  start at pid: 43204
+system    | loop.1    start at pid: 43205
+system    | exit_1.1  start at pid: 43206
+system    | loop.2    start at pid: 43207
 loop.2    | hello world
 loop.1    | hello world
 loop.1    | hello world
 loop.2    | hello world
-^Csystem    | ctrl-c detected
+^Csystem  | ctrl-c detected
 system    | sending SIGTERM for children
-system | sending SIGTERM for exit_1.1 at pid 23294
-system | sending SIGTERM for loop.1 at pid 23295
-system | sending SIGTERM for exit_0.1 at pid 23296
-system | sending SIGTERM for loop.2 at pid 23297
+system    | sending SIGTERM for exit_0.1  at pid 43204
+system    | sending SIGTERM for loop.1    at pid 43205
+system    | sending SIGTERM for exit_1.1  at pid 43206
+system    | sending SIGTERM for loop.2    at pid 43207
 system    | exit 0
 ```
 
