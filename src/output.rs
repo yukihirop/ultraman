@@ -76,3 +76,28 @@ impl Output {
         // }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use anyhow;
+    use std::process::{Command, Stdio};
+
+    #[test]
+    fn test_handle_output() -> anyhow::Result<()> {
+        let proc = Arc::new(Mutex::new(Process {
+            name: String::from("handle_output"),
+            child: Command::new("./test/script/for.sh")
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .spawn()
+                .expect("failed execute handle_output command")
+        }));
+        
+        let proc2 = Arc::clone(&proc);
+        let output = Output::new(0, 10);
+        output.handle_output(&proc2);
+        
+        Ok(())
+    }
+}
