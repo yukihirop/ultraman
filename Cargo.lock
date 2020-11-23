@@ -93,6 +93,7 @@ dependencies = [
  "anyhow",
  "colored",
  "crossbeam-channel",
+ "libc",
  "nix",
  "signal-hook",
 ]

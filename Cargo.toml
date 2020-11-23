@@ -14,3 +14,4 @@ signal-hook = "0.1.16"
 
 [dev-dependencies]
 anyhow = "1.0.34"
+libc = "0.2.80"
