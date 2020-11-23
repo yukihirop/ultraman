@@ -18,32 +18,32 @@ The processes that can be executed are as follows.
 
 The behavior is that when exit_0 or exit_1 exits after 5 seconds, the remaining child processes will be signaled with a `SIGTERM` and killed.
 
-![image](https://user-images.githubusercontent.com/11146767/99907357-bd69dd80-2d1f-11eb-8bb0-aa67d604baee.png)
+![image](https://user-images.githubusercontent.com/11146767/99929079-1f156080-2d8f-11eb-8315-ae7588d21d31.png)
 
 <details>
 
 ```
 $ cargo run
-    Finished dev [unoptimized + debuginfo] target(s) in 0.09s
+    Finished dev [unoptimized + debuginfo] target(s) in 0.08s
      Running `target/debug/eg_foreman`
-system    | exit_0.1  start at pid: 42932
-system    | exit_1.1  start at pid: 42933
-system    | loop.2    start at pid: 42934
-system    | loop.1    start at pid: 42935
+system    | exit_0.1  start at pid: 11350
+system    | loop.1    start at pid: 11351
+system    | exit_1.1  start at pid: 11352
+system    | loop.2    start at pid: 11353
+loop.2    | hello world
+loop.1    | hello world
 loop.1    | hello world
 loop.2    | hello world
 loop.2    | hello world
 loop.1    | hello world
-loop.2    | hello world
 loop.1    | hello world
 loop.2    | hello world
-loop.1    | hello world
 exit_1.1  | failed
 exit_0.1  | success
-system    | sending SIGTERM for exit_0.1 at pid 42932
-system    | sending SIGTERM for loop.2 at pid 42934
-system    | sending SIGTERM for loop.1 at pid 42935
-system    | exit 1
+system    | sending SIGTERM for loop.1    at pid 11351
+system    | sending SIGTERM for exit_1.1  at pid 11352
+system    | sending SIGTERM for loop.2    at pid 11353
+system    | exit 0
 ```
 
 </details>

@@ -87,8 +87,8 @@ pub fn check_child_terminated(
                                 log::output(
                                     "system",
                                     &format!(
-                                        "sending SIGTERM for {} at pid {}",
-                                        &proc.name, &child_id
+                                        "sending SIGTERM for {0:1$} at pid {2}",
+                                        &proc.name, padding, &child_id
                                     ),
                                     padding,
                                 );
