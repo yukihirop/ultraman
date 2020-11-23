@@ -59,3 +59,34 @@ impl PipeStreamReader {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::process::{Command, Stdio};
+    use anyhow;
+
+    #[test]
+    fn test_new() -> anyhow::Result<()> {
+        let mut child = Command::new("echo")
+            .arg("Test")
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("failed execute command");
+        let stream = Box::new(child.stdout.take().unwrap());
+        let result = PipeStreamReader::new(stream);
+
+        match result.lines.recv().unwrap() {
+            Ok(piped_line) => match piped_line {
+                PipedLine::Line(line) => assert_eq!(line, "Test"),
+                PipedLine::EOF => println!("EOF")
+            },
+            Err(error) => match error {
+                PipeError::IO(err) => println!("{}", err),
+                PipeError::NotUtf8(err) => println!("{}", err),
+            }
+        }
+
+        Ok(())
+    }
+}
