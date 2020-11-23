@@ -44,3 +44,41 @@ pub fn process_ln() -> usize {
         .map(|s| s.concurrency)
         .fold(0, |sum, a| sum + a)
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use anyhow;
+
+  #[test]
+  fn test_scripts() -> anyhow::Result<()> {
+    let scripts = scripts();
+
+    let loop_ = scripts.get("loop").unwrap(); 
+    assert_eq!(loop_.cmd, String::from("./bin/loop.sh"));
+    assert_eq!(loop_.concurrency, 2);
+
+    let exit_1 = scripts.get("exit_1").unwrap();
+    assert_eq!(exit_1.cmd, String::from("./bin/exit_1.sh"));
+    assert_eq!(exit_1.concurrency, 1);
+
+    let exit_0 = scripts.get("exit_0").unwrap();
+    assert_eq!(exit_0.cmd, String::from("./bin/exit_0.sh"));
+    assert_eq!(exit_0.concurrency, 1);
+    
+    Ok(())
+  }
+
+  #[test]
+  fn test_padding() -> anyhow::Result<()> {
+    assert_eq!(padding(), 9);
+    Ok(())
+  }
+
+  #[test]
+  fn test_process_ln() -> anyhow::Result<()> {
+    assert_eq!(process_ln(), 4);
+
+    Ok(())
+  }
+}
