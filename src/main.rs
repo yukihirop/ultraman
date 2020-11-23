@@ -11,7 +11,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut proc_handles = vec![];
     let procs: Arc<Mutex<Vec<Arc<Mutex<process::Process>>>>> = Arc::new(Mutex::new(vec![]));
     let scripts = procfile::scripts();
-    let process_len = procfile::process_ln();
+    let process_len = procfile::process_len();
     let padding = procfile::padding();
     let barrier = Arc::new(Barrier::new(process_len + 1));
     let mut index = 0;

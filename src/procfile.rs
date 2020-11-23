@@ -38,7 +38,7 @@ pub fn padding() -> usize {
     scripts().keys().map(|name| name.len()).max().unwrap() + 3
 }
 
-pub fn process_ln() -> usize {
+pub fn process_len() -> usize {
     scripts()
         .values()
         .map(|s| s.concurrency)
@@ -76,8 +76,8 @@ mod tests {
   }
 
   #[test]
-  fn test_process_ln() -> anyhow::Result<()> {
-    assert_eq!(process_ln(), 4);
+  fn test_process_len() -> anyhow::Result<()> {
+    assert_eq!(process_len(), 4);
 
     Ok(())
   }
