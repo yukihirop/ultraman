@@ -18,10 +18,10 @@ impl Output {
     pub fn handle_output(&self, proc: &Arc<Mutex<Process>>) {
         let mut channels: Vec<PipeStreamReader> = Vec::new();
         channels.push(PipeStreamReader::new(Box::new(
-            proc.lock().unwrap().child.stdout.take().expect("!stdout"),
+            proc.lock().unwrap().child.stdout.take().expect("failed take stdout"),
         )));
         channels.push(PipeStreamReader::new(Box::new(
-            proc.lock().unwrap().child.stderr.take().expect("!stderr"),
+            proc.lock().unwrap().child.stderr.take().expect("failed take stderr"),
         )));
 
         let mut select = Select::new();
@@ -34,7 +34,7 @@ impl Output {
         while !stream_eof {
             let operation = select.select();
             let index = operation.index();
-            let received = operation.recv(&channels.get(index).expect("!channel").lines);
+            let received = operation.recv(&channels.get(index).expect("failed get channel at index").lines);
             let log = &self.log;
 
             match received {

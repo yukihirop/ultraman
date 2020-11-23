@@ -33,7 +33,7 @@ pub fn each_handle_exec_and_output(
                         .stdout(Stdio::piped())
                         .stderr(Stdio::piped())
                         .spawn()
-                        .unwrap(),
+                        .expect("failed execute command"),
                 };
                 let proc = Arc::new(Mutex::new(tmp_proc));
                 let proc2 = Arc::clone(&proc);
