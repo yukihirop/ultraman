@@ -3,7 +3,11 @@ use crate::output;
 use nix::sys::signal::{self, Signal};
 use nix::sys::wait::WaitStatus;
 use nix::{self, unistd::Pid};
-use std::process::{exit, Child, Command, Stdio};
+use std::process::{Child, Command, Stdio};
+
+#[cfg(not(test))]
+use std::process::exit;
+
 use std::sync::{Arc, Barrier, Mutex};
 use std::thread::{self, JoinHandle};
 
@@ -97,14 +101,21 @@ pub fn check_child_terminated(
                             }
                             log::output("system", &format!("exit {}", &code), padding);
                             // close loop (thread finished)
+                            // https://www.reddit.com/r/rust/comments/emz456/testing_whether_functions_exit/
+                            #[cfg(not(test))]
                             exit(code);
+                            #[cfg(test)]
+                            panic!("exit 1");
                         }
                         _ => (),
                     },
                     Err(e) => {
                         if let nix::Error::Sys(nix::errno::Errno::ECHILD) = e {
                             // close loop (thread finished)
+                            #[cfg(not(test))]
                             exit(0);
+                            #[cfg(test)]
+                            break
                         }
                     }
                 };
@@ -113,4 +124,49 @@ pub fn check_child_terminated(
         .expect("failed check child terminated");
 
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use anyhow;
+    use std::sync::{Barrier};
+
+    #[test]
+    fn test_each_handle_exec_and_output() -> anyhow::Result<()> {
+        let procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>> = Arc::new(Mutex::new(vec![]));
+        let procs2 = Arc::clone(&procs);
+
+        let padding = 10;
+        let barrier = Arc::new(Barrier::new(1));
+        let output = Arc::new(output::Output::new(0, padding));
+
+        let each_fn_thread = each_handle_exec_and_output(procs2, padding, barrier, output);
+        each_fn_thread(String::from("each_handle_exec_and_output"), 0, String::from("./test/script/for.sh")).join().expect("failed join each thread");
+
+        Ok(())
+    }
+
+    #[test]
+    #[should_panic(expected ="exit 1: Any")]
+    fn test_check_child_terminated(){
+        let procs = Arc::new(Mutex::new(vec![
+            Arc::new(Mutex::new(Process {
+                name: String::from("check_child_terminated-1"),
+                child: Command::new("./test/script/exit_0.sh")
+                    .spawn()
+                    .expect("failed execute check_child_terminated-1")
+            })),
+            Arc::new(Mutex::new(Process {
+                name: String::from("check_child_terminated-2"),
+                child: Command::new("./test/script/exit_1.sh")
+                    .spawn()
+                    .expect("failed execute check_child_terminated-2")
+            }))
+        ]));
+        let procs2 = Arc::clone(&procs);
+        let padding = 10;
+
+        check_child_terminated(procs2, padding).join().expect("exit 1");
+    }
 }
