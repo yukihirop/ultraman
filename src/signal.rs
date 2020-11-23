@@ -42,7 +42,12 @@ fn trap_signal(
 
                     log::output(
                         "system",
-                        &format!("sending SIGTERM for {0:1$} at pid {2}", &proc.name, padding, &child.id()),
+                        &format!(
+                            "sending SIGTERM for {0:1$} at pid {2}",
+                            &proc.name,
+                            padding,
+                            &child.id()
+                        ),
                         padding,
                     );
 
@@ -50,7 +55,7 @@ fn trap_signal(
                     {
                         log::error("system", &e, padding);
                         log::output("system", "exit 1", padding);
-                        
+
                         // https://www.reddit.com/r/rust/comments/emz456/testing_whether_functions_exit/
                         #[cfg(not(test))]
                         exit(1);
@@ -62,7 +67,7 @@ fn trap_signal(
                 #[cfg(not(test))]
                 exit(0);
                 #[cfg(test)]
-                break
+                break;
             }
             _ => (),
         }
@@ -74,15 +79,15 @@ fn trap_signal(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::process::{Command};
     use anyhow;
-    use signal_hook::{SIGINT};
     use libc;
-    use std::time::Duration;
+    use signal_hook::SIGINT;
+    use std::process::Command;
     use std::thread::sleep;
+    use std::time::Duration;
 
     // https://github.com/vorner/signal-hook/blob/master/tests/iterator.rs
-    fn send_sigint(){
+    fn send_sigint() {
         unsafe { libc::raise(SIGINT) };
     }
 
@@ -94,21 +99,20 @@ mod tests {
                 child: Command::new("./test/script/loop.sh")
                     .arg("trap_signal_1")
                     .spawn()
-                    .expect("failed execute test-app-1")
+                    .expect("failed execute test-app-1"),
             })),
             Arc::new(Mutex::new(Process {
                 name: String::from("trap-signal-2"),
                 child: Command::new("./test/script/loop.sh")
                     .arg("trap_signal_2")
                     .spawn()
-                    .expect("failed execute test-app-2")
-            }))
+                    .expect("failed execute test-app-2"),
+            })),
         ]));
 
         let procs2 = Arc::clone(&procs);
-        let thread_trap_signal = thread::spawn(move || {
-            trap_signal(procs2, 10).expect("failed trap signals")
-        });
+        let thread_trap_signal =
+            thread::spawn(move || trap_signal(procs2, 10).expect("failed trap signals"));
 
         let thread_send_sigint = thread::spawn(move || {
             sleep(Duration::from_millis(5000));

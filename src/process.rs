@@ -115,7 +115,7 @@ pub fn check_child_terminated(
                             #[cfg(not(test))]
                             exit(0);
                             #[cfg(test)]
-                            break
+                            break;
                         }
                     }
                 };
@@ -130,7 +130,7 @@ pub fn check_child_terminated(
 mod tests {
     use super::*;
     use anyhow;
-    use std::sync::{Barrier};
+    use std::sync::Barrier;
 
     #[test]
     fn test_each_handle_exec_and_output() -> anyhow::Result<()> {
@@ -142,31 +142,39 @@ mod tests {
         let output = Arc::new(output::Output::new(0, padding));
 
         let each_fn_thread = each_handle_exec_and_output(procs2, padding, barrier, output);
-        each_fn_thread(String::from("each_handle_exec_and_output"), 0, String::from("./test/script/for.sh")).join().expect("failed join each thread");
+        each_fn_thread(
+            String::from("each_handle_exec_and_output"),
+            0,
+            String::from("./test/script/for.sh"),
+        )
+        .join()
+        .expect("failed join each thread");
 
         Ok(())
     }
 
     #[test]
-    #[should_panic(expected ="exit 1: Any")]
-    fn test_check_child_terminated(){
+    #[should_panic(expected = "exit 1: Any")]
+    fn test_check_child_terminated() {
         let procs = Arc::new(Mutex::new(vec![
             Arc::new(Mutex::new(Process {
                 name: String::from("check_child_terminated-1"),
                 child: Command::new("./test/script/exit_0.sh")
                     .spawn()
-                    .expect("failed execute check_child_terminated-1")
+                    .expect("failed execute check_child_terminated-1"),
             })),
             Arc::new(Mutex::new(Process {
                 name: String::from("check_child_terminated-2"),
                 child: Command::new("./test/script/exit_1.sh")
                     .spawn()
-                    .expect("failed execute check_child_terminated-2")
-            }))
+                    .expect("failed execute check_child_terminated-2"),
+            })),
         ]));
         let procs2 = Arc::clone(&procs);
         let padding = 10;
 
-        check_child_terminated(procs2, padding).join().expect("exit 1");
+        check_child_terminated(procs2, padding)
+            .join()
+            .expect("exit 1");
     }
 }

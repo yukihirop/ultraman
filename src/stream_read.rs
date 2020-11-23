@@ -63,8 +63,8 @@ impl PipeStreamReader {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::process::{Command, Stdio};
     use anyhow;
+    use std::process::{Command, Stdio};
 
     #[test]
     fn test_new() -> anyhow::Result<()> {
@@ -79,12 +79,12 @@ mod tests {
         match result.lines.recv().unwrap() {
             Ok(piped_line) => match piped_line {
                 PipedLine::Line(line) => assert_eq!(line, "Test"),
-                PipedLine::EOF => println!("EOF")
+                PipedLine::EOF => println!("EOF"),
             },
             Err(error) => match error {
                 PipeError::IO(err) => println!("{}", err),
                 PipeError::NotUtf8(err) => println!("{}", err),
-            }
+            },
         }
 
         Ok(())
