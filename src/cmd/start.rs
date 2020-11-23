@@ -1,33 +1,42 @@
-use crate::script;
 use crate::process;
 use crate::output;
 use crate::signal;
-use std::sync::{Arc, Barrier, Mutex};
+use crate::procfile::{read_procfile};
 
-pub fn run() -> Result<(), Box<dyn std::error::Error>> {
+use std::sync::{Arc, Barrier, Mutex};
+use structopt::{clap, StructOpt};
+use std::path::PathBuf;
+
+#[derive(StructOpt, Debug)]
+#[structopt(setting(clap::AppSettings::ColoredHelp))]
+pub struct StartOpts {
+}
+
+pub fn run(procfile_path: PathBuf, _opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
     let mut proc_handles = vec![];
     let procs: Arc<Mutex<Vec<Arc<Mutex<process::Process>>>>> = Arc::new(Mutex::new(vec![]));
-    let scripts = script::scripts();
-    let process_len = script::process_len();
-    let padding = script::padding();
+
+    let procfile = read_procfile(procfile_path).expect("failed read Procfile");
+    let process_len = procfile.process_len();
+    let padding = procfile.padding();
+
     let barrier = Arc::new(Barrier::new(process_len + 1));
     let mut index = 0;
 
-    for (key, script) in scripts {
-        let con = script.concurrency;
-        let script = Arc::new(script);
+    for pe in procfile.entries {
+        let con = pe.concurrency;
         let output = Arc::new(output::Output::new(index, padding));
         index += 1;
 
         for n in 0..con {
             let barrier = barrier.clone();
-            let script = script.clone();
             let procs = procs.clone();
             let output = output.clone();
+            let pe_name = pe.name.clone();
+            let pe_command = pe.command.clone();
 
             let each_fn = process::each_handle_exec_and_output(procs, padding, barrier, output);
-            let each_handle_exec_and_output =
-                each_fn(String::from(key), n, String::from(&script.cmd));
+            let each_handle_exec_and_output = each_fn(pe_name, n, pe_command);
             proc_handles.push(each_handle_exec_and_output);
         }
     }

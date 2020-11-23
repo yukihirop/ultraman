@@ -1,11 +1,25 @@
+use opt::{Opt, Rustman};
+use structopt::StructOpt;
+
+mod cmd;
 mod log;
+mod opt;
 mod output;
 mod process;
-mod script;
+mod procfile;
 mod signal;
 mod stream_read;
-mod cmd;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    cmd::start::run()
+    let opt = Opt::from_args();
+
+    if let Some(subcommand) = opt.subcommands {
+        match subcommand {
+            Rustman::Start(opts) => {
+                cmd::start::run(opt.procfile, opts).expect("failed rustman start")
+            }
+        }
+    }
+
+    Ok(())
 }
