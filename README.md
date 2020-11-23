@@ -79,6 +79,16 @@ system    | exit 0
 
 If you generalize this, you can make a foreman. You did it. 🎉
 
+## Development
+
+Executte Test
+
+```bash
+cargo test
+# or
+cargo test -- --nocapture
+```
+
 
 ## Environment
 
