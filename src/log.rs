@@ -80,3 +80,70 @@ pub fn error(proc_name: &str, err: &dyn std::error::Error, padding: usize) {
         output(proc_name, content, padding);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use anyhow;
+    use std::env;
+    use std::error::Error;
+    use std::fmt;
+
+    #[test]
+    fn test_new_when_color_env_exist() -> anyhow::Result<()> {
+        env::set_var("COLOR", "false");
+
+        let result = Log::new(0, 10);
+        assert_eq!(result.index, 0);
+        assert_eq!(result.padding, 10);
+        assert_eq!(result.is_color, false);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_new_when_color_env_do_not_exist() -> anyhow::Result<()> {
+        let result = Log::new(0, 10);
+        assert_eq!(result.index, 0);
+        assert_eq!(result.padding, 10);
+        assert_eq!(result.is_color, true);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_output_when_coloring() -> anyhow::Result<()> {
+        let log = Log::new(0, 10);
+        log.output("output 1", "coloring");
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_output_when_not_coloring() -> anyhow::Result<()> {
+        env::set_var("COLOR", "false");
+        let log = Log::new(0, 10);
+        log.output("output 2", "not colorinng");
+
+        Ok(())
+    }
+
+    // https://www.366service.com/jp/qa/265b4c8f485bfeedef32947292211f12
+    #[derive(Debug)]
+    struct TestError<'a>(&'a str);
+    impl<'a> Error for TestError<'a> {}
+    impl<'a> fmt::Display for TestError<'a> {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            self.0.fmt(f)
+        }
+    }
+
+    #[test]
+    fn test_error() -> anyhow::Result<()> {
+        let error = TestError("test error");
+        let log = Log::new(0, 10);
+        log.error("test_app", &error);
+
+        Ok(())
+    }
+}
