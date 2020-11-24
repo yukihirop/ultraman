@@ -1,30 +1,41 @@
-use crate::process;
 use crate::output;
+use crate::process;
+use crate::procfile::read_procfile;
 use crate::signal;
-use crate::procfile::{read_procfile};
 
+use std::path::PathBuf;
 use std::sync::{Arc, Barrier, Mutex};
 use structopt::{clap, StructOpt};
-use std::path::PathBuf;
 
 #[derive(StructOpt, Debug)]
 #[structopt(setting(clap::AppSettings::ColoredHelp))]
 pub struct StartOpts {
+    /// Formation
+    #[structopt(
+        name = "APP=NUMBER",
+        short = "m",
+        long = "formation",
+        default_value = "all=1"
+    )]
+    pub formation: String,
 }
 
-pub fn run(procfile_path: PathBuf, _opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
+pub fn run(procfile_path: PathBuf, opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
     let mut proc_handles = vec![];
     let procs: Arc<Mutex<Vec<Arc<Mutex<process::Process>>>>> = Arc::new(Mutex::new(vec![]));
 
     let procfile = read_procfile(procfile_path).expect("failed read Procfile");
+    // Read the formation from the command line option and always call it before process_len for the convenience of setting concurrency
+    procfile.set_concurrency(&opts.formation);
+
     let process_len = procfile.process_len();
     let padding = procfile.padding();
 
     let barrier = Arc::new(Barrier::new(process_len + 1));
     let mut index = 0;
 
-    for pe in procfile.entries {
-        let con = pe.concurrency;
+    for (name, pe) in procfile.data.iter() {
+        let con = pe.concurrency.get();
         let output = Arc::new(output::Output::new(index, padding));
         index += 1;
 
@@ -32,11 +43,11 @@ pub fn run(procfile_path: PathBuf, _opts: StartOpts) -> Result<(), Box<dyn std::
             let barrier = barrier.clone();
             let procs = procs.clone();
             let output = output.clone();
-            let pe_name = pe.name.clone();
+            let name = name.clone();
             let pe_command = pe.command.clone();
 
             let each_fn = process::each_handle_exec_and_output(procs, padding, barrier, output);
-            let each_handle_exec_and_output = each_fn(pe_name, n, pe_command);
+            let each_handle_exec_and_output = each_fn(name, n, pe_command);
             proc_handles.push(each_handle_exec_and_output);
         }
     }
