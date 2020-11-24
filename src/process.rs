@@ -1,3 +1,4 @@
+use crate::env::read_env;
 use crate::log;
 use crate::output;
 use nix::sys::signal::{self, Signal};
@@ -8,6 +9,7 @@ use std::process::{Child, Command, Stdio};
 #[cfg(not(test))]
 use std::process::exit;
 
+use std::path::PathBuf;
 use std::sync::{Arc, Barrier, Mutex};
 use std::thread::{self, JoinHandle};
 
@@ -22,45 +24,48 @@ pub fn each_handle_exec_and_output(
     padding: usize,
     barrier: Arc<Barrier>,
     output: Arc<output::Output>,
-) -> Box<dyn Fn(String, usize, String) -> JoinHandle<()>> {
-    Box::new(move |key: String, n: usize, cmd: String| {
-        let output = output.clone();
-        let procs = procs.clone();
-        let barrier = barrier.clone();
+) -> Box<dyn Fn(String, usize, String, PathBuf) -> JoinHandle<()>> {
+    Box::new(
+        move |key: String, n: usize, cmd: String, envpath: PathBuf| {
+            let output = output.clone();
+            let procs = procs.clone();
+            let barrier = barrier.clone();
 
-        let result = thread::Builder::new()
-            .name(String::from("handling output"))
-            .spawn(move || {
-                let tmp_proc = Process {
-                    name: String::from(format!("{}.{}", key, n + 1)),
-                    child: Command::new(cmd)
-                        .stdout(Stdio::piped())
-                        .stderr(Stdio::piped())
-                        .spawn()
-                        .expect("failed execute command"),
-                };
-                let proc = Arc::new(Mutex::new(tmp_proc));
-                let proc2 = Arc::clone(&proc);
+            let result = thread::Builder::new()
+                .name(String::from("handling output"))
+                .spawn(move || {
+                    let tmp_proc = Process {
+                        name: String::from(format!("{}.{}", key, n + 1)),
+                        child: Command::new(cmd)
+                            .stdout(Stdio::piped())
+                            .stderr(Stdio::piped())
+                            .envs(read_env(envpath).expect("failed read .env"))
+                            .spawn()
+                            .expect("failed execute command"),
+                    };
+                    let proc = Arc::new(Mutex::new(tmp_proc));
+                    let proc2 = Arc::clone(&proc);
 
-                let child_id = proc.lock().unwrap().child.id() as i32;
-                output.log.output(
-                    "system",
-                    &format!(
-                        "{0:1$} start at pid: {2}",
-                        &proc.lock().unwrap().name,
-                        padding,
-                        &child_id
-                    ),
-                );
+                    let child_id = proc.lock().unwrap().child.id() as i32;
+                    output.log.output(
+                        "system",
+                        &format!(
+                            "{0:1$} start at pid: {2}",
+                            &proc.lock().unwrap().name,
+                            padding,
+                            &child_id
+                        ),
+                    );
 
-                procs.lock().unwrap().push(proc);
-                barrier.wait();
+                    procs.lock().unwrap().push(proc);
+                    barrier.wait();
 
-                output.handle_output(&proc2);
-            })
-            .expect("failed exec and output");
-        result
-    })
+                    output.handle_output(&proc2);
+                })
+                .expect("failed exec and output");
+            result
+        },
+    )
 }
 
 pub fn check_child_terminated(
@@ -146,6 +151,7 @@ mod tests {
             String::from("each_handle_exec_and_output"),
             0,
             String::from("./test/script/for.sh"),
+            PathBuf::from("./test/script/.env"),
         )
         .join()
         .expect("failed join each thread");

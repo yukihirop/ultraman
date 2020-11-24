@@ -2,6 +2,7 @@ use opt::{Opt, Rustman};
 use structopt::StructOpt;
 
 mod cmd;
+mod env;
 mod log;
 mod opt;
 mod output;
@@ -15,8 +16,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if let Some(subcommand) = opt.subcommands {
         match subcommand {
-            Rustman::Start(opts) => {
-                cmd::start::run(opt.procfile, opts).expect("failed rustman start")
+            Rustman::Start(start_opts) => {
+                cmd::start::run(opt.procfile, start_opts).expect("failed rustman start")
             }
         }
     }

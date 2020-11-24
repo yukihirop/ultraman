@@ -1,3 +1,3 @@
 #!/bin/bash
 
-while :; do sleep 1 && echo 'hello world'; done;
+while :; do sleep 1 && echo ${LOOP}; done;

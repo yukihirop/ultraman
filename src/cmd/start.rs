@@ -18,6 +18,16 @@ pub struct StartOpts {
         default_value = "all=1"
     )]
     pub formation: String,
+
+    /// .env file
+    #[structopt(
+        name = "ENV",
+        short = "e",
+        long = "env",
+        parse(from_os_str),
+        default_value = ".env"
+    )]
+    pub envpath: PathBuf,
 }
 
 pub fn run(procfile_path: PathBuf, opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
@@ -45,9 +55,10 @@ pub fn run(procfile_path: PathBuf, opts: StartOpts) -> Result<(), Box<dyn std::e
             let output = output.clone();
             let name = name.clone();
             let pe_command = pe.command.clone();
+            let envpath = opts.envpath.clone();
 
             let each_fn = process::each_handle_exec_and_output(procs, padding, barrier, output);
-            let each_handle_exec_and_output = each_fn(name, n, pe_command);
+            let each_handle_exec_and_output = each_fn(name, n, pe_command, envpath);
             proc_handles.push(each_handle_exec_and_output);
         }
     }
