@@ -28,13 +28,23 @@ pub struct StartOpts {
         default_value = ".env"
     )]
     pub envpath: PathBuf,
+
+    /// Profile path
+    #[structopt(
+        name = "PROCFILE",
+        short = "f",
+        long = "file",
+        parse(from_os_str),
+        default_value = "Procfile"
+    )]
+    pub procfile_path: PathBuf,
 }
 
-pub fn run(procfile_path: PathBuf, opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
+pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
     let mut proc_handles = vec![];
     let procs: Arc<Mutex<Vec<Arc<Mutex<process::Process>>>>> = Arc::new(Mutex::new(vec![]));
 
-    let procfile = read_procfile(procfile_path).expect("failed read Procfile");
+    let procfile = read_procfile(opts.procfile_path).expect("failed read Procfile");
     // Read the formation from the command line option and always call it before process_len for the convenience of setting concurrency
     procfile.set_concurrency(&opts.formation);
 
