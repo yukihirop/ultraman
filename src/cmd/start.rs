@@ -38,6 +38,15 @@ pub struct StartOpts {
         default_value = "Procfile"
     )]
     pub procfile_path: PathBuf,
+
+    /// Timeout
+    #[structopt(
+        name = "TIMEOUT (sec)",
+        short = "t",
+        long = "timeout",
+        default_value = "5",
+    )]
+    pub timeout: String
 }
 
 pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
@@ -80,7 +89,7 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
     proc_handles.push(process::check_for_child_termination_thread(procs, padding));
 
     let procs = Arc::clone(&procs2);
-    proc_handles.push(signal::handle_signal_thread(procs, padding));
+    proc_handles.push(signal::handle_signal_thread(procs, padding, opts.timeout.parse::<u64>().unwrap()));
 
     for handle in proc_handles {
         handle.join().expect("failed join");

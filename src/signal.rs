@@ -1,7 +1,7 @@
 #![cfg(not(windows))]
 
 use crate::log;
-use crate::process::Process;
+use crate::process::{self, Process};
 use nix::sys::signal::{self, Signal};
 use nix::unistd::Pid;
 use signal_hook::{iterator::Signals, SIGALRM, SIGHUP, SIGINT, SIGTERM};
@@ -10,15 +10,17 @@ use signal_hook::{iterator::Signals, SIGALRM, SIGHUP, SIGINT, SIGTERM};
 use std::process::exit;
 
 use std::sync::{Arc, Mutex};
-use std::thread::{self, JoinHandle};
+use std::thread::{self, JoinHandle, sleep};
+use std::time::{Duration, Instant};
 
 pub fn handle_signal_thread(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
     padding: usize,
+    timeout: u64,
 ) -> JoinHandle<()> {
     let result = thread::Builder::new()
         .name(String::from("handling signal"))
-        .spawn(move || trap_signal(procs, padding).expect("failed trap signals"))
+        .spawn(move || trap_signal(procs, padding, timeout).expect("failed trap signals"))
         .expect("failed handle signals");
 
     result
@@ -27,6 +29,7 @@ pub fn handle_signal_thread(
 fn trap_signal(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
     padding: usize,
+    timeout: u64,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let signals = Signals::new(&[SIGALRM, SIGHUP, SIGINT, SIGTERM])?;
 
@@ -37,7 +40,7 @@ fn trap_signal(
                 log::output("system", "ctrl-c detected", padding - 2);
 
                 log::output("system", "sending SIGTERM to all processes", padding);
-                kill_children(procs, padding, Signal::SIGTERM, 1);
+                terminate_gracefully(procs, padding, Signal::SIGTERM, 1, timeout);
 
                 log::output("system", "exit 0", padding);
                 #[cfg(not(test))]
@@ -50,6 +53,35 @@ fn trap_signal(
     }
 
     Ok(())
+}
+
+pub fn terminate_gracefully(
+    procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
+    padding: usize,
+    signal: Signal,
+    code: i32,
+    timeout: u64
+){
+    let procs2 = Arc::clone(&procs);
+    kill_children(procs, padding, signal, code);
+
+    // Wait for all children to stop or until the time comes to kill them all
+    let start_time = Instant::now();
+    while start_time.elapsed() < Duration::from_secs(timeout) {
+        if procs2.lock().unwrap().len() == 0 {
+            return
+        }
+
+        let procs3 = Arc::clone(&procs2);
+        process::check_for_child_termination(procs3);
+
+        // Sleep for a moment and do not blow up if more signals are coming our way
+        sleep(Duration::from_millis(100));
+    }
+
+    // Ok, we have no other option than to kill all of our children
+    log::output("system", "sending SIGKILL to all processes", padding);
+    kill_children(procs2, padding, Signal::SIGKILL, 0);
 }
 
 pub fn kill_children(
@@ -76,7 +108,7 @@ pub fn kill_children(
 
         if let Err(e) = signal::kill(Pid::from_raw(child.id() as i32), signal) {
             log::error("system", &e, padding);
-            log::output("system", "exit 1", padding);
+            log::output("system", &format!("exit {}", _code), padding);
             // https://www.reddit.com/r/rust/comments/emz456/testing_whether_functions_exit/
             #[cfg(not(test))]
             exit(_code);
@@ -122,10 +154,10 @@ mod tests {
 
         let procs2 = Arc::clone(&procs);
         let thread_trap_signal =
-            thread::spawn(move || trap_signal(procs2, 10).expect("failed trap signals"));
+            thread::spawn(move || trap_signal(procs2, 10, 5).expect("failed trap signals"));
 
         let thread_send_sigint = thread::spawn(move || {
-            sleep(Duration::from_millis(5000));
+            sleep(Duration::from_secs(5));
             send_sigint();
         });
 
