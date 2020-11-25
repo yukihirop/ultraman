@@ -1,7 +1,7 @@
 use crate::env::read_env;
 use crate::output;
 use crate::signal;
-use nix::sys::signal::{Signal};
+use nix::sys::signal::Signal;
 use nix::sys::wait::WaitStatus;
 use nix::{self, unistd::Pid};
 use std::process::{Child, Command, Stdio};
@@ -68,7 +68,7 @@ pub fn each_handle_exec_and_output(
     )
 }
 
-pub fn check_child_terminated(
+pub fn check_for_child_termination_thread(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
     padding: usize,
 ) -> JoinHandle<()> {
@@ -77,39 +77,47 @@ pub fn check_child_terminated(
         .spawn(move || {
             loop {
                 // Waiting for the end of any one child process
-                match nix::sys::wait::waitpid(
-                    Pid::from_raw(-1),
-                    Some(nix::sys::wait::WaitPidFlag::WNOHANG),
-                ) {
-                    Ok(exit_status) => match exit_status {
-                        WaitStatus::Exited(pid, code) => {
-                            procs.lock().unwrap().retain(|p| {
-                                let child_id = p.lock().unwrap().child.id() as i32;
-                                Pid::from_raw(child_id) != pid
-                            });
-
-                            // If the child process dies, send SIGTERM to all child processes
-                            let procs2 = procs.clone();
-                            signal::kill_children(procs2, padding, Signal::SIGTERM, code)
-
-                        }
-                        _ => (),
-                    },
-                    Err(e) => {
-                        if let nix::Error::Sys(nix::errno::Errno::ECHILD) = e {
-                            // close loop (thread finished)
-                            #[cfg(not(test))]
-                            exit(0);
-                            #[cfg(test)]
-                            break;
-                        }
-                    }
-                };
+                let procs2 = Arc::clone(&procs);
+                let procs3 = Arc::clone(&procs);
+                if let Some((_, code)) = check_for_child_termination(procs2) {
+                    signal::kill_children(procs3, padding, Signal::SIGTERM, code)
+                }
             }
         })
         .expect("failed check child terminated");
 
     result
+}
+
+pub fn check_for_child_termination(
+    procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
+) -> Option<(Pid, i32)> {
+    // Waiting for the end of any one child process
+    match nix::sys::wait::waitpid(
+        Pid::from_raw(-1),
+        Some(nix::sys::wait::WaitPidFlag::WNOHANG),
+    ) {
+        Ok(exit_status) => match exit_status {
+            WaitStatus::Exited(pid, code) => {
+                procs.lock().unwrap().retain(|p| {
+                    let child_id = p.lock().unwrap().child.id() as i32;
+                    Pid::from_raw(child_id) != pid
+                });
+                return Some((pid, code));
+            }
+            _ => return None,
+        },
+        Err(e) => {
+            if let nix::Error::Sys(nix::errno::Errno::ECHILD) = e {
+                // close loop (thread finished)
+                #[cfg(not(test))]
+                exit(0);
+                #[cfg(test)]
+                panic!("exit 0");
+            }
+            return None;
+        }
+    };
 }
 
 #[cfg(test)]
@@ -142,25 +150,25 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "exit 1: Any")]
-    fn test_check_child_terminated() {
+    fn test_check_for_child_termination_thread() {
         let procs = Arc::new(Mutex::new(vec![
             Arc::new(Mutex::new(Process {
-                name: String::from("check_child_terminated-1"),
+                name: String::from("check_for_child_termination_thread-1"),
                 child: Command::new("./test/script/exit_0.sh")
                     .spawn()
-                    .expect("failed execute check_child_terminated-1"),
+                    .expect("failed execute check_for_child_termination_thread-1"),
             })),
             Arc::new(Mutex::new(Process {
-                name: String::from("check_child_terminated-2"),
+                name: String::from("check_for_child_termination_thread-2"),
                 child: Command::new("./test/script/exit_1.sh")
                     .spawn()
-                    .expect("failed execute check_child_terminated-2"),
+                    .expect("failed execute check_for_child_termination_thread-2"),
             })),
         ]));
         let procs2 = Arc::clone(&procs);
         let padding = 10;
 
-        check_child_terminated(procs2, padding)
+        check_for_child_termination_thread(procs2, padding)
             .join()
             .expect("exit 1");
     }

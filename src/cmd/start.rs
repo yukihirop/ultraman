@@ -77,7 +77,7 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
 
     // use handle_signal
     let procs2 = Arc::clone(&procs);
-    proc_handles.push(process::check_child_terminated(procs, padding));
+    proc_handles.push(process::check_for_child_termination_thread(procs, padding));
 
     let procs = Arc::clone(&procs2);
     proc_handles.push(signal::handle_signal_thread(procs, padding));
