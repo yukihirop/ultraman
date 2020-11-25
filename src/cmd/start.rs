@@ -80,7 +80,7 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
     proc_handles.push(process::check_child_terminated(procs, padding));
 
     let procs = Arc::clone(&procs2);
-    proc_handles.push(signal::handle_signal(procs, padding));
+    proc_handles.push(signal::handle_signal_thread(procs, padding));
 
     for handle in proc_handles {
         handle.join().expect("failed join");

@@ -1,7 +1,7 @@
 use crate::env::read_env;
-use crate::log;
 use crate::output;
-use nix::sys::signal::{self, Signal};
+use crate::signal;
+use nix::sys::signal::{Signal};
 use nix::sys::wait::WaitStatus;
 use nix::{self, unistd::Pid};
 use std::process::{Child, Command, Stdio};
@@ -89,28 +89,9 @@ pub fn check_child_terminated(
                             });
 
                             // If the child process dies, send SIGTERM to all child processes
-                            for proc in procs.lock().unwrap().iter() {
-                                let proc = proc.lock().unwrap();
-                                let child_id = proc.child.id();
+                            let procs2 = procs.clone();
+                            signal::kill_children(procs2, padding, Signal::SIGTERM, code)
 
-                                log::output(
-                                    "system",
-                                    &format!(
-                                        "sending SIGTERM for {0:1$} at pid {2}",
-                                        &proc.name, padding, &child_id
-                                    ),
-                                    padding,
-                                );
-                                signal::kill(Pid::from_raw(child_id as i32), Signal::SIGTERM)
-                                    .unwrap();
-                            }
-                            log::output("system", &format!("exit {}", &code), padding);
-                            // close loop (thread finished)
-                            // https://www.reddit.com/r/rust/comments/emz456/testing_whether_functions_exit/
-                            #[cfg(not(test))]
-                            exit(code);
-                            #[cfg(test)]
-                            panic!("exit 1");
                         }
                         _ => (),
                     },

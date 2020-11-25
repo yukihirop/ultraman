@@ -12,7 +12,7 @@ use std::process::exit;
 use std::sync::{Arc, Mutex};
 use std::thread::{self, JoinHandle};
 
-pub fn handle_signal(
+pub fn handle_signal_thread(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
     padding: usize,
 ) -> JoinHandle<()> {
@@ -35,34 +35,10 @@ fn trap_signal(
             SIGINT => {
                 // 2 is 「^C」 of 「^Csystem   | ctrl-c detected」
                 log::output("system", "ctrl-c detected", padding - 2);
-                log::output("system", "sending SIGTERM for children", padding);
-                for proc in procs.lock().unwrap().iter() {
-                    let proc = proc.lock().unwrap();
-                    let child = &proc.child;
 
-                    log::output(
-                        "system",
-                        &format!(
-                            "sending SIGTERM for {0:1$} at pid {2}",
-                            &proc.name,
-                            padding,
-                            &child.id()
-                        ),
-                        padding,
-                    );
+                log::output("system", "sending SIGTERM to all processes", padding);
+                kill_children(procs, padding, Signal::SIGTERM, 1);
 
-                    if let Err(e) = signal::kill(Pid::from_raw(child.id() as i32), Signal::SIGTERM)
-                    {
-                        log::error("system", &e, padding);
-                        log::output("system", "exit 1", padding);
-
-                        // https://www.reddit.com/r/rust/comments/emz456/testing_whether_functions_exit/
-                        #[cfg(not(test))]
-                        exit(1);
-                        #[cfg(test)]
-                        panic!("exit 1");
-                    }
-                }
                 log::output("system", "exit 0", padding);
                 #[cfg(not(test))]
                 exit(0);
@@ -74,6 +50,40 @@ fn trap_signal(
     }
 
     Ok(())
+}
+
+pub fn kill_children(
+    procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
+    padding: usize,
+    signal: Signal,
+    _code: i32,
+) {
+    for proc in procs.lock().unwrap().iter() {
+        let proc = proc.lock().unwrap();
+        let child = &proc.child;
+
+        log::output(
+            "system",
+            &format!(
+                "sending {3} for {0:1$} at pid {2}",
+                &proc.name,
+                padding,
+                &child.id(),
+                Signal::as_str(signal),
+            ),
+            padding,
+        );
+
+        if let Err(e) = signal::kill(Pid::from_raw(child.id() as i32), signal) {
+            log::error("system", &e, padding);
+            log::output("system", "exit 1", padding);
+            // https://www.reddit.com/r/rust/comments/emz456/testing_whether_functions_exit/
+            #[cfg(not(test))]
+            exit(_code);
+            #[cfg(test)]
+            panic!("exit {}", _code);
+        }
+    }
 }
 
 #[cfg(test)]
