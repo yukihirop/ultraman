@@ -39,10 +39,13 @@ pub fn each_handle_exec_and_output(
                     let mut read_env = read_env(envpath.clone()).expect("failed read .env");
                     read_env.insert(String::from("PORT"), port_for(envpath, port, index, con));
                     read_env.insert(String::from("PS"), ps_for(process_name.clone(), con + 1));
+                    let shell = os_env::var("SHELL").expect("$SHELL is not set");
 
                     let tmp_proc = Process {
                         name: ps_for(process_name, con + 1),
-                        child: Command::new(cmd)
+                        child: Command::new(shell)
+                            .arg("-c")
+                            .arg(cmd)
                             .stdout(Stdio::piped())
                             .stderr(Stdio::piped())
                             .envs(read_env)
