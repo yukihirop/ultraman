@@ -138,14 +138,14 @@ mod tests {
         let procs = Arc::new(Mutex::new(vec![
             Arc::new(Mutex::new(Process {
                 name: String::from("trap-signal-1"),
-                child: Command::new("./test/script/loop.sh")
+                child: Command::new("./test/fixtures/loop.sh")
                     .arg("trap_signal_1")
                     .spawn()
                     .expect("failed execute test-app-1"),
             })),
             Arc::new(Mutex::new(Process {
                 name: String::from("trap-signal-2"),
-                child: Command::new("./test/script/loop.sh")
+                child: Command::new("./test/fixtures/loop.sh")
                     .arg("trap_signal_2")
                     .spawn()
                     .expect("failed execute test-app-2"),

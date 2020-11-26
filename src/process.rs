@@ -172,8 +172,8 @@ mod tests {
         each_fn_thread(
             String::from("each_handle_exec_and_output"),
             0,
-            String::from("./test/script/for.sh"),
-            PathBuf::from("./test/script/.env"),
+            String::from("./test/fixtures/for.sh"),
+            PathBuf::from("./test/fixtures/.env"),
             None,
             1
         )
@@ -189,13 +189,13 @@ mod tests {
         let procs = Arc::new(Mutex::new(vec![
             Arc::new(Mutex::new(Process {
                 name: String::from("check_for_child_termination_thread-1"),
-                child: Command::new("./test/script/exit_0.sh")
+                child: Command::new("./test/fixtures/exit_0.sh")
                     .spawn()
                     .expect("failed execute check_for_child_termination_thread-1"),
             })),
             Arc::new(Mutex::new(Process {
                 name: String::from("check_for_child_termination_thread-2"),
-                child: Command::new("./test/script/exit_1.sh")
+                child: Command::new("./test/fixtures/exit_1.sh")
                     .spawn()
                     .expect("failed execute check_for_child_termination_thread-2"),
             })),

@@ -102,7 +102,7 @@ mod tests {
     fn test_handle_output() -> anyhow::Result<()> {
         let proc = Arc::new(Mutex::new(Process {
             name: String::from("handle_output"),
-            child: Command::new("./test/script/for.sh")
+            child: Command::new("./test/fixtures/for.sh")
                 .stdout(Stdio::piped())
                 .stderr(Stdio::piped())
                 .spawn()
