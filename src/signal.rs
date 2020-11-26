@@ -10,7 +10,7 @@ use signal_hook::{iterator::Signals, SIGALRM, SIGHUP, SIGINT, SIGTERM};
 use std::process::exit;
 
 use std::sync::{Arc, Mutex};
-use std::thread::{self, JoinHandle, sleep};
+use std::thread::{self, sleep, JoinHandle};
 use std::time::{Duration, Instant};
 
 pub fn handle_signal_thread(
@@ -37,7 +37,12 @@ fn trap_signal(
         match sig {
             SIGINT => {
                 // 2 is 「^C」 of 「^Csystem   | SIGINT received, starting shutdown」
-                log::output("system", "SIGINT received, starting shutdown", padding - 2, None);
+                log::output(
+                    "system",
+                    "SIGINT received, starting shutdown",
+                    padding - 2,
+                    None,
+                );
 
                 log::output("system", "sending SIGTERM to all processes", padding, None);
                 terminate_gracefully(procs, padding, Signal::SIGTERM, 1, timeout);
@@ -60,8 +65,8 @@ pub fn terminate_gracefully(
     padding: usize,
     signal: Signal,
     code: i32,
-    timeout: u64
-){
+    timeout: u64,
+) {
     let procs2 = Arc::clone(&procs);
     kill_children(procs, padding, signal, code);
 
@@ -69,7 +74,7 @@ pub fn terminate_gracefully(
     let start_time = Instant::now();
     while start_time.elapsed() < Duration::from_secs(timeout) {
         if procs2.lock().unwrap().len() == 0 {
-            return
+            return;
         }
 
         let procs3 = Arc::clone(&procs2);
@@ -104,7 +109,7 @@ pub fn kill_children(
                 Signal::as_str(signal),
             ),
             padding,
-            None
+            None,
         );
 
         if let Err(e) = signal::kill(Pid::from_raw(child.id() as i32), signal) {

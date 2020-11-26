@@ -1,7 +1,7 @@
 use crate::env::read_env;
+use crate::log;
 use crate::output;
 use crate::signal;
-use crate::log;
 use nix::sys::signal::Signal;
 use nix::sys::wait::WaitStatus;
 use nix::{self, unistd::Pid};
@@ -10,10 +10,10 @@ use std::process::{Child, Command, Stdio};
 #[cfg(not(test))]
 use std::process::exit;
 
+use std::env::{self as os_env};
 use std::path::PathBuf;
 use std::sync::{Arc, Barrier, Mutex};
 use std::thread::{self, JoinHandle};
-use std::env::{self as os_env};
 
 pub struct Process {
     pub index: usize,
@@ -30,7 +30,12 @@ pub fn each_handle_exec_and_output(
 ) -> Box<dyn Fn(String, usize, String, PathBuf, Option<String>, usize) -> JoinHandle<()>> {
     Box::new(
         // MEMO: Refactor when you understand your lifetime
-        move |process_name: String, con: usize, cmd: String, envpath: PathBuf, port: Option<String>, index: usize| {
+        move |process_name: String,
+              con: usize,
+              cmd: String,
+              envpath: PathBuf,
+              port: Option<String>,
+              index: usize| {
             let output = output.clone();
             let procs = procs.clone();
             let barrier = barrier.clone();
@@ -103,7 +108,7 @@ pub fn check_for_child_termination_thread(
 
 pub fn check_for_child_termination(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
-    padding: usize
+    padding: usize,
 ) -> Option<(Pid, i32)> {
     // Waiting for the end of any one child process
     match nix::sys::wait::waitpid(
@@ -114,29 +119,39 @@ pub fn check_for_child_termination(
             WaitStatus::Exited(pid, code) => {
                 procs.lock().unwrap().retain(|p| {
                     let child_id = p.lock().unwrap().child.id() as i32;
-                    if Pid::from_raw(child_id) == pid { 
+                    if Pid::from_raw(child_id) == pid {
                         let proc = p.lock().unwrap();
                         let proc_name = &proc.name;
                         let proc_index = proc.index;
-                        log::output(&proc_name, &format!("exited with code {}", code), padding, Some(proc_index));
+                        log::output(
+                            &proc_name,
+                            &format!("exited with code {}", code),
+                            padding,
+                            Some(proc_index),
+                        );
                     }
                     Pid::from_raw(child_id) != pid
                 });
                 return Some((pid, code));
-            },
+            }
             WaitStatus::Signaled(pid, signal, _) => {
                 procs.lock().unwrap().retain(|p| {
                     let child_id = p.lock().unwrap().child.id() as i32;
-                    if Pid::from_raw(child_id) == pid { 
+                    if Pid::from_raw(child_id) == pid {
                         let proc = p.lock().unwrap();
                         let proc_name = &proc.name;
                         let proc_index = proc.index;
-                        log::output(&proc_name, &format!("terminated by {}", signal.as_str()), padding, Some(proc_index));
+                        log::output(
+                            &proc_name,
+                            &format!("terminated by {}", signal.as_str()),
+                            padding,
+                            Some(proc_index),
+                        );
                     }
                     Pid::from_raw(child_id) != pid
                 });
-                return None
-            },
+                return None;
+            }
             _ => return None,
         },
         Err(e) => {
@@ -198,7 +213,7 @@ mod tests {
             String::from("./test/fixtures/for.sh"),
             PathBuf::from("./test/fixtures/.env"),
             None,
-            1
+            1,
         )
         .join()
         .expect("failed join each thread");

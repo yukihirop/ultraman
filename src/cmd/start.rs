@@ -44,16 +44,12 @@ pub struct StartOpts {
         name = "TIMEOUT (sec)",
         short = "t",
         long = "timeout",
-        default_value = "5",
+        default_value = "5"
     )]
     pub timeout: String,
 
     /// Port
-    #[structopt(
-        name = "PORT",
-        short = "p",
-        long = "port",
-    )]
+    #[structopt(name = "PORT", short = "p", long = "port")]
     pub port: Option<String>,
 }
 
@@ -87,7 +83,8 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
             let port = opts.port.clone();
 
             let each_fn = process::each_handle_exec_and_output(procs, padding, barrier, output);
-            let each_handle_exec_and_output = each_fn(name, n, pe_command, envpath, port, before_index);
+            let each_handle_exec_and_output =
+                each_fn(name, n, pe_command, envpath, port, before_index);
             proc_handles.push(each_handle_exec_and_output);
         }
     }
@@ -99,7 +96,11 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
     proc_handles.push(process::check_for_child_termination_thread(procs, padding));
 
     let procs = Arc::clone(&procs2);
-    proc_handles.push(signal::handle_signal_thread(procs, padding, opts.timeout.parse::<u64>().unwrap()));
+    proc_handles.push(signal::handle_signal_thread(
+        procs,
+        padding,
+        opts.timeout.parse::<u64>().unwrap(),
+    ));
 
     for handle in proc_handles {
         handle.join().expect("failed join");

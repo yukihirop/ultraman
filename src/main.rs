@@ -16,9 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if let Some(subcommand) = opt.subcommands {
         match subcommand {
-            Rustman::Start(opts) => {
-                cmd::start::run(opts).expect("failed rustman start")
-            }
+            Rustman::Start(opts) => cmd::start::run(opts).expect("failed rustman start"),
         }
     }
 

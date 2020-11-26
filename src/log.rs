@@ -1,6 +1,6 @@
+use chrono::Local;
 use colored::*;
 use std::env;
-use chrono::{Local};
 
 pub struct Log {
     index: usize,
@@ -71,7 +71,7 @@ impl Log {
 }
 
 pub fn output(proc_name: &str, content: &str, padding: usize, index: Option<usize>) {
-    let output_fn = Box::new(move |proc_name, content, padding, index|{
+    let output_fn = Box::new(move |proc_name, content, padding, index| {
         if let Some(i) = index {
             color_output(proc_name, content, padding, i);
         } else {
@@ -86,10 +86,8 @@ pub fn output(proc_name: &str, content: &str, padding: usize, index: Option<usiz
             } else {
                 normal_output(proc_name, content, padding)
             }
-        },
-        Err(_) => {
-            output_fn(proc_name, content, padding, index)
         }
+        Err(_) => output_fn(proc_name, content, padding, index),
     }
 }
 
