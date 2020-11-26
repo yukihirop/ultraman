@@ -1,3 +1,4 @@
+use chrono::Local;
 use colored::*;
 use std::env;
 
@@ -47,7 +48,7 @@ impl Log {
             self.color_output(proc_name, content)
                 .expect("failed color output");
         } else {
-            println!("{0:1$} | {2}", proc_name, self.padding, content);
+            println!("{3} {0:1$} | {2}", proc_name, self.padding, content, now());
         }
     }
 
@@ -59,26 +60,63 @@ impl Log {
     fn color_output(&self, name: &str, content: &str) -> Result<(), Box<dyn std::error::Error>> {
         let color = COLORS[self.index % COLORS.len()];
         println!(
-            "{0:1$} | {2}",
+            "{3} {0:1$} | {2}",
             name.color(color),
             self.padding,
-            content.color(color)
+            content.color(color),
+            now().color(color)
         );
         Ok(())
     }
 }
 
-pub fn output(proc_name: &str, content: &str, padding: usize) {
-    println!("{0:1$} | {2}", proc_name, padding, content);
+pub fn output(proc_name: &str, content: &str, padding: usize, index: Option<usize>) {
+    let output_fn = Box::new(move |proc_name, content, padding, index| {
+        if let Some(i) = index {
+            color_output(proc_name, content, padding, i);
+        } else {
+            normal_output(proc_name, content, padding)
+        }
+    });
+
+    match env::var("COLOR") {
+        Ok(c) => {
+            if c == "true" {
+                output_fn(proc_name, content, padding, index)
+            } else {
+                normal_output(proc_name, content, padding)
+            }
+        }
+        Err(_) => output_fn(proc_name, content, padding, index),
+    }
+}
+
+fn normal_output(proc_name: &str, content: &str, padding: usize) {
+    println!("{3} {0:1$} | {2}", proc_name, padding, content, now());
+}
+
+fn color_output(proc_name: &str, content: &str, padding: usize, index: usize) {
+    let color = COLORS[index % COLORS.len()];
+    println!(
+        "{3} {0:1$} | {2}",
+        proc_name.color(color),
+        padding,
+        content.color(color),
+        now().color(color)
+    );
 }
 
 pub fn error(proc_name: &str, err: &dyn std::error::Error, padding: usize) {
     let content = &format!("error: {:?}", err);
     if padding == 0 {
-        output(proc_name, content, proc_name.len() + 1);
+        output(proc_name, content, proc_name.len() + 1, None);
     } else {
-        output(proc_name, content, padding);
+        output(proc_name, content, padding, None);
     }
+}
+
+fn now() -> String {
+    Local::now().format("%H:%M:%S").to_string()
 }
 
 #[cfg(test)]

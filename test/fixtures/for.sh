@@ -3,5 +3,5 @@
 for i in 1 2 3
 do
   sleep 1
-  echo "hello world $i"
+  echo "${FOR_MSG} $i"
 done

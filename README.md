@@ -1,87 +1,118 @@
-# Example in rust of the core part of foreman
+# Rustman (Rust Foreman)
 
-It is an implementation example in rust of IO processing and signal processing in multithread as done by [foreman](https://github.com/ddollar/foreman) of ruby.  
+Manage Procfile-based applications.  
 
-- IO process in multi thread
-- handle signlas in another thread
-- child wait in another thread
+This is a [foreman](https://github.com/ddollar/foreman) rust implementation made with ruby.  
+So the specifications are exactly the same as ruby ​​`foreman`.
 
-Since it is a sample, unlike `foreman`, it does not have the flexibility to define a process in `Procfile`.  
-The processes that can be executed are as follows.  
+## 🚉 Platform
 
-|process|concurrency|command|
-|---|-----------|-------|
-|exit_0|1| `sleep 5 && echo 'success' && exit 0;`|
-|exit_1|1| `sleep 5 && echo 'failed' && exit 1;`|
-|loop|2|`while :; do sleep 1 && echo 'hello world'; done;`|
+- Linux
+- macOS
+- windows?
 
+## 🦀 Installation
 
-The behavior is that when exit_0 or exit_1 exits after 5 seconds, the remaining child processes will be signaled with a `SIGTERM` and killed.
+Download binary
 
-![image](https://user-images.githubusercontent.com/11146767/99929079-1f156080-2d8f-11eb-8315-ae7588d21d31.png)
+Download from [release page](), and extract to the directory in PATH.
+
+## 💻 Command
+
+```
+$ rustman --help
+rustman 0.1.0
+
+USAGE:
+    rustman [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    help     Prints this message or the help of the given subcommand(s)
+    start    Start the application
+```
+
+## 🚀 Tutorial
+
+Create a `Procfile` like the one below
+
+```
+exit_0: sleep 5 && echo 'success' && exit 0;
+exit_1: sleep 5 && echo 'failed' && exit 1;
+loop: while :; do sleep 1 && echo 'Hello World'; done;
+```
+
+Then execute the following command
+
+```bash
+rustman start
+```
+
+![image](https://user-images.githubusercontent.com/11146767/100380658-9894a380-305a-11eb-9509-30495a39a346.png)
 
 <details>
 
-```
-$ cargo run
-    Finished dev [unoptimized + debuginfo] target(s) in 0.08s
-     Running `target/debug/eg_foreman`
-system    | exit_0.1  start at pid: 11350
-system    | loop.1    start at pid: 11351
-system    | exit_1.1  start at pid: 11352
-system    | loop.2    start at pid: 11353
-loop.2    | hello world
-loop.1    | hello world
-loop.1    | hello world
-loop.2    | hello world
-loop.2    | hello world
-loop.1    | hello world
-loop.1    | hello world
-loop.2    | hello world
-exit_1.1  | failed
-exit_0.1  | success
-system    | sending SIGTERM for loop.1    at pid 11351
-system    | sending SIGTERM for exit_1.1  at pid 11352
-system    | sending SIGTERM for loop.2    at pid 11353
-system    | exit 0
+```bash
+$ rustman start
+02:44:43 system    | exit_0.1  start at pid: 59658
+02:44:43 system    | loop.1    start at pid: 59659
+02:44:43 system    | exit_1.1  start at pid: 59660
+02:44:44 loop.1    | Hello World
+02:44:45 loop.1    | Hello World
+02:44:46 loop.1    | Hello World
+02:44:47 loop.1    | Hello World
+02:44:48 exit_1.1  | failed
+02:44:48 exit_0.1  | success
+02:44:48 exit_1.1  | exited with code 1
+02:44:48 system    | sending SIGTERM for exit_0.1  at pid 59658
+02:44:48 system    | sending SIGTERM for loop.1    at pid 59659
+02:44:48 exit_0.1  | exited with code 0
+02:44:48 system    | sending SIGTERM for loop.1    at pid 59659
+02:44:48 loop.1    | terminated by SIGTERM
 ```
 
 </details>
 
 If <kbd>ctrl-c</kbd> is detected within 5 seconds, `SIGTERM` will be sent to all child processes and the process will be killed.
 
-![image](https://user-images.githubusercontent.com/11146767/99907366-c9ee3600-2d1f-11eb-809f-7ab562ee3698.png)
+![image](https://user-images.githubusercontent.com/11146767/100380752-c5e15180-305a-11eb-93ce-125c0002c162.png)
 
 <details>
 
 ```
-$ cargo run
-    Finished dev [unoptimized + debuginfo] target(s) in 0.09s
-     Running `target/debug/eg_foreman`
-system    | exit_0.1  start at pid: 43204
-system    | loop.1    start at pid: 43205
-system    | exit_1.1  start at pid: 43206
-system    | loop.2    start at pid: 43207
-loop.2    | hello world
-loop.1    | hello world
-loop.1    | hello world
-loop.2    | hello world
-^Csystem  | ctrl-c detected
-system    | sending SIGTERM for children
-system    | sending SIGTERM for exit_0.1  at pid 43204
-system    | sending SIGTERM for loop.1    at pid 43205
-system    | sending SIGTERM for exit_1.1  at pid 43206
-system    | sending SIGTERM for loop.2    at pid 43207
-system    | exit 0
+$ ./rustman start
+02:46:13 system    | exit_0.1  start at pid: 59892
+02:46:13 system    | loop.1    start at pid: 59893
+02:46:13 system    | exit_1.1  start at pid: 59891
+02:46:14 loop.1    | Hello World
+02:46:15 loop.1    | Hello World
+02:46:16 loop.1    | Hello World
+^C02:46:17 system  | SIGINT received, starting shutdown
+02:46:17 system    | sending SIGTERM to all processes
+02:46:17 system    | sending SIGTERM for exit_0.1  at pid 59892
+02:46:17 system    | sending SIGTERM for loop.1    at pid 59893
+02:46:17 system    | sending SIGTERM for exit_1.1  at pid 59891
+02:46:17 exit_0.1  | terminated by SIGTERM
+02:46:17 loop.1    | terminated by SIGTERM
+02:46:17 exit_1.1  | terminated by SIGTERM
 ```
 
 </details>
 
-If you generalize this, you can make a foreman. You did it. 🎉
+## 💪 Development
 
-## Development
+```bash
+cargo run -- --help
+# or
+cargo run start
+# or
+cargo run start --help
+```
 
-Executte Test
+## ✍️ Test
 
 ```bash
 cargo test
@@ -90,15 +121,16 @@ cargo test -- --nocapture
 ```
 
 
-## Environment
+## ⚙ Environment
 
 |name|desc|defaul|
 |----|----|------|
 |COLOR|Color the output|true|
 
-## Reference
+## 📚 Reference
 
 I really referred to the implementation of the following repository.
 
-- [fors](https://github.com/jtdowney/fors)
-- [arpx](https://github.com/jaredgorski/arpx)
+- [yukihirop/eg_foreman](https://github.com/yukihirop/eg_foreman)
+- [jtdowney/fors](https://github.com/jtdowney/fors)
+- [jaredgorski/arpx](https://github.com/jaredgorski/arpx)
