@@ -74,6 +74,7 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
     for (name, pe) in procfile.data.iter() {
         let con = pe.concurrency.get();
         let output = Arc::new(output::Output::new(index, padding));
+        let before_index = index;
         index += 1;
 
         for n in 0..con {
@@ -86,7 +87,7 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
             let port = opts.port.clone();
 
             let each_fn = process::each_handle_exec_and_output(procs, padding, barrier, output);
-            let each_handle_exec_and_output = each_fn(name, n, pe_command, envpath, port, index);
+            let each_handle_exec_and_output = each_fn(name, n, pe_command, envpath, port, before_index);
             proc_handles.push(each_handle_exec_and_output);
         }
     }

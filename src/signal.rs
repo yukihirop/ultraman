@@ -37,12 +37,12 @@ fn trap_signal(
         match sig {
             SIGINT => {
                 // 2 is 「^C」 of 「^Csystem   | ctrl-c detected」
-                log::output("system", "ctrl-c detected", padding - 2);
+                log::output("system", "ctrl-c detected", padding - 2, None);
 
-                log::output("system", "sending SIGTERM to all processes", padding);
+                log::output("system", "sending SIGTERM to all processes", padding, None);
                 terminate_gracefully(procs, padding, Signal::SIGTERM, 1, timeout);
 
-                log::output("system", "exit 0", padding);
+                log::output("system", "exit 0", padding, None);
                 #[cfg(not(test))]
                 exit(0);
                 #[cfg(test)]
@@ -73,14 +73,14 @@ pub fn terminate_gracefully(
         }
 
         let procs3 = Arc::clone(&procs2);
-        process::check_for_child_termination(procs3);
+        process::check_for_child_termination(procs3, padding);
 
         // Sleep for a moment and do not blow up if more signals are coming our way
         sleep(Duration::from_millis(100));
     }
 
     // Ok, we have no other option than to kill all of our children
-    log::output("system", "sending SIGKILL to all processes", padding);
+    log::output("system", "sending SIGKILL to all processes", padding, None);
     kill_children(procs2, padding, Signal::SIGKILL, 0);
 }
 
@@ -104,11 +104,12 @@ pub fn kill_children(
                 Signal::as_str(signal),
             ),
             padding,
+            None
         );
 
         if let Err(e) = signal::kill(Pid::from_raw(child.id() as i32), signal) {
             log::error("system", &e, padding);
-            log::output("system", &format!("exit {}", _code), padding);
+            log::output("system", &format!("exit {}", _code), padding, None);
             // https://www.reddit.com/r/rust/comments/emz456/testing_whether_functions_exit/
             #[cfg(not(test))]
             exit(_code);
@@ -137,6 +138,7 @@ mod tests {
     fn test_trap_signal() {
         let procs = Arc::new(Mutex::new(vec![
             Arc::new(Mutex::new(Process {
+                index: 0,
                 name: String::from("trap-signal-1"),
                 child: Command::new("./test/fixtures/loop.sh")
                     .arg("trap_signal_1")
@@ -144,6 +146,7 @@ mod tests {
                     .expect("failed execute test-app-1"),
             })),
             Arc::new(Mutex::new(Process {
+                index: 1,
                 name: String::from("trap-signal-2"),
                 child: Command::new("./test/fixtures/loop.sh")
                     .arg("trap_signal_2")

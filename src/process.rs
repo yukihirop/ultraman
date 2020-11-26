@@ -1,6 +1,7 @@
 use crate::env::read_env;
 use crate::output;
 use crate::signal;
+use crate::log;
 use nix::sys::signal::Signal;
 use nix::sys::wait::WaitStatus;
 use nix::{self, unistd::Pid};
@@ -15,6 +16,7 @@ use std::thread::{self, JoinHandle};
 use std::env::{self as os_env};
 
 pub struct Process {
+    pub index: usize,
     pub name: String,
     pub child: Child,
 }
@@ -42,6 +44,7 @@ pub fn each_handle_exec_and_output(
                     let shell = os_env::var("SHELL").expect("$SHELL is not set");
 
                     let tmp_proc = Process {
+                        index,
                         name: ps_for(process_name, con + 1),
                         child: Command::new(shell)
                             .arg("-c")
@@ -88,7 +91,7 @@ pub fn check_for_child_termination_thread(
                 // Waiting for the end of any one child process
                 let procs2 = Arc::clone(&procs);
                 let procs3 = Arc::clone(&procs);
-                if let Some((_, code)) = check_for_child_termination(procs2) {
+                if let Some((_, code)) = check_for_child_termination(procs2, padding) {
                     signal::kill_children(procs3, padding, Signal::SIGTERM, code)
                 }
             }
@@ -100,6 +103,7 @@ pub fn check_for_child_termination_thread(
 
 pub fn check_for_child_termination(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
+    padding: usize
 ) -> Option<(Pid, i32)> {
     // Waiting for the end of any one child process
     match nix::sys::wait::waitpid(
@@ -110,6 +114,12 @@ pub fn check_for_child_termination(
             WaitStatus::Exited(pid, code) => {
                 procs.lock().unwrap().retain(|p| {
                     let child_id = p.lock().unwrap().child.id() as i32;
+                    if Pid::from_raw(child_id) == pid { 
+                        let proc = p.lock().unwrap();
+                        let proc_name = &proc.name;
+                        let proc_index = proc.index;
+                        log::output(&proc_name, &format!("exited with code {}", code), padding, Some(proc_index));
+                    }
                     Pid::from_raw(child_id) != pid
                 });
                 return Some((pid, code));
@@ -188,12 +198,14 @@ mod tests {
     fn test_check_for_child_termination_thread() {
         let procs = Arc::new(Mutex::new(vec![
             Arc::new(Mutex::new(Process {
+                index: 0,
                 name: String::from("check_for_child_termination_thread-1"),
                 child: Command::new("./test/fixtures/exit_0.sh")
                     .spawn()
                     .expect("failed execute check_for_child_termination_thread-1"),
             })),
             Arc::new(Mutex::new(Process {
+                index: 1,
                 name: String::from("check_for_child_termination_thread-2"),
                 child: Command::new("./test/fixtures/exit_1.sh")
                     .spawn()
