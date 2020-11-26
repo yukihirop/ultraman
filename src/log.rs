@@ -1,5 +1,6 @@
 use colored::*;
 use std::env;
+use chrono::{Local};
 
 pub struct Log {
     index: usize,
@@ -47,7 +48,7 @@ impl Log {
             self.color_output(proc_name, content)
                 .expect("failed color output");
         } else {
-            println!("{0:1$} | {2}", proc_name, self.padding, content);
+            println!("{3} {0:1$} | {2}", proc_name, self.padding, content, now());
         }
     }
 
@@ -59,17 +60,19 @@ impl Log {
     fn color_output(&self, name: &str, content: &str) -> Result<(), Box<dyn std::error::Error>> {
         let color = COLORS[self.index % COLORS.len()];
         println!(
-            "{0:1$} | {2}",
+            "{3} {0:1$} | {2}",
             name.color(color),
             self.padding,
-            content.color(color)
+            content.color(color),
+            now().color(color)
         );
         Ok(())
     }
 }
 
 pub fn output(proc_name: &str, content: &str, padding: usize) {
-    println!("{0:1$} | {2}", proc_name, padding, content);
+
+    println!("{3} {0:1$} | {2}", proc_name, padding, content, now());
 }
 
 pub fn error(proc_name: &str, err: &dyn std::error::Error, padding: usize) {
@@ -79,6 +82,10 @@ pub fn error(proc_name: &str, err: &dyn std::error::Error, padding: usize) {
     } else {
         output(proc_name, content, padding);
     }
+}
+
+fn now() -> String {
+    Local::now().format("%H:%M:%S").to_string()
 }
 
 #[cfg(test)]
