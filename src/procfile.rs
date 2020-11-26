@@ -205,10 +205,8 @@ web: ./web.sh
         let read_file = File::open(procfile_path)?;
         let result = parse_procfile(&read_file).expect("failed parse_procfile");
 
-        assert_eq!(
-            result.data.keys().clone().collect::<Vec<_>>(),
-            vec!["app", "web"]
-        );
+        assert!(result.data.contains_key("app"));
+        assert!(result.data.contains_key("web"));
         assert_eq!(result.data.get("app").unwrap().command, "./app.sh");
         assert_eq!(result.data.get("app").unwrap().concurrency.get(), 1);
         assert_eq!(result.data.get("web").unwrap().command, "./web.sh");

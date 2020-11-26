@@ -121,7 +121,6 @@ pub fn kill_children(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use anyhow;
     use libc;
     use signal_hook::SIGINT;
     use std::process::Command;
@@ -134,7 +133,8 @@ mod tests {
     }
 
     #[test]
-    fn test_trap_signal() -> anyhow::Result<()> {
+    #[should_panic(expected = "failed handle signals: Any")]
+    fn test_trap_signal() {
         let procs = Arc::new(Mutex::new(vec![
             Arc::new(Mutex::new(Process {
                 name: String::from("trap-signal-1"),
@@ -163,7 +163,5 @@ mod tests {
 
         thread_trap_signal.join().expect("failed handle signals");
         thread_send_sigint.join().expect("failed send sigint");
-
-        Ok(())
     }
 }
