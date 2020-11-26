@@ -1,8 +1,9 @@
 use crate::cmd::start::StartOpts;
-use structopt::StructOpt;
+use structopt::{clap, StructOpt};
 
 #[derive(StructOpt, Debug)]
 #[structopt(long_version(option_env!("LONG_VERSION").unwrap_or(env!("CARGO_PKG_VERSION"))))]
+#[structopt(setting(clap::AppSettings::ColoredHelp))]
 pub struct Opt {
     #[structopt(subcommand)]
     pub subcommands: Option<Rustman>,
