@@ -104,7 +104,7 @@ fn color_output(proc_name: &str, content: &str, padding: usize, index: usize) {
         proc_name.color(color),
         padding,
         content.color(color),
-        now()
+        now().color(color)
     );
 }
 

@@ -123,7 +123,20 @@ pub fn check_for_child_termination(
                     Pid::from_raw(child_id) != pid
                 });
                 return Some((pid, code));
-            }
+            },
+            WaitStatus::Signaled(pid, signal, _) => {
+                procs.lock().unwrap().retain(|p| {
+                    let child_id = p.lock().unwrap().child.id() as i32;
+                    if Pid::from_raw(child_id) == pid { 
+                        let proc = p.lock().unwrap();
+                        let proc_name = &proc.name;
+                        let proc_index = proc.index;
+                        log::output(&proc_name, &format!("terminated by {}", signal.as_str()), padding, Some(proc_index));
+                    }
+                    Pid::from_raw(child_id) != pid
+                });
+                return None
+            },
             _ => return None,
         },
         Err(e) => {

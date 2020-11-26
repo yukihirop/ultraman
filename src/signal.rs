@@ -36,8 +36,8 @@ fn trap_signal(
     for sig in signals.forever() {
         match sig {
             SIGINT => {
-                // 2 is 「^C」 of 「^Csystem   | ctrl-c detected」
-                log::output("system", "ctrl-c detected", padding - 2, None);
+                // 2 is 「^C」 of 「^Csystem   | SIGINT received, starting shutdown」
+                log::output("system", "SIGINT received, starting shutdown", padding - 2, None);
 
                 log::output("system", "sending SIGTERM to all processes", padding, None);
                 terminate_gracefully(procs, padding, Signal::SIGTERM, 1, timeout);
