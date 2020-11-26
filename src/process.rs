@@ -12,6 +12,7 @@ use std::process::exit;
 use std::path::PathBuf;
 use std::sync::{Arc, Barrier, Mutex};
 use std::thread::{self, JoinHandle};
+use std::env::{self as os_env};
 
 pub struct Process {
     pub name: String,
@@ -24,22 +25,27 @@ pub fn each_handle_exec_and_output(
     padding: usize,
     barrier: Arc<Barrier>,
     output: Arc<output::Output>,
-) -> Box<dyn Fn(String, usize, String, PathBuf) -> JoinHandle<()>> {
+) -> Box<dyn Fn(String, usize, String, PathBuf, Option<String>, usize) -> JoinHandle<()>> {
     Box::new(
-        move |key: String, n: usize, cmd: String, envpath: PathBuf| {
+        // MEMO: Refactor when you understand your lifetime
+        move |process_name: String, con: usize, cmd: String, envpath: PathBuf, port: Option<String>, index: usize| {
             let output = output.clone();
             let procs = procs.clone();
             let barrier = barrier.clone();
 
             let result = thread::Builder::new()
-                .name(String::from("handling output"))
+                .name(String::from("handle exec and output"))
                 .spawn(move || {
+                    let mut read_env = read_env(envpath.clone()).expect("failed read .env");
+                    read_env.insert(String::from("PORT"), port_for(envpath, port, index, con));
+                    read_env.insert(String::from("PS"), ps_for(process_name.clone(), con + 1));
+
                     let tmp_proc = Process {
-                        name: String::from(format!("{}.{}", key, n + 1)),
+                        name: ps_for(process_name, con + 1),
                         child: Command::new(cmd)
                             .stdout(Stdio::piped())
                             .stderr(Stdio::piped())
-                            .envs(read_env(envpath).expect("failed read .env"))
+                            .envs(read_env)
                             .spawn()
                             .expect("failed execute command"),
                     };
@@ -120,6 +126,30 @@ pub fn check_for_child_termination(
     };
 }
 
+fn ps_for(process_name: String, concurrency: usize) -> String {
+    format!("{}.{}", process_name, concurrency)
+}
+
+fn port_for(envpath: PathBuf, port: Option<String>, index: usize, concurrency: usize) -> String {
+    let result = base_port(envpath, port).parse::<usize>().unwrap() + index * 100 + concurrency - 1;
+    result.to_string()
+}
+
+fn base_port(envpath: PathBuf, port: Option<String>) -> String {
+    let env = read_env(envpath).unwrap();
+    let default_port = String::from("5000");
+
+    if let Some(p) = port {
+        p
+    } else if let Some(p) = env.get("PORT") {
+        p.clone()
+    } else if let Ok(p) = os_env::var("PORT") {
+        p
+    } else {
+        default_port
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -141,6 +171,8 @@ mod tests {
             0,
             String::from("./test/script/for.sh"),
             PathBuf::from("./test/script/.env"),
+            None,
+            1
         )
         .join()
         .expect("failed join each thread");

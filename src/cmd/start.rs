@@ -46,7 +46,15 @@ pub struct StartOpts {
         long = "timeout",
         default_value = "5",
     )]
-    pub timeout: String
+    pub timeout: String,
+
+    /// Port
+    #[structopt(
+        name = "PORT",
+        short = "p",
+        long = "port",
+    )]
+    pub port: Option<String>,
 }
 
 pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
@@ -75,9 +83,10 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
             let name = name.clone();
             let pe_command = pe.command.clone();
             let envpath = opts.envpath.clone();
+            let port = opts.port.clone();
 
             let each_fn = process::each_handle_exec_and_output(procs, padding, barrier, output);
-            let each_handle_exec_and_output = each_fn(name, n, pe_command, envpath);
+            let each_handle_exec_and_output = each_fn(name, n, pe_command, envpath, port, index);
             proc_handles.push(each_handle_exec_and_output);
         }
     }
