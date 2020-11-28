@@ -53,12 +53,8 @@ pub struct StartOpts {
     pub port: Option<String>,
 
     /// Include timestamp in output
-    #[structopt(
-        name = "NOTIMESTAMP",
-        short = "n",
-        long = "no-timestamp"
-    )]
-    pub is_no_timestamp: bool
+    #[structopt(name = "NOTIMESTAMP", short = "n", long = "no-timestamp")]
+    pub is_no_timestamp: bool,
 }
 
 pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
@@ -102,14 +98,18 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
 
     // use handle_signal
     let procs2 = Arc::clone(&procs);
-    proc_handles.push(process::check_for_child_termination_thread(procs, padding, is_timestamp));
+    proc_handles.push(process::check_for_child_termination_thread(
+        procs,
+        padding,
+        is_timestamp,
+    ));
 
     let procs = Arc::clone(&procs2);
     proc_handles.push(signal::handle_signal_thread(
         procs,
         padding,
         opts.timeout.parse::<u64>().unwrap(),
-        is_timestamp
+        is_timestamp,
     ));
 
     for handle in proc_handles {

@@ -15,12 +15,13 @@ pub fn handle_signal_thread(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
     padding: usize,
     timeout: u64,
-    is_timestamp: bool
+    is_timestamp: bool,
 ) -> JoinHandle<()> {
     let result = thread::Builder::new()
         .name(String::from("handling signal"))
         .spawn(move || {
-            trap_signal_at_multithred(procs, padding, timeout, is_timestamp).expect("failed trap signals")
+            trap_signal_at_multithred(procs, padding, timeout, is_timestamp)
+                .expect("failed trap signals")
         })
         .expect("failed handle signals");
 
@@ -58,7 +59,7 @@ fn trap_signal_at_multithred(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
     padding: usize,
     timeout: u64,
-    is_timestamp: bool
+    is_timestamp: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let signals = Signals::new(&[SIGALRM, SIGHUP, SIGINT, SIGTERM])?;
 
@@ -117,7 +118,7 @@ pub fn terminate_gracefully(
     signal: Signal,
     code: i32,
     timeout: u64,
-    is_timestamp: bool
+    is_timestamp: bool,
 ) {
     let procs2 = Arc::clone(&procs);
     kill_children(procs, padding, signal, code, is_timestamp);
@@ -155,7 +156,7 @@ pub fn kill_children(
     padding: usize,
     signal: Signal,
     _code: i32,
-    is_timestamp: bool
+    is_timestamp: bool,
 ) {
     for proc in procs.lock().unwrap().iter() {
         let proc = proc.lock().unwrap();
@@ -271,7 +272,8 @@ mod tests {
 
         let procs2 = Arc::clone(&procs);
         let thread_trap_signal = thread::spawn(move || {
-            trap_signal_at_multithred(procs2, 10, 5, true).expect("failed trap_signal_at_multithred")
+            trap_signal_at_multithred(procs2, 10, 5, true)
+                .expect("failed trap_signal_at_multithred")
         });
 
         let thread_send_sigint = thread::spawn(move || {
