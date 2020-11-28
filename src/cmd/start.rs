@@ -10,7 +10,7 @@ use structopt::{clap, StructOpt};
 #[derive(StructOpt, Debug)]
 #[structopt(setting(clap::AppSettings::ColoredHelp))]
 pub struct StartOpts {
-    /// Formation
+    /// Specify the number of each process type to run. The value passed in should be in the format process=num,process=num
     #[structopt(
         name = "APP=NUMBER",
         short = "m",
@@ -19,7 +19,7 @@ pub struct StartOpts {
     )]
     pub formation: String,
 
-    /// .env file
+    /// Specify an environment file to load
     #[structopt(
         name = "ENV",
         short = "e",
@@ -29,17 +29,17 @@ pub struct StartOpts {
     )]
     pub env_path: PathBuf,
 
-    /// Profile path
+    /// Specify an Procfile to load
     #[structopt(
         name = "PROCFILE",
         short = "f",
-        long = "file",
+        long = "procfile",
         parse(from_os_str),
         default_value = "Procfile"
     )]
     pub procfile_path: PathBuf,
 
-    /// Timeout
+    /// Specify the amount of time (in seconds) processes have to shutdown gracefully before receiving a SIGTERM
     #[structopt(
         name = "TIMEOUT (sec)",
         short = "t",
@@ -48,7 +48,7 @@ pub struct StartOpts {
     )]
     pub timeout: String,
 
-    /// Port
+    /// Specify which port to use as the base for this application. Should be a multiple of 1000
     #[structopt(name = "PORT", short = "p", long = "port")]
     pub port: Option<String>,
 }
