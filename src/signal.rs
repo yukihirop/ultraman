@@ -20,13 +20,42 @@ pub fn handle_signal_thread(
 ) -> JoinHandle<()> {
     let result = thread::Builder::new()
         .name(String::from("handling signal"))
-        .spawn(move || trap_signal(procs, padding, timeout).expect("failed trap signals"))
+        .spawn(move || {
+            trap_signal_at_multithred(procs, padding, timeout).expect("failed trap signals")
+        })
         .expect("failed handle signals");
 
     result
 }
 
-fn trap_signal(
+pub fn trap_signal(child_id: nix::unistd::Pid) -> Result<(), Box<dyn std::error::Error>> {
+    let signals = Signals::new(&[SIGALRM, SIGHUP, SIGINT, SIGTERM])?;
+
+    for sig in signals.forever() {
+        match sig {
+            SIGINT => {
+                if let Err(e) = signal::kill(child_id, Signal::SIGTERM) {
+                    println!("error: {}", &e);
+
+                    #[cfg(not(test))]
+                    exit(1);
+                    #[cfg(test)]
+                    panic!("exit {}", 1);
+                }
+
+                #[cfg(not(test))]
+                exit(0);
+                #[cfg(test)]
+                panic!("exit 0");
+            }
+            _ => (),
+        }
+    }
+
+    Ok(())
+}
+
+fn trap_signal_at_multithred(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
     padding: usize,
     timeout: u64,
@@ -128,6 +157,7 @@ pub fn kill_children(
 mod tests {
     use super::*;
     use libc;
+    use nix::unistd::{fork, pause, ForkResult};
     use signal_hook::SIGINT;
     use std::process::Command;
     use std::thread::sleep;
@@ -139,30 +169,56 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "failed handle signals: Any")]
+    #[should_panic(expected = "exit 0")]
     fn test_trap_signal() {
+        let thread_send_sigint = thread::spawn(move || {
+            sleep(Duration::from_secs(5));
+            send_sigint();
+        });
+
+        unsafe {
+            match fork().expect("failed fork at test_trap_signal") {
+                ForkResult::Child => {
+                    Command::new("./test/fixtures/loop.sh")
+                        .arg("trap_signal")
+                        .spawn()
+                        .expect("failed execute trap_signal");
+                    pause()
+                }
+                ForkResult::Parent { child } => {
+                    trap_signal(child).expect("failed test_trap_signal");
+                    thread_send_sigint.join().expect("failed send sigint");
+                }
+            }
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "failed handle signals: Any")]
+    fn test_trap_signal_at_multithred() {
         let procs = Arc::new(Mutex::new(vec![
             Arc::new(Mutex::new(Process {
                 index: 0,
-                name: String::from("trap-signal-1"),
+                name: String::from("trap_signal_at_multithred-1"),
                 child: Command::new("./test/fixtures/loop.sh")
-                    .arg("trap_signal_1")
+                    .arg("trap_signal_at_multithred_1")
                     .spawn()
                     .expect("failed execute test-app-1"),
             })),
             Arc::new(Mutex::new(Process {
                 index: 1,
-                name: String::from("trap-signal-2"),
+                name: String::from("trap_signal_at_multithred-2"),
                 child: Command::new("./test/fixtures/loop.sh")
-                    .arg("trap_signal_2")
+                    .arg("trap_signal_at_multithred_2")
                     .spawn()
                     .expect("failed execute test-app-2"),
             })),
         ]));
 
         let procs2 = Arc::clone(&procs);
-        let thread_trap_signal =
-            thread::spawn(move || trap_signal(procs2, 10, 5).expect("failed trap signals"));
+        let thread_trap_signal = thread::spawn(move || {
+            trap_signal_at_multithred(procs2, 10, 5).expect("failed trap_signal_at_multithred")
+        });
 
         let thread_send_sigint = thread::spawn(move || {
             sleep(Duration::from_secs(5));

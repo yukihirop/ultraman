@@ -1,3 +1,4 @@
+use crate::cmd::run::RunOpts;
 use crate::cmd::start::StartOpts;
 use structopt::{clap, StructOpt};
 
@@ -14,4 +15,10 @@ pub struct Opt {
 pub enum Rustman {
     #[structopt(name = "start", about = "Start the application")]
     Start(StartOpts),
+
+    #[structopt(
+        name = "run",
+        about = "Run a command using your application's environment"
+    )]
+    Run(RunOpts),
 }

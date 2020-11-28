@@ -32,6 +32,7 @@ FLAGS:
 
 SUBCOMMANDS:
     help     Prints this message or the help of the given subcommand(s)
+    run      Run a command using your application's environment
     start    Start the application
 ```
 

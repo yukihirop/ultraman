@@ -37,6 +37,14 @@ impl Procfile {
             .fold(0, |sum, a| sum + a)
     }
 
+    pub fn find_by(&self, name: &str) -> &ProcfileEntry {
+        let pe = self
+            .data
+            .get(name)
+            .expect(&format!("Can't find process called: {}", name));
+        pe
+    }
+
     pub fn set_concurrency(&self, formation: &str) {
         if formation == DEFAULT_FORMATION {
             return ();
@@ -155,6 +163,16 @@ mod tests {
         let pf = create_procfile();
         let result = pf.padding();
         assert_eq!(result, 6);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_find_by() -> anyhow::Result<()> {
+        let pf = create_procfile();
+        let result = pf.find_by("web");
+        assert_eq!(result.command, String::from("./app.sh"));
+        assert_eq!(result.concurrency.get(), 1);
 
         Ok(())
     }
