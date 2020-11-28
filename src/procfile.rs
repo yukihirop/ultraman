@@ -168,6 +168,16 @@ mod tests {
     }
 
     #[test]
+    fn test_find_by() -> anyhow::Result<()> {
+        let pf = create_procfile();
+        let result = pf.find_by("web");
+        assert_eq!(result.command, String::from("./app.sh"));
+        assert_eq!(result.concurrency.get(), 1);
+
+        Ok(())
+    }
+
+    #[test]
     fn test_process_len() -> anyhow::Result<()> {
         let pf = create_procfile();
         let result = pf.process_len();
