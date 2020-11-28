@@ -10,7 +10,7 @@ use structopt::{clap, StructOpt};
 #[derive(StructOpt, Debug)]
 #[structopt(setting(clap::AppSettings::ColoredHelp))]
 pub struct StartOpts {
-    /// Formation
+    /// Specify the number of each process type to run. The value passed in should be in the format process=num,process=num
     #[structopt(
         name = "APP=NUMBER",
         short = "m",
@@ -19,7 +19,7 @@ pub struct StartOpts {
     )]
     pub formation: String,
 
-    /// .env file
+    /// Specify an environment file to load
     #[structopt(
         name = "ENV",
         short = "e",
@@ -27,19 +27,19 @@ pub struct StartOpts {
         parse(from_os_str),
         default_value = ".env"
     )]
-    pub envpath: PathBuf,
+    pub env_path: PathBuf,
 
-    /// Profile path
+    /// Specify an Procfile to load
     #[structopt(
         name = "PROCFILE",
         short = "f",
-        long = "file",
+        long = "procfile",
         parse(from_os_str),
         default_value = "Procfile"
     )]
     pub procfile_path: PathBuf,
 
-    /// Timeout
+    /// Specify the amount of time (in seconds) processes have to shutdown gracefully before receiving a SIGTERM
     #[structopt(
         name = "TIMEOUT (sec)",
         short = "t",
@@ -48,9 +48,13 @@ pub struct StartOpts {
     )]
     pub timeout: String,
 
-    /// Port
+    /// Specify which port to use as the base for this application. Should be a multiple of 1000
     #[structopt(name = "PORT", short = "p", long = "port")]
     pub port: Option<String>,
+
+    /// Include timestamp in output
+    #[structopt(name = "NOTIMESTAMP", short = "n", long = "no-timestamp")]
+    pub is_no_timestamp: bool,
 }
 
 pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
@@ -66,10 +70,11 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
 
     let barrier = Arc::new(Barrier::new(process_len + 1));
     let mut index = 0;
+    let is_timestamp = !opts.is_no_timestamp;
 
     for (name, pe) in procfile.data.iter() {
         let con = pe.concurrency.get();
-        let output = Arc::new(output::Output::new(index, padding));
+        let output = Arc::new(output::Output::new(index, padding, is_timestamp));
         let before_index = index;
         index += 1;
 
@@ -79,12 +84,12 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
             let output = output.clone();
             let name = name.clone();
             let pe_command = pe.command.clone();
-            let envpath = opts.envpath.clone();
+            let env_path = opts.env_path.clone();
             let port = opts.port.clone();
 
             let each_fn = process::each_handle_exec_and_output(procs, padding, barrier, output);
             let each_handle_exec_and_output =
-                each_fn(name, n, pe_command, envpath, port, before_index);
+                each_fn(name, n, pe_command, env_path, port, before_index);
             proc_handles.push(each_handle_exec_and_output);
         }
     }
@@ -93,13 +98,18 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
 
     // use handle_signal
     let procs2 = Arc::clone(&procs);
-    proc_handles.push(process::check_for_child_termination_thread(procs, padding));
+    proc_handles.push(process::check_for_child_termination_thread(
+        procs,
+        padding,
+        is_timestamp,
+    ));
 
     let procs = Arc::clone(&procs2);
     proc_handles.push(signal::handle_signal_thread(
         procs,
         padding,
         opts.timeout.parse::<u64>().unwrap(),
+        is_timestamp,
     ));
 
     for handle in proc_handles {

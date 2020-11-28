@@ -11,7 +11,10 @@ pub struct Opt {
 }
 
 #[derive(StructOpt, Debug)]
-#[structopt(name = "rustman")]
+#[structopt(
+    name = "rustman",
+    about = "Rustman is a manager for Procfile-based applications. Its aim is to abstract away the details of the Procfile format, and allow you to either run your application directly or export it to some other process management format."
+)]
 pub enum Rustman {
     #[structopt(name = "start", about = "Start the application")]
     Start(StartOpts),
