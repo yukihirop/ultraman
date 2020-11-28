@@ -27,7 +27,7 @@ pub struct StartOpts {
         parse(from_os_str),
         default_value = ".env"
     )]
-    pub envpath: PathBuf,
+    pub env_path: PathBuf,
 
     /// Profile path
     #[structopt(
@@ -79,12 +79,12 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
             let output = output.clone();
             let name = name.clone();
             let pe_command = pe.command.clone();
-            let envpath = opts.envpath.clone();
+            let env_path = opts.env_path.clone();
             let port = opts.port.clone();
 
             let each_fn = process::each_handle_exec_and_output(procs, padding, barrier, output);
             let each_handle_exec_and_output =
-                each_fn(name, n, pe_command, envpath, port, before_index);
+                each_fn(name, n, pe_command, env_path, port, before_index);
             proc_handles.push(each_handle_exec_and_output);
         }
     }

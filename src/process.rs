@@ -33,7 +33,7 @@ pub fn each_handle_exec_and_output(
         move |process_name: String,
               con: usize,
               cmd: String,
-              envpath: PathBuf,
+              env_path: PathBuf,
               port: Option<String>,
               index: usize| {
             let output = output.clone();
@@ -43,8 +43,8 @@ pub fn each_handle_exec_and_output(
             let result = thread::Builder::new()
                 .name(String::from("handle exec and output"))
                 .spawn(move || {
-                    let mut read_env = read_env(envpath.clone()).expect("failed read .env");
-                    read_env.insert(String::from("PORT"), port_for(envpath, port, index, con));
+                    let mut read_env = read_env(env_path.clone()).expect("failed read .env");
+                    read_env.insert(String::from("PORT"), port_for(env_path, port, index, con));
                     read_env.insert(String::from("PS"), ps_for(process_name.clone(), con + 1));
                     let shell = os_env::var("SHELL").expect("$SHELL is not set");
 
@@ -171,13 +171,13 @@ fn ps_for(process_name: String, concurrency: usize) -> String {
     format!("{}.{}", process_name, concurrency)
 }
 
-fn port_for(envpath: PathBuf, port: Option<String>, index: usize, concurrency: usize) -> String {
-    let result = base_port(envpath, port).parse::<usize>().unwrap() + index * 100 + concurrency - 1;
+fn port_for(env_path: PathBuf, port: Option<String>, index: usize, concurrency: usize) -> String {
+    let result = base_port(env_path, port).parse::<usize>().unwrap() + index * 100 + concurrency - 1;
     result.to_string()
 }
 
-fn base_port(envpath: PathBuf, port: Option<String>) -> String {
-    let env = read_env(envpath).unwrap();
+fn base_port(env_path: PathBuf, port: Option<String>) -> String {
+    let env = read_env(env_path).unwrap();
     let default_port = String::from("5000");
 
     if let Some(p) = port {
