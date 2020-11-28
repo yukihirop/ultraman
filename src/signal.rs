@@ -1,5 +1,3 @@
-#![cfg(not(windows))]
-
 use crate::log::{self, LogOpt};
 use crate::process::{self, Process};
 use nix::sys::signal::{self, Signal};
