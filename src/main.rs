@@ -3,7 +3,6 @@ use structopt::StructOpt;
 
 mod cmd;
 mod env;
-mod log;
 mod logt;
 mod opt;
 mod output;
