@@ -1,5 +1,5 @@
 use crate::env::read_env;
-use crate::log;
+use crate::logt::{self as log, LogOpt};
 use crate::output;
 use crate::signal;
 use nix::sys::signal::Signal;
@@ -128,6 +128,10 @@ pub fn check_for_child_termination(
                             &format!("exited with code {}", code),
                             padding,
                             Some(proc_index),
+                            &LogOpt {
+                                is_color: true,
+                                is_timestamp: true,
+                            },
                         );
                     }
                     Pid::from_raw(child_id) != pid
@@ -146,6 +150,10 @@ pub fn check_for_child_termination(
                             &format!("terminated by {}", signal.as_str()),
                             padding,
                             Some(proc_index),
+                            &LogOpt {
+                                is_color: true,
+                                is_timestamp: true,
+                            },
                         );
                     }
                     Pid::from_raw(child_id) != pid
@@ -172,7 +180,8 @@ fn ps_for(process_name: String, concurrency: usize) -> String {
 }
 
 fn port_for(env_path: PathBuf, port: Option<String>, index: usize, concurrency: usize) -> String {
-    let result = base_port(env_path, port).parse::<usize>().unwrap() + index * 100 + concurrency - 1;
+    let result =
+        base_port(env_path, port).parse::<usize>().unwrap() + index * 100 + concurrency - 1;
     result.to_string()
 }
 

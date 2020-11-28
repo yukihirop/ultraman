@@ -1,17 +1,24 @@
-use crate::log::Log;
+use crate::logt::{Log, LogOpt, Printable};
 use crate::process::Process;
 use crate::stream_read::{PipeError, PipeStreamReader, PipedLine};
 use crossbeam_channel::Select;
 use std::sync::{Arc, Mutex};
 
 pub struct Output {
-    pub log: Log,
+    pub log: Box<dyn Printable + Sync + Send>,
 }
 
 impl Output {
     pub fn new(index: usize, padding: usize) -> Self {
         Output {
-            log: Log::new(index, padding),
+            log: Log::new(
+                index,
+                padding,
+                &LogOpt {
+                    is_color: true,
+                    is_timestamp: true,
+                },
+            ),
         }
     }
 

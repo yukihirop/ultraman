@@ -121,13 +121,6 @@ cargo test
 cargo test -- --nocapture
 ```
 
-
-## ⚙ Environment
-
-|name|desc|defaul|
-|----|----|------|
-|COLOR|Color the output|true|
-
 ## 📚 Reference
 
 I really referred to the implementation of the following repository.

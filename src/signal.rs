@@ -1,6 +1,6 @@
 #![cfg(not(windows))]
 
-use crate::log;
+use crate::logt::{self as log, LogOpt};
 use crate::process::{self, Process};
 use nix::sys::signal::{self, Signal};
 use nix::unistd::Pid;
@@ -71,12 +71,34 @@ fn trap_signal_at_multithred(
                     "SIGINT received, starting shutdown",
                     padding - 2,
                     None,
+                    &LogOpt {
+                        is_color: false,
+                        is_timestamp: true,
+                    },
                 );
 
-                log::output("system", "sending SIGTERM to all processes", padding, None);
+                log::output(
+                    "system",
+                    "sending SIGTERM to all processes",
+                    padding,
+                    None,
+                    &LogOpt {
+                        is_color: false,
+                        is_timestamp: true,
+                    },
+                );
                 terminate_gracefully(procs, padding, Signal::SIGTERM, 1, timeout);
 
-                log::output("system", "exit 0", padding, None);
+                log::output(
+                    "system",
+                    "exit 0",
+                    padding,
+                    None,
+                    &LogOpt {
+                        is_color: false,
+                        is_timestamp: true,
+                    },
+                );
                 #[cfg(not(test))]
                 exit(0);
                 #[cfg(test)]
@@ -114,7 +136,16 @@ pub fn terminate_gracefully(
     }
 
     // Ok, we have no other option than to kill all of our children
-    log::output("system", "sending SIGKILL to all processes", padding, None);
+    log::output(
+        "system",
+        "sending SIGKILL to all processes",
+        padding,
+        None,
+        &LogOpt {
+            is_color: false,
+            is_timestamp: true,
+        },
+    );
     kill_children(procs2, padding, Signal::SIGKILL, 0);
 }
 
@@ -139,11 +170,32 @@ pub fn kill_children(
             ),
             padding,
             None,
+            &LogOpt {
+                is_color: false,
+                is_timestamp: true,
+            },
         );
 
         if let Err(e) = signal::kill(Pid::from_raw(child.id() as i32), signal) {
-            log::error("system", &e, padding);
-            log::output("system", &format!("exit {}", _code), padding, None);
+            log::error(
+                "system",
+                &e,
+                Some(padding),
+                &LogOpt {
+                    is_color: false,
+                    is_timestamp: true,
+                },
+            );
+            log::output(
+                "system",
+                &format!("exit {}", _code),
+                padding,
+                None,
+                &LogOpt {
+                    is_color: false,
+                    is_timestamp: true,
+                },
+            );
             // https://www.reddit.com/r/rust/comments/emz456/testing_whether_functions_exit/
             #[cfg(not(test))]
             exit(_code);
