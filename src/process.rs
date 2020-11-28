@@ -88,6 +88,7 @@ pub fn each_handle_exec_and_output(
 pub fn check_for_child_termination_thread(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
     padding: usize,
+    is_timestamp: bool
 ) -> JoinHandle<()> {
     let result = thread::Builder::new()
         .name(String::from(format!("check child terminated")))
@@ -96,8 +97,8 @@ pub fn check_for_child_termination_thread(
                 // Waiting for the end of any one child process
                 let procs2 = Arc::clone(&procs);
                 let procs3 = Arc::clone(&procs);
-                if let Some((_, code)) = check_for_child_termination(procs2, padding) {
-                    signal::kill_children(procs3, padding, Signal::SIGTERM, code)
+                if let Some((_, code)) = check_for_child_termination(procs2, padding, is_timestamp) {
+                    signal::kill_children(procs3, padding, Signal::SIGTERM, code, is_timestamp)
                 }
             }
         })
@@ -109,6 +110,7 @@ pub fn check_for_child_termination_thread(
 pub fn check_for_child_termination(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
     padding: usize,
+    is_timestamp: bool
 ) -> Option<(Pid, i32)> {
     // Waiting for the end of any one child process
     match nix::sys::wait::waitpid(
@@ -130,7 +132,7 @@ pub fn check_for_child_termination(
                             Some(proc_index),
                             &LogOpt {
                                 is_color: true,
-                                is_timestamp: true,
+                                is_timestamp,
                             },
                         );
                     }
@@ -152,7 +154,7 @@ pub fn check_for_child_termination(
                             Some(proc_index),
                             &LogOpt {
                                 is_color: true,
-                                is_timestamp: true,
+                                is_timestamp,
                             },
                         );
                     }
@@ -213,7 +215,7 @@ mod tests {
 
         let padding = 10;
         let barrier = Arc::new(Barrier::new(1));
-        let output = Arc::new(output::Output::new(0, padding));
+        let output = Arc::new(output::Output::new(0, padding, true));
 
         let each_fn_thread = each_handle_exec_and_output(procs2, padding, barrier, output);
         each_fn_thread(
@@ -252,7 +254,7 @@ mod tests {
         let procs2 = Arc::clone(&procs);
         let padding = 10;
 
-        check_for_child_termination_thread(procs2, padding)
+        check_for_child_termination_thread(procs2, padding, true)
             .join()
             .expect("exit 1");
     }

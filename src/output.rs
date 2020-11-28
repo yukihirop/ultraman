@@ -9,14 +9,14 @@ pub struct Output {
 }
 
 impl Output {
-    pub fn new(index: usize, padding: usize) -> Self {
+    pub fn new(index: usize, padding: usize, is_timestamp: bool) -> Self {
         Output {
             log: Log::new(
                 index,
                 padding,
                 &LogOpt {
                     is_color: true,
-                    is_timestamp: true,
+                    is_timestamp,
                 },
             ),
         }
@@ -118,7 +118,7 @@ mod tests {
         }));
 
         let proc2 = Arc::clone(&proc);
-        let output = Output::new(0, 10);
+        let output = Output::new(0, 10, true);
         output.handle_output(&proc2);
 
         Ok(())

@@ -51,6 +51,14 @@ pub struct StartOpts {
     /// Specify which port to use as the base for this application. Should be a multiple of 1000
     #[structopt(name = "PORT", short = "p", long = "port")]
     pub port: Option<String>,
+
+    /// Include timestamp in output
+    #[structopt(
+        name = "NOTIMESTAMP",
+        short = "n",
+        long = "no-timestamp"
+    )]
+    pub is_no_timestamp: bool
 }
 
 pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
@@ -66,10 +74,11 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
 
     let barrier = Arc::new(Barrier::new(process_len + 1));
     let mut index = 0;
+    let is_timestamp = !opts.is_no_timestamp;
 
     for (name, pe) in procfile.data.iter() {
         let con = pe.concurrency.get();
-        let output = Arc::new(output::Output::new(index, padding));
+        let output = Arc::new(output::Output::new(index, padding, is_timestamp));
         let before_index = index;
         index += 1;
 
@@ -93,13 +102,14 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
 
     // use handle_signal
     let procs2 = Arc::clone(&procs);
-    proc_handles.push(process::check_for_child_termination_thread(procs, padding));
+    proc_handles.push(process::check_for_child_termination_thread(procs, padding, is_timestamp));
 
     let procs = Arc::clone(&procs2);
     proc_handles.push(signal::handle_signal_thread(
         procs,
         padding,
         opts.timeout.parse::<u64>().unwrap(),
+        is_timestamp
     ));
 
     for handle in proc_handles {
