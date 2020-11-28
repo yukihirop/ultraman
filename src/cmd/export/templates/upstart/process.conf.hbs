@@ -1,0 +1,16 @@
+{{#with process}}
+start on starting {{ app }}-{{ name }}
+stop on stopping {{ app }}-{{ name }}
+respawn
+
+env PORT={{ port }}
+{{#each env_without_port as |item| ~}}
+env {{ item.key }}='{{ item.value }}'
+{{/each~}}
+
+setuid {{ setuid }}
+
+chdir {{ chdir }}
+
+exec {{{ exec }}}
+{{/with}}

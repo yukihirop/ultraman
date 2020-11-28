@@ -1,14 +1,15 @@
 use dotenv;
 use std::collections::HashMap;
-use std::env;
-use std::path::{Path, PathBuf};
+use std::path::{PathBuf};
 
 pub type Env = HashMap<String, String>;
 
 pub fn read_env(filepath: PathBuf) -> Result<Env, Box<dyn std::error::Error>> {
     let mut env: Env = HashMap::new();
-    if let Some(_) = dotenv::from_path(Path::new(&filepath)).ok() {
-        for (key, val) in env::vars() {
+
+    if let Some(iter) = dotenv::from_path_iter(filepath.as_path()).ok() {
+        for item in iter {
+            let (key, val) = item.expect("Could not convert .env to tuple");
             env.insert(key, val);
         }
         return Ok(env);
@@ -41,6 +42,7 @@ PS=1
 
         assert_eq!(result.get("PORT").unwrap(), "5000");
         assert_eq!(result.get("PS").unwrap(), "1");
+        assert_eq!(result.get("CARGO_PKG_VERSION"), None);
 
         Ok(())
     }

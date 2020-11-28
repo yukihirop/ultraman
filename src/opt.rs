@@ -1,3 +1,4 @@
+use crate::cmd::export::ExportOpts;
 use crate::cmd::run::RunOpts;
 use crate::cmd::start::StartOpts;
 use structopt::{clap, StructOpt};
@@ -24,4 +25,10 @@ pub enum Rustman {
         about = "Run a command using your application's environment"
     )]
     Run(RunOpts),
+
+    #[structopt(
+        name = "export",
+        about = "Export the application to another process management format"
+    )]
+    Export(ExportOpts),
 }
