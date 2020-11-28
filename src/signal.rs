@@ -1,6 +1,6 @@
 #![cfg(not(windows))]
 
-use crate::logt::{self as log, LogOpt};
+use crate::log::{self, LogOpt};
 use crate::process::{self, Process};
 use nix::sys::signal::{self, Signal};
 use nix::unistd::Pid;

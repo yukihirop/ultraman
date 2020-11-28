@@ -1,4 +1,4 @@
-use crate::logt::{Log, LogOpt, Printable};
+use crate::log::{Log, LogOpt, Printable};
 use crate::process::Process;
 use crate::stream_read::{PipeError, PipeStreamReader, PipedLine};
 use crossbeam_channel::Select;

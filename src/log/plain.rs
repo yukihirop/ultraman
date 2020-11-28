@@ -1,4 +1,4 @@
-use crate::logt::{now, Printable};
+use crate::log::{now, Printable};
 
 #[derive(Default)]
 pub struct Log {

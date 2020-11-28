@@ -1,5 +1,5 @@
 use crate::env::read_env;
-use crate::logt::{self as log, LogOpt};
+use crate::log::{self, LogOpt};
 use crate::output;
 use crate::signal;
 use nix::sys::signal::Signal;
