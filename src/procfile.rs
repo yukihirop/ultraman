@@ -37,6 +37,14 @@ impl Procfile {
             .fold(0, |sum, a| sum + a)
     }
 
+    pub fn find_by(&self, name: &str) -> &ProcfileEntry {
+        let pe = self
+            .data
+            .get(name)
+            .expect(&format!("Can't find process called: {}", name));
+        pe
+    }
+
     pub fn set_concurrency(&self, formation: &str) {
         if formation == DEFAULT_FORMATION {
             return ();

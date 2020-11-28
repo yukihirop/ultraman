@@ -1,0 +1,3 @@
+exit_0: ../test/fixtures/exit_0.sh
+exit_1: ../test/fixtures/exit_1.sh
+loop: ./test/fixtures/loop.sh "Hello World"
