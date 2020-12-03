@@ -1,0 +1,8 @@
+version: "3"
+services:
+  export_upstart:
+    build: .
+    volumes:
+      - ./tmp/upstart:/etc/init
+      - ./fixtures:/home/app
+    entrypoint: /bin/sh -c "initctl reload-configuration && while :; do sleep 10; done"

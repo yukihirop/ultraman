@@ -1,6 +1,6 @@
 # Rustman (Rust Foreman)
 
-Manage Procfile-based applications.  
+Manage Procfile-based applications.
 
 This is a [foreman](https://github.com/ddollar/foreman) rust implementation made with ruby.  
 So the specifications are exactly the same as ruby ​​`foreman`.
@@ -103,14 +103,28 @@ $ ./rustman start
 
 </details>
 
+## Example
+
+| command          | link                                                                                 |
+| ---------------- | ------------------------------------------------------------------------------------ |
+| `rustman export` | [README.md](https://github.com/yukihirop/rustman/tree/main/example/export/README.md) |
+
 ## 💪 Development
 
 ```bash
-cargo run -- --help
-# or
 cargo run start
-# or
+cargo run run <app>
+cargo run export <format> <location>
+```
+
+If you want to see help
+In that case, you can check with the following command
+
+```bash
+cargo run -- --help
 cargo run start --help
+cargo run run --help
+cargo run export --help
 ```
 
 ## ✍️ Test

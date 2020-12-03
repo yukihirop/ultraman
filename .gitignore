@@ -1,3 +1,4 @@
 /target
 /Procfile
-.env
+/.env
+tmp
