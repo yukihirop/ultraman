@@ -105,9 +105,10 @@ $ ./rustman start
 
 ## Example
 
-| command          | link                                                                                 |
-| ---------------- | ------------------------------------------------------------------------------------ |
-| `rustman export` | [README.md](https://github.com/yukihirop/rustman/tree/main/example/export/README.md) |
+|command|link|
+|-------|----|
+|`rustman run`|[README.md](https://github.com/yukihirop/rustman/tree/main/example/run/README.md)|
+|`rustman export`|[README.md](https://github.com/yukihirop/rustman/tree/main/example/export/README.md)|
 
 ## 💪 Development
 
