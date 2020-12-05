@@ -1,14 +1,13 @@
-use crate::cmd::export::base::Exportable;
+use super::base::{Exportable, EnvParameter};
 use crate::cmd::export::ExportOpts;
 use crate::process::port_for;
 use crate::procfile::{Procfile, ProcfileEntry};
-use crate::env::read_env;
 
 use handlebars::to_json;
 use serde_derive::Serialize;
 use serde_json::value::{Map, Value as Json};
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::env;
 
 pub struct Exporter {
@@ -39,16 +38,10 @@ struct ProcessParams {
     app: String,
     name: String,
     port: String,
-    env_without_port: Vec<ProcessEnvParams>,
+    env_without_port: Vec<EnvParameter>,
     setuid: String,
     chdir: String,
     exec: String,
-}
-
-#[derive(Serialize)]
-struct ProcessEnvParams {
-    key: String,
-    value: String
 }
 
 // http://takoyaking.hatenablog.com/entry/anonymous_lifetime
@@ -82,10 +75,6 @@ impl Exporter {
         path
     }
 
-    fn project_root_path(&self) -> PathBuf {
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-    }
-
     fn make_process_master_data(&self) -> Map<String, Json> {
         let mut data = Map::new();
         let pm = ProcessMasterParams { app: self.app() };
@@ -101,21 +90,12 @@ impl Exporter {
         con_index: usize,
     ) -> Map<String, Json> {
         let mut data = Map::new();
-        let mut env = read_env(self.opts().env_path).expect("failed read .env");
-        env.remove("PORT");
-        let mut env_without_port: Vec<ProcessEnvParams> = vec![];
-        for (key, value) in env {
-            env_without_port.push(ProcessEnvParams{
-                key,
-                value
-            });
-        }
 
         let p = ProcessParams {
             app: self.app(),
             name: app_name.to_string(),
             port: port_for(self.opts().env_path, self.opts().port, index, con_index),
-            env_without_port,
+            env_without_port: self.env_without_port(),
             setuid: self.username(),
             chdir: self.root_path().into_os_string().into_string().unwrap(),
             exec: pe.command.to_string(),
@@ -155,10 +135,10 @@ impl Exportable for Exporter {
         let master_file = format!("{}.conf", self.app());
         let output_path = self.output_path(master_file);
         let display_output = output_path.clone().into_os_string().into_string().unwrap();
+        let mut data = Map::new();
 
         self.clean(&output_path)
             .expect(&format!("failed clean file: {}", display_output));
-        let mut data = Map::new();
         self.write_template(&self.master_tmpl_path(), &mut data, &output_path);
 
         let mut index = 0;

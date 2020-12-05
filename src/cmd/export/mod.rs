@@ -5,6 +5,7 @@ use structopt::{clap, StructOpt};
 
 pub mod base;
 pub mod upstart;
+pub mod systemd;
 
 #[derive(StructOpt, Debug, Default)]
 #[structopt(setting(clap::AppSettings::ColoredHelp))]
@@ -89,6 +90,11 @@ pub struct ExportOpts {
     pub timeout: String,
 }
 
+enum ExportFormat {
+    Upstart,
+    Systemd,
+}
+
 fn new(opts: &ExportOpts) -> Box<dyn Exportable> {
     let procfile_path = opts.procfile_path.clone();
     let display = procfile_path
@@ -98,14 +104,32 @@ fn new(opts: &ExportOpts) -> Box<dyn Exportable> {
         .unwrap();
     let procfile =
         read_procfile(procfile_path).expect(&format!("Could not read Procfile: {}", display));
-    let exp_format = opts.format.as_str();
-
-    match exp_format {
-        "upstart" => {
+    let format = opts.format.as_str();
+    
+    match export_format(format) {
+        ExportFormat::Upstart => {
             let mut expo = upstart::Exporter::boxed_new();
             // Read the formation from the command line option and always call it before process_len for the convenience of setting concurrency
             procfile.set_concurrency(&opts.formation);
-            
+            expo.procfile = procfile;
+            expo.format = opts.format.clone();
+            expo.location = opts.location.clone();
+            expo.app = opts.app.clone();
+            expo.formation = opts.formation.clone();
+            expo.log_path = opts.log_path.clone();
+            expo.run_path = opts.run_path.clone();
+            expo.port = opts.port.clone();
+            expo.template_path = opts.template_path.clone();
+            expo.user = opts.user.clone();
+            expo.env_path = opts.env_path.clone();
+            expo.procfile_path = opts.procfile_path.clone();
+            expo.root_path = opts.root_path.clone();
+            expo.timeout = opts.timeout.clone();
+            expo
+        },
+        ExportFormat::Systemd => {
+            let mut expo = systemd::Exporter::boxed_new();
+            procfile.set_concurrency(&opts.formation);
             expo.procfile = procfile;
             expo.format = opts.format.clone();
             expo.location = opts.location.clone();
@@ -122,7 +146,6 @@ fn new(opts: &ExportOpts) -> Box<dyn Exportable> {
             expo.timeout = opts.timeout.clone();
             expo
         }
-        _ => panic!("Do not support format {}", exp_format),
     }
 }
 
@@ -131,4 +154,14 @@ pub fn run(opts: ExportOpts) -> Result<(), Box<dyn std::error::Error>> {
     exporter.export().expect("failed rustman export");
 
     Ok(())
+}
+
+fn export_format(format: &str) -> ExportFormat {
+    if format == "upstart" {
+        ExportFormat::Upstart
+    } else if format == "systemd" {
+        ExportFormat::Systemd
+    } else {
+        panic!("Do not support format {}", format)
+    }
 }

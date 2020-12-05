@@ -6,3 +6,9 @@ services:
       - ./tmp/upstart:/etc/init
       - ./fixtures:/home/app
     entrypoint: /bin/sh -c "initctl reload-configuration && while :; do sleep 10; done"
+  export_systemd:
+    build: .
+    volumes:
+      - ./tmp/systemd:/etc/systemd/system
+      - ./fixtures:/home/app
+    entrypoint: /bin/sh -c "initctl reload-configuration && while :; do sleep 10; done"

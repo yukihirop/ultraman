@@ -1,12 +1,20 @@
 use crate::cmd::export::ExportOpts;
+use crate::env::read_env;
 
 use handlebars::Handlebars;
 use nix::unistd::{chown, User};
+use serde_derive::Serialize;
 use serde_json::value::{Map, Value as Json};
 use std::fs::File;
 use std::fs::{create_dir_all, remove_file};
 use std::path::PathBuf;
 use std::env;
+
+#[derive(Serialize)]
+pub struct EnvParameter {
+    pub(crate) key: String,
+    pub(crate) value: String,
+}
 
 pub trait Exportable {
     fn export(&self) -> Result<(), Box<dyn std::error::Error>>;
@@ -18,6 +26,7 @@ pub trait Exportable {
         let location = &opts.location;
         let display = location.clone().into_os_string().into_string().unwrap();
         create_dir_all(&location).expect(&format!("Could not create: {}", display));
+        
 
         // self.chown(&username, &self.log_path());
         // self.chown(&username, &self.run_path());
@@ -66,6 +75,10 @@ pub trait Exportable {
         Ok(())
     }
 
+    fn project_root_path(&self) -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+    }
+
     fn say(&self, msg: &str) {
         println!("[rustman export] {}", msg)
     }
@@ -96,5 +109,18 @@ pub trait Exportable {
     fn output_path(&self, filename: String) -> PathBuf {
         let location = self.opts().location;
         location.join(filename)
+    }
+
+    fn env_without_port(&self) -> Vec<EnvParameter> {
+        let mut env = read_env(self.opts().env_path).expect("failed read .env");
+        env.remove("PORT");
+        let mut env_without_port: Vec<EnvParameter> = vec![];
+        for (key, value) in env {
+            env_without_port.push(EnvParameter{
+                key,
+                value
+            });
+        }
+        env_without_port
     }
 }
