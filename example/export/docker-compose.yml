@@ -12,3 +12,10 @@ services:
       - ./tmp/systemd:/etc/systemd/system
       - ./fixtures:/home/app
     entrypoint: /bin/sh -c "initctl reload-configuration && while :; do sleep 10; done"
+  export_supervisord:
+    build: .
+    volumes:
+      - ./tmp/supervisord:/etc/supervisor/conf.d
+      - ./fixtures:/home/app
+    entrypoint: |-
+        /bin/sh -c "mkdir -p /var/log/app && touch /var/log/app/{exit_0-1,exit_1-1,loop-1}.log && touch /var/log/app/{exit_0-1,exit_1-1,loop-1}.error.log && while :; do sleep 10; done"

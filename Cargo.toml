@@ -17,6 +17,7 @@ regex = "1.4.2"
 serde = "1.0.117"
 serde_derive = "1.0.117"
 serde_json = "1.0.59"
+shellwords = "1.1.0"
 signal-hook = "0.1.16"
 structopt = "0.3.20"
 

@@ -6,6 +6,7 @@ use structopt::{clap, StructOpt};
 pub mod base;
 pub mod upstart;
 pub mod systemd;
+pub mod supervisord;
 
 #[derive(StructOpt, Debug, Default)]
 #[structopt(setting(clap::AppSettings::ColoredHelp))]
@@ -93,6 +94,7 @@ pub struct ExportOpts {
 enum ExportFormat {
     Upstart,
     Systemd,
+    Supervisord
 }
 
 fn new(opts: &ExportOpts) -> Box<dyn Exportable> {
@@ -145,6 +147,25 @@ fn new(opts: &ExportOpts) -> Box<dyn Exportable> {
             expo.root_path = opts.root_path.clone();
             expo.timeout = opts.timeout.clone();
             expo
+        },
+        ExportFormat::Supervisord => {
+            let mut expo = supervisord::Exporter::boxed_new();
+            procfile.set_concurrency(&opts.formation);
+            expo.procfile = procfile;
+            expo.format = opts.format.clone();
+            expo.location = opts.location.clone();
+            expo.app = opts.app.clone();
+            expo.formation = opts.formation.clone();
+            expo.log_path = opts.log_path.clone();
+            expo.run_path = opts.run_path.clone();
+            expo.port = opts.port.clone();
+            expo.template_path = opts.template_path.clone();
+            expo.user = opts.user.clone();
+            expo.env_path = opts.env_path.clone();
+            expo.procfile_path = opts.procfile_path.clone();
+            expo.root_path = opts.root_path.clone();
+            expo.timeout = opts.timeout.clone();
+            expo
         }
     }
 }
@@ -161,6 +182,8 @@ fn export_format(format: &str) -> ExportFormat {
         ExportFormat::Upstart
     } else if format == "systemd" {
         ExportFormat::Systemd
+    } else if format == "supervisord" {
+        ExportFormat::Supervisord
     } else {
         panic!("Do not support format {}", format)
     }

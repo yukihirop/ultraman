@@ -2,3 +2,4 @@
 /Procfile
 /.env
 tmp
+supervisord.log
