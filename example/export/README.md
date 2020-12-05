@@ -16,7 +16,7 @@
 ### upstart
 
 ```bash
-cargo run export upstart ./tmp/upstart
+cargo run export upstart ./tmp/upstart -d /home/app
 
 {
   docker-compose build

@@ -94,7 +94,7 @@ impl Exporter {
         let p = ProcessParams {
             app: self.app(),
             name: app_name.to_string(),
-            port: port_for(self.opts().env_path, self.opts().port, index, con_index),
+            port: port_for(self.opts().env_path, self.opts().port, index, con_index + 1),
             env_without_port: self.env_without_port(),
             setuid: self.username(),
             chdir: self.root_path().into_os_string().into_string().unwrap(),
