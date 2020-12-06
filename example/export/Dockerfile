@@ -1,9 +1,9 @@
 FROM ubuntu:16.04 as for_upstart
-RUN apt-get update && apt-get install -y sudo vim supervisor && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y sudo vim supervisor runit && rm -rf /var/lib/apt/lists/*
 ENV APP /home/app
 
 
-RUN mkdir -p ${APP} && mkdir -p /etc/init /etc/systemd/system /etc/supervisor/conf.d
+RUN mkdir -p ${APP}/setup && mkdir -p /etc/init /etc/systemd/system /etc/supervisor/conf.d
 
 # for supervisor
 # If this is not done, the following error will occur

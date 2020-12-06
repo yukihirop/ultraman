@@ -5,6 +5,7 @@
 - upstart
 - systemd
 - supervisord
+- runit
 
 ## Check
 
@@ -13,6 +14,7 @@
 |upstart|❌|I couldn't get upstart to work on the Ubuntu image.|
 |systemd|❌|I couldn't get upstart to work on the Ubuntu image.|
 |supervisord|⭕️||
+|runit|⭕️|
 
 
 ### upstart
@@ -58,7 +60,7 @@ cargo run export supervisord ./tmp/supervisord -d /home/app
 }
 
 # in docker
-root@162d49a056ac:/home/app# export MESSAGE="Hello\ World"
+root@162d49a056ac:/home/app# /bin/bash ./setup/supervisord.sh
 
 root@162d49a056ac:/home/app# supervisord -c /etc/supervisor/conf.d/app.conf
 2020-12-06 05:57:32,120 CRIT Supervisor running as root (no user in config file)
@@ -96,3 +98,26 @@ root@162d49a056ac:/home/app#
 ```
 
 See [this](http://supervisord.org/subprocess.html#nondaemonizing-of-subprocesses) to know about supervisord
+
+
+### runit
+
+```bash
+cargo run export runit ./tmp/runit -d /home/app -u root
+
+{
+  docker-compose build
+  docker-compose up -d
+  docker exec -it export_export_runit_1 /bin/bash
+}
+
+# in docker
+root@b84eaadeb69d:/home/app# /bin/bash ./setup/runit.sh
+root@b84eaadeb69d:/home/app# runsvdir -P /etc/service
+^C
+
+root@b84eaadeb69d:/home/app# cat /var/log/app/exit_0-1/current
+success
+success
+success
+```

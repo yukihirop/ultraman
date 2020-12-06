@@ -17,5 +17,12 @@ services:
     volumes:
       - ./tmp/supervisord:/etc/supervisor/conf.d
       - ./fixtures:/home/app
-    entrypoint: |-
-        /bin/sh -c "mkdir -p /var/log/app && touch /var/log/app/{exit_0-1,exit_1-1,loop-1}.log && touch /var/log/app/{exit_0-1,exit_1-1,loop-1}.error.log && while :; do sleep 10; done"
+      - ./setup:/home/app/setup
+    entrypoint: /bin/sh -c "while :; do sleep 10; done"
+  export_runit:
+    build: .
+    volumes:
+      - ./tmp/runit:/etc/service
+      - ./fixtures:/home/app
+      - ./setup:/home/app/setup
+    entrypoint: /bin/bash -c "while :; do sleep 10; done"
