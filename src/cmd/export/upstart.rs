@@ -146,12 +146,14 @@ impl Exportable for Exporter {
             let process_master_file = format!("{}-{}.conf", self.app(), &name);
             let output_path = self.output_path(process_master_file);
             let mut data = self.make_process_master_data();
+            self.clean(&output_path);
             self.write_template(&self.process_master_tmpl_path(), &mut data, &output_path);
 
             for n in 0..con {
                 let process_file = format!("{}-{}-{}.conf", self.app(), &name, n);
                 let output_path = self.output_path(process_file);
                 let mut data = self.make_process_data(pe, &name, index, n);
+                self.clean(&output_path);
                 self.write_template(&self.process_tmpl_path(), &mut data, &output_path);
             }
         }
