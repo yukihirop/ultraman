@@ -134,11 +134,9 @@ impl Exportable for Exporter {
 
         let master_file = format!("{}.conf", self.app());
         let output_path = self.output_path(master_file);
-        let display_output = output_path.clone().into_os_string().into_string().unwrap();
         let mut data = Map::new();
 
-        self.clean(&output_path)
-            .expect(&format!("failed clean file: {}", display_output));
+        self.clean(&output_path);
         self.write_template(&self.master_tmpl_path(), &mut data, &output_path);
 
         let mut index = 0;

@@ -135,20 +135,18 @@ impl Exportable for Exporter {
         let process_name = format!("{}.{}", &name, n);
         let service_filename = format!("{}-{}.service", &name, &process_name);
         let output_path = self.output_path(service_filename.clone());
-        let display_output = output_path.clone().into_os_string().into_string().unwrap();
         let mut data = self.make_process_service_data(pe, &process_name, index, n);
         
-        self.clean(&output_path).expect(&format!("failed clean file: {}", display_output));
+        self.clean(&output_path);
         self.write_template(&self.process_service_tmpl_path(), &mut data, &output_path);
         service_names.push(service_filename);
       }
     }
 
     let output_path = self.output_path(format!("{}.target", self.app()));
-    let display_output = output_path.clone().into_os_string().into_string().unwrap();
     let mut data = self.make_master_target_data(service_names);
 
-    self.clean(&output_path).expect(&format!("failed clean file: {}", display_output));
+    self.clean(&output_path);
     self.write_template(&self.master_target_tmpl_path(), &mut data, &output_path);
 
     Ok(())

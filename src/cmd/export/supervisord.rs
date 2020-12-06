@@ -156,9 +156,8 @@ impl Exportable for Exporter {
     }
 
     let output_path = self.output_path("app.conf".to_string());
-    let display_output = output_path.clone().into_os_string().into_string().unwrap();
     let mut data = self.make_app_conf_data(service_names, data);
-    self.clean(&output_path).expect(&format!("failed clean file: {}", display_output));
+    self.clean(&output_path);
     self.write_template(&self.app_conf_tmpl_path(), &mut data, &output_path);
 
     Ok(())

@@ -66,13 +66,12 @@ pub trait Exportable {
             .expect(&format!("Could not chown {} to {}", display, username))
     }
 
-    fn clean(&self, filepath: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+    fn clean(&self, filepath: &PathBuf) {
         let display = filepath.clone().into_os_string().into_string().unwrap();
         if filepath.exists() {
             self.say(&format!("cleaning up directory: {}", display));
             remove_file(filepath).expect(&format!("Could not remove file: {}", display));
         }
-        Ok(())
     }
 
     fn project_root_path(&self) -> PathBuf {
