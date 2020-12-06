@@ -69,7 +69,7 @@ pub trait Exportable {
     fn clean(&self, filepath: &PathBuf) {
         let display = filepath.clone().into_os_string().into_string().unwrap();
         if filepath.exists() {
-            self.say(&format!("cleaning up directory: {}", display));
+            self.say(&format!("cleaning: {}", display));
             remove_file(filepath).expect(&format!("Could not remove file: {}", display));
         }
     }
@@ -121,5 +121,10 @@ pub trait Exportable {
             });
         }
         env_without_port
+    }
+
+    fn create_dir_recursive(&self, dir_path: &PathBuf) {
+        let display = dir_path.clone().into_os_string().into_string().unwrap();
+        create_dir_all(dir_path).expect(&format!("Could not create: {}", display))
     }
 }

@@ -1,0 +1,6 @@
+#!/bin/sh
+{{#with run}}
+cd {{ work_dir }}
+exec 2>&1
+exec chpst -u {{ user }} -e {{ env_dir_path }} {{ process_command }}
+{{/with}}
