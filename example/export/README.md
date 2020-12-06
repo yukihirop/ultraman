@@ -20,7 +20,7 @@
 ### upstart
 
 ```bash
-cargo run export upstart ./tmp/upstart -d /home/app
+cargo run export upstart ./tmp/upstart -d /home/app -u root
 
 {
   docker-compose build
@@ -35,7 +35,7 @@ root@35a2d8d4a896:/home/app# sudo service app start # do not work
 ### systemd
 
 ```bash
-cargo run export systemd ./tmp/systemd -d /home/app
+cargo run export systemd ./tmp/systemd -d /home/app -u root
 
 {
   docker-compose build
@@ -51,7 +51,7 @@ root@d09938652e40:/home/app# sudo systemctl restart exit_0-exit_0.0 exit_1-exit_
 ### supervisord
 
 ```bash
-cargo run export supervisord ./tmp/supervisord -d /home/app
+cargo run export supervisord ./tmp/supervisord -d /home/app -u root
 
 {
   docker-compose build
@@ -61,6 +61,7 @@ cargo run export supervisord ./tmp/supervisord -d /home/app
 
 # in docker
 root@162d49a056ac:/home/app# /bin/bash ./setup/supervisord.sh
+root@162d49a056ac:/home/app# export MESSAGE="Hello\ World"
 
 root@162d49a056ac:/home/app# supervisord -c /etc/supervisor/conf.d/app.conf
 2020-12-06 05:57:32,120 CRIT Supervisor running as root (no user in config file)
