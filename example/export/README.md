@@ -6,6 +6,7 @@
 - systemd
 - supervisord
 - runit
+- launchd
 
 ## Check
 
@@ -15,6 +16,7 @@
 |systemd|❌|I couldn't get upstart to work on the Ubuntu image.|
 |supervisord|⭕️||
 |runit|⭕️|
+|launchd|❌|
 
 
 ### upstart
@@ -122,3 +124,11 @@ success
 success
 success
 ```
+
+### launchd
+
+```bash
+cargo run export launchd ./tmp/launchd -d /home/app -u root
+```
+
+I have not confirmed the operation with the actually generated plist.
