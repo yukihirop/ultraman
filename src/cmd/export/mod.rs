@@ -9,6 +9,7 @@ pub mod systemd;
 pub mod supervisord;
 pub mod runit;
 pub mod launchd;
+pub mod daemon;
 
 #[derive(StructOpt, Debug, Default)]
 #[structopt(setting(clap::AppSettings::ColoredHelp))]
@@ -99,6 +100,7 @@ enum ExportFormat {
     Supervisord,
     Runit,
     Launchd,
+    Daemon,
 }
 
 fn new(opts: &ExportOpts) -> Box<dyn Exportable> {
@@ -208,6 +210,25 @@ fn new(opts: &ExportOpts) -> Box<dyn Exportable> {
             expo.root_path = opts.root_path.clone();
             expo.timeout = opts.timeout.clone();
             expo
+        },
+        ExportFormat::Daemon => {
+            let mut expo = daemon::Exporter::boxed_new();
+            procfile.set_concurrency(&opts.formation);
+            expo.procfile = procfile;
+            expo.format = opts.format.clone();
+            expo.location = opts.location.clone();
+            expo.app = opts.app.clone();
+            expo.formation = opts.formation.clone();
+            expo.log_path = opts.log_path.clone();
+            expo.run_path = opts.run_path.clone();
+            expo.port = opts.port.clone();
+            expo.template_path = opts.template_path.clone();
+            expo.user = opts.user.clone();
+            expo.env_path = opts.env_path.clone();
+            expo.procfile_path = opts.procfile_path.clone();
+            expo.root_path = opts.root_path.clone();
+            expo.timeout = opts.timeout.clone();
+            expo
         }
     }
 }
@@ -230,6 +251,8 @@ fn export_format(format: &str) -> ExportFormat {
         ExportFormat::Runit
     } else if format == "launchd" {
         ExportFormat::Launchd
+    } else if format == "daemon" {
+        ExportFormat::Daemon
     } else {
         panic!("Do not support format {}", format)
     }

@@ -7,6 +7,7 @@
 - supervisord
 - runit
 - launchd
+- daemon
 
 ## Check
 
@@ -17,6 +18,7 @@
 |supervisord|⭕️||
 |runit|⭕️|
 |launchd|❌|
+|daemon|❌|I couldn't get upstart to work on the Ubuntu image.|
 
 
 ### upstart
@@ -132,3 +134,19 @@ cargo run export launchd ./tmp/launchd -d /home/app -u root
 ```
 
 I have not confirmed the operation with the actually generated plist.
+
+
+### daemon
+
+```bash
+cargo run export daemon ./tmp/daemon -d /home/app -u root
+
+{
+  docker-compose build
+  docker-compose up -d
+  docker exec -it export_export_daemon_1 /bin/bash
+}
+
+# in docker
+root@35a2d8d4a896:/home/app# sudo service app start # do not work
+```

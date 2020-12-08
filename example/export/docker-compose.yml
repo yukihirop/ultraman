@@ -26,3 +26,9 @@ services:
       - ./fixtures:/home/app
       - ./setup:/home/app/setup
     entrypoint: /bin/bash -c "while :; do sleep 10; done"
+  export_daemon:
+    build: .
+    volumes:
+      - ./tmp/daemon:/etc/init
+      - ./fixtures:/home/app
+    entrypoint: /bin/sh -c "initctl reload-configuration && while :; do sleep 10; done"
