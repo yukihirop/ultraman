@@ -55,53 +55,53 @@ Then execute the following command
 ultraman start
 ```
 
-![image](https://user-images.githubusercontent.com/11146767/100380658-9894a380-305a-11eb-9509-30495a39a346.png)
+![image](https://user-images.githubusercontent.com/11146767/101663968-a3a1f780-3a8e-11eb-9446-108d4eaa7652.png)
 
 <details>
 
 ```bash
 $ ultraman start
-02:44:43 system    | exit_0.1  start at pid: 59658
-02:44:43 system    | loop.1    start at pid: 59659
-02:44:43 system    | exit_1.1  start at pid: 59660
-02:44:44 loop.1    | Hello World
-02:44:45 loop.1    | Hello World
-02:44:46 loop.1    | Hello World
-02:44:47 loop.1    | Hello World
-02:44:48 exit_1.1  | failed
-02:44:48 exit_0.1  | success
-02:44:48 exit_1.1  | exited with code 1
-02:44:48 system    | sending SIGTERM for exit_0.1  at pid 59658
-02:44:48 system    | sending SIGTERM for loop.1    at pid 59659
-02:44:48 exit_0.1  | exited with code 0
-02:44:48 system    | sending SIGTERM for loop.1    at pid 59659
-02:44:48 loop.1    | terminated by SIGTERM
+02:22:34 system    | exit_1.1  start at pid: 23374
+02:22:34 system    | loop.1    start at pid: 23375
+02:22:34 system    | exit_0.1  start at pid: 23376
+02:22:35 loop.1    | Hello World
+02:22:36 loop.1    | Hello World
+02:22:37 loop.1    | Hello World
+02:22:38 loop.1    | Hello World
+02:22:39 exit_1.1  | failed
+02:22:39 exit_0.1  | success
+02:22:39 exit_0.1  | exited with code 0
+02:22:39 system    | sending SIGTERM for exit_1.1  at pid 23374
+02:22:39 system    | sending SIGTERM for loop.1    at pid 23375
+02:22:39 exit_1.1  | exited with code 1
+02:22:39 system    | sending SIGTERM for loop.1    at pid 23375
+02:22:39 loop.1    | terminated by SIGTERM
 ```
 
 </details>
 
 If <kbd>ctrl-c</kbd> is detected within 5 seconds, `SIGTERM` will be sent to all child processes and the process will be killed.
 
-![image](https://user-images.githubusercontent.com/11146767/100380752-c5e15180-305a-11eb-93ce-125c0002c162.png)
+![image](https://user-images.githubusercontent.com/11146767/101664175-dc41d100-3a8e-11eb-8b99-12862d9c91b1.png)
 
 <details>
 
 ```
-$ ./ultraman start
-02:46:13 system    | exit_0.1  start at pid: 59892
-02:46:13 system    | loop.1    start at pid: 59893
-02:46:13 system    | exit_1.1  start at pid: 59891
-02:46:14 loop.1    | Hello World
-02:46:15 loop.1    | Hello World
-02:46:16 loop.1    | Hello World
-^C02:46:17 system  | SIGINT received, starting shutdown
-02:46:17 system    | sending SIGTERM to all processes
-02:46:17 system    | sending SIGTERM for exit_0.1  at pid 59892
-02:46:17 system    | sending SIGTERM for loop.1    at pid 59893
-02:46:17 system    | sending SIGTERM for exit_1.1  at pid 59891
-02:46:17 exit_0.1  | terminated by SIGTERM
-02:46:17 loop.1    | terminated by SIGTERM
-02:46:17 exit_1.1  | terminated by SIGTERM
+$ ultraman start
+02:23:58 system    | loop.1    start at pid: 23588
+02:23:58 system    | exit_0.1  start at pid: 23589
+02:23:58 system    | exit_1.1  start at pid: 23590
+02:23:59 loop.1    | Hello World
+02:24:00 loop.1    | Hello World
+02:24:01 loop.1    | Hello World
+^C02:24:01 system  | SIGINT received, starting shutdown
+02:24:01 system    | sending SIGTERM to all processes
+02:24:01 system    | sending SIGTERM for loop.1    at pid 23588
+02:24:01 system    | sending SIGTERM for exit_0.1  at pid 23589
+02:24:01 system    | sending SIGTERM for exit_1.1  at pid 23590
+02:24:01 exit_1.1  | terminated by SIGTERM
+02:24:01 exit_0.1  | terminated by SIGTERM
+02:24:01 loop.1    | terminated by SIGTERM
 ```
 
 </details>
