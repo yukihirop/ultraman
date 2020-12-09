@@ -486,28 +486,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ultraman"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "chrono",
- "colored",
- "crossbeam-channel",
- "dotenv",
- "handlebars",
- "libc",
- "nix",
- "regex",
- "serde",
- "serde_derive",
- "serde_json",
- "shellwords",
- "signal-hook",
- "structopt",
- "tempfile",
-]
-
-[[package]]
 name = "ryu"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -677,6 +655,28 @@ name = "ucd-trie"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56dee185309b50d1f11bfedef0fe6d036842e3fb77413abef29f8f8d1c5d4c1c"
+
+[[package]]
+name = "ultraman"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "colored",
+ "crossbeam-channel",
+ "dotenv",
+ "handlebars",
+ "libc",
+ "nix",
+ "regex",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "shellwords",
+ "signal-hook",
+ "structopt",
+ "tempfile",
+]
 
 [[package]]
 name = "unicode-segmentation"
