@@ -22,6 +22,8 @@ Download from [release page](), and extract to the directory in PATH.
 ```
 $ rustman --help
 rustman 0.1.0
+Rustman is a manager for Procfile-based applications. Its aim is to abstract away the details of the Procfile format,
+and allow you to either run your application directly or export it to some other process management format.
 
 USAGE:
     rustman [SUBCOMMAND]
@@ -31,9 +33,10 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    help     Prints this message or the help of the given subcommand(s)
-    run      Run a command using your application's environment
-    start    Start the application
+    export    Export the application to another process management format
+    help      Prints this message or the help of the given subcommand(s)
+    run       Run a command using your application's environment
+    start     Start the application
 ```
 
 ## 🚀 Tutorial
