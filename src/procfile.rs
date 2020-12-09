@@ -15,6 +15,7 @@ pub struct ProcfileEntry {
 
 type ProcfileData = HashMap<String, ProcfileEntry>;
 
+#[derive(Default)]
 pub struct Procfile {
     pub data: ProcfileData,
 }

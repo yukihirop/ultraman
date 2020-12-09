@@ -1,0 +1,7 @@
+{{#with master_target}}
+[Unit]
+Wants={{ service_names }}
+
+[Install]
+WantedBy=multi-user.target
+{{/with}}

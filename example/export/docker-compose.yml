@@ -1,0 +1,34 @@
+version: "3"
+services:
+  export_upstart:
+    build: .
+    volumes:
+      - ./tmp/upstart:/etc/init
+      - ./fixtures:/home/app
+    entrypoint: /bin/sh -c "initctl reload-configuration && while :; do sleep 10; done"
+  export_systemd:
+    build: .
+    volumes:
+      - ./tmp/systemd:/etc/systemd/system
+      - ./fixtures:/home/app
+    entrypoint: /bin/sh -c "initctl reload-configuration && while :; do sleep 10; done"
+  export_supervisord:
+    build: .
+    volumes:
+      - ./tmp/supervisord:/etc/supervisor/conf.d
+      - ./fixtures:/home/app
+      - ./setup:/home/app/setup
+    entrypoint: /bin/sh -c "while :; do sleep 10; done"
+  export_runit:
+    build: .
+    volumes:
+      - ./tmp/runit:/etc/service
+      - ./fixtures:/home/app
+      - ./setup:/home/app/setup
+    entrypoint: /bin/bash -c "while :; do sleep 10; done"
+  export_daemon:
+    build: .
+    volumes:
+      - ./tmp/daemon:/etc/init
+      - ./fixtures:/home/app
+    entrypoint: /bin/sh -c "initctl reload-configuration && while :; do sleep 10; done"

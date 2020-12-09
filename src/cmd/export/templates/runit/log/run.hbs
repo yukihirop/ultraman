@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+{{#with log_run}}
+LOG={{ log_path }}
+
+test -d "$LOG" || mkdir -p -m 2750 "$LOG" && chown {{ user }} "$LOG"
+exec chpst -u {{ user }} svlogd "$LOG"
+{{/with}}

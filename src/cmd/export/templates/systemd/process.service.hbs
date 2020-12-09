@@ -1,0 +1,23 @@
+{{#with process_service }}
+[Unint]
+PartOf={{ app }}.target
+StopWhenUnneeded=yes
+
+[Service]
+User={{ user }}
+WorkingDirectory={{ work_dir }}
+Environment=PORT={{ port }}
+Environment=PS={{ process_name }}
+{{#each env_without_port as |item| ~}}
+Environment="{{ item.key }}={{ item.value }}"
+{{/each~}}
+ExecStart=/bin/bash -lc 'exec -a "{{ app }}-{{ process_name }}" {{ process_command }}'
+Restart=always
+RestartSec=14s
+StandardInput=null
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=%n
+KillMode=mixed
+TimeoutStopSec={{ timeout }}
+{{/with}}

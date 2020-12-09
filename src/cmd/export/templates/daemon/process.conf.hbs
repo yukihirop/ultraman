@@ -1,0 +1,11 @@
+{{#with process}}
+start on starting {{ service_name }}
+stop on stopping {{ service_name }}
+respawn
+
+{{#each env as |item| ~}}
+env {{ item.key }}={{ item.value }}
+{{/each ~}}
+
+exec start-stop-daemon --start --chuid {{ user }} --chdir {{ work_dir }} --make-pidfile --pidfile {{ pid_path }} --exec {{ command }}{{ command_args }}; >> {{ log_path }} 2>&1 
+{{/with}}

@@ -1,0 +1,3 @@
+exit_0: ./exit_0.sh
+exit_1: ./exit_1.sh
+loop: ./loop.sh $MESSAGE

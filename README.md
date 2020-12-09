@@ -1,6 +1,6 @@
 # Rustman (Rust Foreman)
 
-Manage Procfile-based applications.  
+Manage Procfile-based applications.
 
 This is a [foreman](https://github.com/ddollar/foreman) rust implementation made with ruby.  
 So the specifications are exactly the same as ruby ​​`foreman`.
@@ -22,6 +22,8 @@ Download from [release page](), and extract to the directory in PATH.
 ```
 $ rustman --help
 rustman 0.1.0
+Rustman is a manager for Procfile-based applications. Its aim is to abstract away the details of the Procfile format,
+and allow you to either run your application directly or export it to some other process management format.
 
 USAGE:
     rustman [SUBCOMMAND]
@@ -31,9 +33,10 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    help     Prints this message or the help of the given subcommand(s)
-    run      Run a command using your application's environment
-    start    Start the application
+    export    Export the application to another process management format
+    help      Prints this message or the help of the given subcommand(s)
+    run       Run a command using your application's environment
+    start     Start the application
 ```
 
 ## 🚀 Tutorial
@@ -103,14 +106,29 @@ $ ./rustman start
 
 </details>
 
+## Example
+
+|command|link|
+|-------|----|
+|`rustman run`|[README.md](https://github.com/yukihirop/rustman/tree/main/example/run/README.md)|
+|`rustman export`|[README.md](https://github.com/yukihirop/rustman/tree/main/example/export/README.md)|
+
 ## 💪 Development
 
 ```bash
-cargo run -- --help
-# or
 cargo run start
-# or
+cargo run run <app>
+cargo run export <format> <location>
+```
+
+If you want to see help
+In that case, you can check with the following command
+
+```bash
+cargo run -- --help
 cargo run start --help
+cargo run run --help
+cargo run export --help
 ```
 
 ## ✍️ Test

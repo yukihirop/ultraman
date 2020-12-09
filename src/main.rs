@@ -18,6 +18,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         match subcommand {
             Rustman::Start(opts) => cmd::start::run(opts).expect("failed rustman start"),
             Rustman::Run(opts) => cmd::run::run(opts),
+            Rustman::Export(opts) => cmd::export::run(opts).expect("failed rustman export"),
         }
     }
 

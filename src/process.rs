@@ -182,7 +182,12 @@ fn ps_for(process_name: String, concurrency: usize) -> String {
     format!("{}.{}", process_name, concurrency)
 }
 
-fn port_for(env_path: PathBuf, port: Option<String>, index: usize, concurrency: usize) -> String {
+pub fn port_for(
+    env_path: PathBuf,
+    port: Option<String>,
+    index: usize,
+    concurrency: usize,
+) -> String {
     let result =
         base_port(env_path, port).parse::<usize>().unwrap() + index * 100 + concurrency - 1;
     result.to_string()
