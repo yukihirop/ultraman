@@ -95,7 +95,7 @@ pub fn run(opts: RunOpts) {
                 }
             },
             Err(e) => {
-                println!("failed rustman run");
+                println!("failed ultraman run");
                 println!("error: {}", &e)
             }
         }

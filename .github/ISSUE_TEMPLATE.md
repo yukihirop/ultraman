@@ -7,6 +7,6 @@ Tell us what should happen
 Tell us what happens instead
 
 ### System configuration
-**rustman version**:
+**ultraman version**:
 
 **Rust version**:

@@ -1,4 +1,4 @@
-use opt::{Opt, Rustman};
+use opt::{Opt, Ultraman};
 use structopt::StructOpt;
 
 mod cmd;
@@ -16,9 +16,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if let Some(subcommand) = opt.subcommands {
         match subcommand {
-            Rustman::Start(opts) => cmd::start::run(opts).expect("failed rustman start"),
-            Rustman::Run(opts) => cmd::run::run(opts),
-            Rustman::Export(opts) => cmd::export::run(opts).expect("failed rustman export"),
+            Ultraman::Start(opts) => cmd::start::run(opts).expect("failed ultraman start"),
+            Ultraman::Run(opts) => cmd::run::run(opts),
+            Ultraman::Export(opts) => cmd::export::run(opts).expect("failed ultraman export"),
         }
     }
 
