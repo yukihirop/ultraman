@@ -1,4 +1,4 @@
-# rustman export example
+# ultraman export example
 
 ```bash
 cargo run run loop

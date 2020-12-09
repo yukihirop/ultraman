@@ -20,13 +20,13 @@ Download from [release page](), and extract to the directory in PATH.
 ## 💻 Command
 
 ```
-$ rustman --help
-rustman 0.1.0
+$ ultraman --help
+ultraman 0.1.0
 Rustman is a manager for Procfile-based applications. Its aim is to abstract away the details of the Procfile format,
 and allow you to either run your application directly or export it to some other process management format.
 
 USAGE:
-    rustman [SUBCOMMAND]
+    ultraman [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information
@@ -52,7 +52,7 @@ loop: while :; do sleep 1 && echo 'Hello World'; done;
 Then execute the following command
 
 ```bash
-rustman start
+ultraman start
 ```
 
 ![image](https://user-images.githubusercontent.com/11146767/100380658-9894a380-305a-11eb-9509-30495a39a346.png)
@@ -60,7 +60,7 @@ rustman start
 <details>
 
 ```bash
-$ rustman start
+$ ultraman start
 02:44:43 system    | exit_0.1  start at pid: 59658
 02:44:43 system    | loop.1    start at pid: 59659
 02:44:43 system    | exit_1.1  start at pid: 59660
@@ -87,7 +87,7 @@ If <kbd>ctrl-c</kbd> is detected within 5 seconds, `SIGTERM` will be sent to all
 <details>
 
 ```
-$ ./rustman start
+$ ./ultraman start
 02:46:13 system    | exit_0.1  start at pid: 59892
 02:46:13 system    | loop.1    start at pid: 59893
 02:46:13 system    | exit_1.1  start at pid: 59891
@@ -110,8 +110,8 @@ $ ./rustman start
 
 |command|link|
 |-------|----|
-|`rustman run`|[README.md](https://github.com/yukihirop/rustman/tree/main/example/run/README.md)|
-|`rustman export`|[README.md](https://github.com/yukihirop/rustman/tree/main/example/export/README.md)|
+|`ultraman run`|[README.md](https://github.com/yukihirop/ultraman/tree/main/example/run/README.md)|
+|`ultraman export`|[README.md](https://github.com/yukihirop/ultraman/tree/main/example/export/README.md)|
 
 ## 💪 Development
 

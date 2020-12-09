@@ -486,7 +486,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rustman"
+name = "ultraman"
 version = "0.1.0"
 dependencies = [
  "anyhow",

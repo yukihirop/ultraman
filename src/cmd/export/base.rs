@@ -80,7 +80,7 @@ pub trait Exportable {
     }
 
     fn say(&self, msg: &str) {
-        println!("[rustman export] {}", msg)
+        println!("[ultraman export] {}", msg)
     }
 
     fn write_template(

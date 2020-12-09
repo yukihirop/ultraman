@@ -230,7 +230,7 @@ fn new(opts: &ExportOpts) -> Box<dyn Exportable> {
 
 pub fn run(opts: ExportOpts) -> Result<(), Box<dyn std::error::Error>> {
     let exporter = new(&opts);
-    exporter.export().expect("failed rustman export");
+    exporter.export().expect("failed ultraman export");
 
     Ok(())
 }
