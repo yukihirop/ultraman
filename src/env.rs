@@ -1,6 +1,6 @@
 use dotenv;
 use std::collections::HashMap;
-use std::path::{PathBuf};
+use std::path::PathBuf;
 
 pub type Env = HashMap<String, String>;
 

@@ -4,12 +4,12 @@ use std::path::PathBuf;
 use structopt::{clap, StructOpt};
 
 pub mod base;
-pub mod upstart;
-pub mod systemd;
-pub mod supervisord;
-pub mod runit;
-pub mod launchd;
 pub mod daemon;
+pub mod launchd;
+pub mod runit;
+pub mod supervisord;
+pub mod systemd;
+pub mod upstart;
 
 #[derive(StructOpt, Debug, Default)]
 #[structopt(setting(clap::AppSettings::ColoredHelp))]
@@ -76,12 +76,7 @@ pub struct ExportOpts {
     pub procfile_path: PathBuf,
 
     /// Specify an alternate application root. This defaults to the directory containing the Procfile.
-    #[structopt(
-        name = "ROOT",
-        short = "d",
-        long = "root",
-        parse(from_os_str),
-    )]
+    #[structopt(name = "ROOT", short = "d", long = "root", parse(from_os_str))]
     pub root_path: Option<PathBuf>,
 
     /// Specify the amount of time (in seconds) processes have to shutdown gracefully before receiving a SIGTERM
@@ -113,7 +108,7 @@ fn new(opts: &ExportOpts) -> Box<dyn Exportable> {
     let procfile =
         read_procfile(procfile_path).expect(&format!("Could not read Procfile: {}", display));
     let format = opts.format.as_str();
-    
+
     match export_format(format) {
         ExportFormat::Upstart => {
             let mut expo = upstart::Exporter::boxed_new();
@@ -134,7 +129,7 @@ fn new(opts: &ExportOpts) -> Box<dyn Exportable> {
             expo.root_path = opts.root_path.clone();
             expo.timeout = opts.timeout.clone();
             expo
-        },
+        }
         ExportFormat::Systemd => {
             let mut expo = systemd::Exporter::boxed_new();
             procfile.set_concurrency(&opts.formation);
@@ -153,7 +148,7 @@ fn new(opts: &ExportOpts) -> Box<dyn Exportable> {
             expo.root_path = opts.root_path.clone();
             expo.timeout = opts.timeout.clone();
             expo
-        },
+        }
         ExportFormat::Supervisord => {
             let mut expo = supervisord::Exporter::boxed_new();
             procfile.set_concurrency(&opts.formation);
@@ -172,7 +167,7 @@ fn new(opts: &ExportOpts) -> Box<dyn Exportable> {
             expo.root_path = opts.root_path.clone();
             expo.timeout = opts.timeout.clone();
             expo
-        },
+        }
         ExportFormat::Runit => {
             let mut expo = runit::Exporter::boxed_new();
             procfile.set_concurrency(&opts.formation);
@@ -191,7 +186,7 @@ fn new(opts: &ExportOpts) -> Box<dyn Exportable> {
             expo.root_path = opts.root_path.clone();
             expo.timeout = opts.timeout.clone();
             expo
-        },
+        }
         ExportFormat::Launchd => {
             let mut expo = launchd::Exporter::boxed_new();
             procfile.set_concurrency(&opts.formation);
@@ -210,7 +205,7 @@ fn new(opts: &ExportOpts) -> Box<dyn Exportable> {
             expo.root_path = opts.root_path.clone();
             expo.timeout = opts.timeout.clone();
             expo
-        },
+        }
         ExportFormat::Daemon => {
             let mut expo = daemon::Exporter::boxed_new();
             procfile.set_concurrency(&opts.formation);

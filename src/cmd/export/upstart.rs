@@ -1,4 +1,4 @@
-use super::base::{Exportable, EnvParameter};
+use super::base::{EnvParameter, Exportable};
 use crate::cmd::export::ExportOpts;
 use crate::process::port_for;
 use crate::procfile::{Procfile, ProcfileEntry};
@@ -7,8 +7,8 @@ use handlebars::to_json;
 use serde_derive::Serialize;
 use serde_json::value::{Map, Value as Json};
 use std::collections::HashMap;
-use std::path::PathBuf;
 use std::env;
+use std::path::PathBuf;
 
 pub struct Exporter {
     pub procfile: Procfile,

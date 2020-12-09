@@ -5,10 +5,10 @@ use handlebars::Handlebars;
 use nix::unistd::{chown, User};
 use serde_derive::Serialize;
 use serde_json::value::{Map, Value as Json};
+use std::env;
 use std::fs::File;
 use std::fs::{create_dir_all, remove_file};
 use std::path::PathBuf;
-use std::env;
 
 #[derive(Serialize)]
 pub struct EnvParameter {
@@ -26,7 +26,6 @@ pub trait Exportable {
         let location = &opts.location;
         let display = location.clone().into_os_string().into_string().unwrap();
         create_dir_all(&location).expect(&format!("Could not create: {}", display));
-        
 
         // self.chown(&username, &self.log_path());
         // self.chown(&username, &self.run_path());
@@ -54,7 +53,9 @@ pub trait Exportable {
     }
 
     fn root_path(&self) -> PathBuf {
-        self.opts().root_path.unwrap_or_else(|| env::current_dir().unwrap())
+        self.opts()
+            .root_path
+            .unwrap_or_else(|| env::current_dir().unwrap())
     }
 
     fn chown(&self, username: &str, dir: &PathBuf) {
@@ -115,10 +116,7 @@ pub trait Exportable {
         env.remove("PORT");
         let mut env_without_port: Vec<EnvParameter> = vec![];
         for (key, value) in env {
-            env_without_port.push(EnvParameter{
-                key,
-                value
-            });
+            env_without_port.push(EnvParameter { key, value });
         }
         env_without_port
     }
