@@ -1,4 +1,4 @@
-# Rustman (Rust Foreman)
+# Ultraman (Rust Foreman)
 
 Manage Procfile-based applications.
 
@@ -22,7 +22,7 @@ Download from [release page](), and extract to the directory in PATH.
 ```
 $ ultraman --help
 ultraman 0.1.0
-Rustman is a manager for Procfile-based applications. Its aim is to abstract away the details of the Procfile format,
+Ultraman is a manager for Procfile-based applications. Its aim is to abstract away the details of the Procfile format,
 and allow you to either run your application directly or export it to some other process management format.
 
 USAGE:
