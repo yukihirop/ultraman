@@ -3,6 +3,7 @@ name = "ultraman"
 version = "0.1.0"
 authors = ["yukihirop <te108186@gmail.com>"]
 edition = "2018"
+default-run="ultraman"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -14,6 +15,7 @@ dotenv = "0.15.0"
 handlebars = "3.5.1"
 nix = "0.19.0"
 regex = "1.4.2"
+roff = { version = "0.2.0", git = "https://github.com/yukihirop/roff-rs", tag = "v0.2.0" }
 serde = "1.0.117"
 serde_derive = "1.0.117"
 serde_json = "1.0.59"
@@ -25,3 +27,11 @@ structopt = "0.3.20"
 anyhow = "1.0.34"
 libc = "0.2.80"
 tempfile = "3.1.0"
+
+[[bin]]
+name = "ultraman"
+path = "src/main.rs"
+
+[[bin]]
+name = "man"
+path = "man/main.rs"

@@ -486,6 +486,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "roff"
+version = "0.2.0"
+source = "git+https://github.com/yukihirop/roff-rs?tag=v0.2.0#4d591b15592b6774ab62c50906f8fdb335b94783"
+
+[[package]]
 name = "ryu"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -669,6 +674,7 @@ dependencies = [
  "libc",
  "nix",
  "regex",
+ "roff",
  "serde",
  "serde_derive",
  "serde_json",
