@@ -2,7 +2,7 @@ extern crate roff;
 use roff::*;
 
 fn main() {
-  let page = Roff::new("ultraman", 1, "December 2020", "Ultraman 0.1.0", "Ultraman Manual")
+    let page = Roff::new("ultraman", 1, "December 2020", "Ultraman 0.1.0", "Ultraman Manual")
     .section("name", &["ultraman - modify files by randomly changing bits"])
     .section("synopsis", &[
       lf(&[bold("ultraman"), " ".into(), bold("start"), " ".into(), "[process]".into()]),
