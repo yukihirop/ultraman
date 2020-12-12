@@ -17,6 +17,13 @@ Download binary
 
 Download from [release page](), and extract to the directory in PATH.
 
+If you want to install the `man`,
+
+```bash
+git clone git@github.com:yukihirop/ultraman.git && cd ultraman
+make install_man
+```
+
 ## 💻 Command
 
 ```
@@ -151,7 +158,7 @@ make man
 ### install man
 
 ```bash
-make install-man
+make install_man
 ```
 
 ## 📚 Reference
