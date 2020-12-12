@@ -9,7 +9,7 @@ So the specifications are exactly the same as ruby ​​`foreman`.
 
 - Linux
 - macOS
-- windows?
+- windows (Do not Support)
 
 ## 🦀 Installation
 
