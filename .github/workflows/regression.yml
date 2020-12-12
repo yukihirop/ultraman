@@ -1,0 +1,30 @@
+# reference: https://github.com/dalance/procs/blob/master/.github/workflows/regression.yml 
+
+name: Regression
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+        rust: [stable]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Setup Rust
+      uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: ${{ matrix.rust }}
+        
+    - name: Checkout
+      uses: actions/checkout@v1
+
+    - name: Run tests
+      run: cargo test --locked
+
+    - name: Run tests feature variation
+      run: cargo test --locked --no-default-features

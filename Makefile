@@ -1,11 +1,37 @@
-.PHONY: create-man
-create-man:
-					cargo run --bin man > ./tmp/ultraman.1;
+# reference: https://github.com/dalance/procs/blob/master/Makefile
 
-.PHONY: man
-man: create-man
-					man ./tmp/ultraman.1;
+VERSION=$(patsubst "%",%, $(word 3, $(shell grep version Cargo.toml)))
+BUILD_TIME=$(shell date +"%Y/%m/%d %H:%M:%S")
+GIT_REVISION=$(shell git log -1 --format="%h")
+RUST_VERSION=$(word 2, $(shell rustc -V))
+LONG_VERSION="$(VERSION) ( rev: $(GIT_REVISION), rustc: $(RUST_VERSION), build at: $(BUILD_TIME) )"
+BIN_NAME=ultraman
 
-.PHONY: install-man
-install-man: create-man
-					sudo install -Dm644 ./tmp/ultraman.1 /usr/share/man/man1/ultraman.1;
+export LONG_VERSION
+
+.PHONY: create_man man install_man test release_linux release_win release_mac
+
+create_man:
+	cargo run --bin man > ./tmp/ultraman.1;
+
+man: create_man
+	man ./tmp/ultraman.1;
+
+install_man: create_man
+	install -Dm644 ./tmp/ultraman.1 /usr/local/share/man/man1/ultraman.1;
+
+test:
+	cargo test --locked
+
+release_linux:
+	cargo build --locked --release --target=x86_64-unknown-linux-musl
+	zip -j ${BIN_NAME}-v${VERSION}-x86_64-linux.zip target/x86_64-unknown-linux-musl/release/${BIN_NAME}
+
+release_win:
+	cargo build --locked --release --target=x86_64-pc-windows-msvc
+	7z a ${BIN_NAME}-v${VERSION}-x86_64-win.zip target/x86_64-pc-windows-msvc/release/${BIN_NAME}.exe
+
+release_mac:
+	cargo build --locked --release --target=x86_64-apple-darwin
+	zip -j ${BIN_NAME}-v${VERSION}-x86_64-mac.zip target/x86_64-apple-darwin/release/${BIN_NAME}
+
