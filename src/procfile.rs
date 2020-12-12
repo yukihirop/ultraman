@@ -47,7 +47,19 @@ impl Procfile {
     }
 
     pub fn set_concurrency(&self, formation: &str) {
+        // e.g.) all=1
         if formation == DEFAULT_FORMATION {
+            return ();
+        }
+
+        // e.g.) all=2
+        let data: Vec<&str> = formation.split("=").collect();
+        let name = data[0];
+        if name == "all" {
+            let concurrency = data[1].parse::<usize>().unwrap();
+            for (_, pe) in self.data.iter() {
+                pe.concurrency.set(concurrency);
+            }
             return ();
         }
 
@@ -195,6 +207,18 @@ mod tests {
         pf.set_concurrency(formation);
         assert_eq!(pf.data.get("app").unwrap().concurrency.get(), 2);
         assert_eq!(pf.data.get("web").unwrap().concurrency.get(), 3);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_set_concurrency_all() -> anyhow::Result<()> {
+        let formation = "all=10";
+        let pf = create_procfile();
+
+        pf.set_concurrency(formation);
+        assert_eq!(pf.data.get("app").unwrap().concurrency.get(), 10);
+        assert_eq!(pf.data.get("web").unwrap().concurrency.get(), 10);
 
         Ok(())
     }
