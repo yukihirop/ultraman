@@ -2,6 +2,8 @@
 
 ## v0.1.0
 
+2020/12/12
+
 First Release 🎉
 
 [foreman](https://github.com/ddollar/foreman)'s rust implementation
