@@ -110,6 +110,7 @@ $ ultraman start
 
 |command|link|
 |-------|----|
+|`ultraman start`|[README.md](https://github.com/yukihirop/ultraman/tree/main/example/start/README.md)|
 |`ultraman run`|[README.md](https://github.com/yukihirop/ultraman/tree/main/example/run/README.md)|
 |`ultraman export`|[README.md](https://github.com/yukihirop/ultraman/tree/main/example/export/README.md)|
 

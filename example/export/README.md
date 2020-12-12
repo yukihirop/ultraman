@@ -1,4 +1,23 @@
-# ultraman export example
+# Ultraman export example
+
+`ultraman export` is used to export your application to another process management format.  
+A location to export can be passed as an argument. This argument may be either required or optional depending on the export format.
+
+The following options control how the application is run:
+
+|short|long|default|description|
+|-----|----|-------|-----------|
+|<kbd>-m</kbd>|<kbd>--formation</kbd>|`all=1`|Specify the number of each process type to run. The value passed in should be in the format process=num,process=num|
+|<kbd>-e</kbd>|<kbd>--env</kbd>|`.env`|Specify an environment file to load|
+|<kbd>-f</kbd>|<kbd>--procfile</kbd>|`Procfile`|Specify an alternate Procfile to load, implies -d at the Procfile root|
+|<kbd>-p</kbd>|<kbd>--port</kbd>||Specify which port to use as the base for this application. Should be a multiple of 1000|
+|<kbd>-a</kbd>|<kbd>--app</kbd>||Use this name rather than the application's root directory name as the name of the application when exporting|
+|<kbd>-l</kdb>|<kbd>--long</kdb>||Specify the directory to place process logs in|
+|<kbd>-r</kbd>|<kbd>--run</kdb>||Specify the pid file directory, defaults to /var/run/<application>|
+|<kbd>-T</kbd>|<kbd>--template</kdb>||Specify an template to use for creating export files|
+|<kbd>-u</kbd>|<kbd>--user</kdb>||Specify the user the application should be run as. Defaults to the app name|
+|<kbd>-d</kbd>|<kbd>--root</kdb>||Specify an alternate application root. This defaults to the directory containing the Procfile|
+|<kbd>-t</kbd>|<kbd>--timeout</kdb>|`5`|Specify the amount of time (in seconds) processes have to shutdown gracefully before receiving a SIGTERM|
 
 ## Support Export Format
 
@@ -149,4 +168,65 @@ cargo run export daemon ./tmp/daemon -d /home/app -u root
 
 # in docker
 root@35a2d8d4a896:/home/app# sudo service app start # do not work
+```
+
+
+## Example
+
+Here is an example when the `Procfile` and `.env` files have the following contents
+
+[Procfile]
+```
+exit_0: ./fixtures/exit_0.sh
+exit_1: ./fixtures/exit_1.sh
+loop: ./fixtures/loop.sh $MESSAGE
+```
+
+[.env]
+```
+MESSAGE="Hello World"
+```
+
+### Full option example (short)
+
+```bssh
+cargo run export supervisord ./tmp/supervisord \
+  -m all=2 \
+  -e .env \
+  -f Procfile \
+  -p 7000 \
+  -a example-app \
+  -l ./tmp/supervisord/log \
+  -r ./tmp/supervisord/run \
+  -T ../../src/cmd/export/templates/supervisord \
+  -u root \
+  -d /home/app \
+  -t 10
+```
+
+```bash
+[ultraman export] cleaning: ./tmp/supervisord/app.conf
+[ultraman export] writing: ./tmp/supervisord/app.conf
+```
+
+### Full option example (long)
+
+```bssh
+cargo run export supervisord ./tmp/supervisord \
+  --formation loop=1,exit_0=2 \
+  --env .env \
+  --procfile Procfile \
+  --port 7000 \
+  --app example-app \
+  --log ./tmp/supervisord/log \
+  --run ./tmp/supervisord/run \
+  --template ../../src/cmd/export/templates/supervisord \
+  --user root \
+  --root /home/app \
+  --timeout 10
+```
+
+```bash
+[ultraman export] cleaning: ./tmp/supervisord/app.conf
+[ultraman export] writing: ./tmp/supervisord/app.conf
 ```
