@@ -15,7 +15,7 @@ So the specifications are exactly the same as ruby ​​`foreman`.
 
 Download binary
 
-Download from [release page](), and extract to the directory in PATH.
+Download from [release page](https://github.com/yukihirop/ultraman/releases), and extract to the directory in PATH.
 
 If you want to install the `man`,
 
