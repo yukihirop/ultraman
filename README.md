@@ -140,10 +140,25 @@ cargo test
 cargo test -- --nocapture
 ```
 
+## 🧔 Man
+
+### view man
+
+```bash
+make man
+```
+
+### install man
+
+```bash
+make install-man
+```
+
 ## 📚 Reference
 
 I really referred to the implementation of the following repository.
 
+- [ddollar/foreman](https://github.com/ddollar/foreman)
 - [yukihirop/eg_foreman](https://github.com/yukihirop/eg_foreman)
 - [jtdowney/fors](https://github.com/jtdowney/fors)
 - [jaredgorski/arpx](https://github.com/jaredgorski/arpx)
