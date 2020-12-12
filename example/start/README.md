@@ -10,6 +10,8 @@ The following options control how the application is run:
 |<kbd>-e</kbd>|<kbd>--env</kbd>|`.env`|Specify an environment file to load|
 |<kbd>-f</kbd>|<kbd>--procfile</kbd>|`Procfile`|Specify an alternate Procfile to load, implies -d at the Procfile root|
 |<kbd>-p</kbd>|<kbd>--port</kbd>||Specify which port to use as the base for this application. Should be a multiple of 1000|
+|<kbd>-t</kbd>|<kbd>--timeout</kbd>|`5`|Specify the amount of time (in seconds) processes have to shutdown gracefully before receiving a SIGTERM|
+|<kbd>-n</kbd>|<kbd>--no-timestamp</kbd>|`false`|Include timestamp in output|
 
 ## Example
 
@@ -34,36 +36,38 @@ cargo run start \
   -m loop=2,exit_1=3 \
   -e ./.env \
   -f ./Procfile \
-  -p 7000
+  -p 7000 \
+  -t 10 \
+  -n
 ```
 
 <details>
 
-```
-13:04:47 system    | exit_1.2  start at pid: 14651
-13:04:48 system    | loop.2    start at pid: 14655
-13:04:47 system    | exit_1.3  start at pid: 14652
-13:04:47 system    | loop.1    start at pid: 14653
-13:04:48 system    | exit_1.1  start at pid: 14654
-13:04:49 loop.2    | Hello World
-13:04:49 loop.1    | Hello World
-13:04:50 exit_1.3  | failed
-13:04:50 exit_1.1  | failed
-13:04:50 exit_1.2  | failed
-13:04:50 exit_1.1  | exited with code 1
-13:04:50 system    | sending SIGTERM for exit_1.2  at pid 14651
-13:04:50 system    | sending SIGTERM for loop.2    at pid 14655
-13:04:50 system    | sending SIGTERM for exit_1.3  at pid 14652
-13:04:50 system    | sending SIGTERM for loop.1    at pid 14653
-13:04:50 exit_1.3  | exited with code 1
-13:04:50 system    | sending SIGTERM for exit_1.2  at pid 14651
-13:04:50 system    | sending SIGTERM for loop.2    at pid 14655
-13:04:50 system    | sending SIGTERM for loop.1    at pid 14653
-13:04:50 exit_1.2  | exited with code 1
-13:04:50 system    | sending SIGTERM for loop.2    at pid 14655
-13:04:50 system    | sending SIGTERM for loop.1    at pid 14653
-13:04:50 loop.2    | terminated by SIGTERM
-13:04:50 loop.1    | terminated by SIGTERM
+```bash
+system    | exit_1.3  start at pid: 64568
+system    | exit_1.2  start at pid: 64569
+system    | exit_1.1  start at pid: 64570
+system    | loop.1    start at pid: 64571
+system    | loop.2    start at pid: 64572
+loop.2    | Hello World
+loop.1    | Hello World
+exit_1.1  | failed
+exit_1.3  | failed
+exit_1.2  | failed
+exit_1.1  | exited with code 1
+system    | sending SIGTERM for exit_1.3  at pid 64568
+system    | sending SIGTERM for exit_1.2  at pid 64569
+system    | sending SIGTERM for loop.1    at pid 64571
+system    | sending SIGTERM for loop.2    at pid 64572
+exit_1.2  | exited with code 1
+system    | sending SIGTERM for exit_1.3  at pid 64568
+system    | sending SIGTERM for loop.1    at pid 64571
+system    | sending SIGTERM for loop.2    at pid 64572
+exit_1.3  | exited with code 1
+system    | sending SIGTERM for loop.1    at pid 64571
+system    | sending SIGTERM for loop.2    at pid 64572
+loop.1    | terminated by SIGTERM
+loop.2    | terminated by SIGTERM
 ```
 
 </details>
@@ -75,39 +79,39 @@ cargo run start \
   --formation all=2 \
   --env ./.env \
   --procfile ./Procfile \
-  --port 7000
+  --port 7000 \
+  --timeout 10 \
+  --no-timestamp
 ```
 
 <details>
 
-```
-13:05:59 system    | exit_1.1  start at pid: 14847
-13:05:59 system    | loop.1    start at pid: 14848
-13:05:59 system    | loop.2    start at pid: 14849
-13:05:59 system    | exit_0.2  start at pid: 14850
-13:05:59 system    | exit_0.1  start at pid: 14851
-13:05:59 system    | exit_1.2  start at pid: 14852
-13:06:00 loop.1    | Hello World
-13:06:00 loop.2    | Hello World
-13:06:01 loop.2    | Hello World
-13:06:01 exit_1.1  | failed
-13:06:01 loop.1    | Hello World
-13:06:01 exit_1.2  | failed
-13:06:01 exit_1.1  | exited with code 1
-13:06:01 system    | sending SIGTERM for loop.1    at pid 14848
-13:06:01 system    | sending SIGTERM for loop.2    at pid 14849
-13:06:01 system    | sending SIGTERM for exit_0.2  at pid 14850
-13:06:01 system    | sending SIGTERM for exit_0.1  at pid 14851
-13:06:01 system    | sending SIGTERM for exit_1.2  at pid 14852
-13:06:01 exit_1.2  | exited with code 1
-13:06:01 system    | sending SIGTERM for loop.1    at pid 14848
-13:06:01 system    | sending SIGTERM for loop.2    at pid 14849
-13:06:01 system    | sending SIGTERM for exit_0.2  at pid 14850
-13:06:01 system    | sending SIGTERM for exit_0.1  at pid 14851
-13:06:01 loop.2    | terminated by SIGTERM
-13:06:01 exit_0.2  | terminated by SIGTERM
-13:06:01 exit_0.1  | terminated by SIGTERM
-13:06:01 loop.1    | terminated by SIGTERM
+```bash
+system    | exit_1.1  start at pid: 65179
+system    | exit_0.2  start at pid: 65180
+system    | loop.2    start at pid: 65181
+system    | exit_0.1  start at pid: 65182
+system    | loop.1    start at pid: 65183
+system    | exit_1.2  start at pid: 65184
+loop.1    | Hello World
+loop.2    | Hello World
+exit_1.2  | failed
+exit_1.1  | failed
+exit_1.1  | exited with code 1
+system    | sending SIGTERM for exit_0.2  at pid 65180
+system    | sending SIGTERM for loop.2    at pid 65181
+system    | sending SIGTERM for exit_0.1  at pid 65182
+system    | sending SIGTERM for loop.1    at pid 65183
+system    | sending SIGTERM for exit_1.2  at pid 65184
+exit_1.2  | exited with code 1
+system    | sending SIGTERM for exit_0.2  at pid 65180
+system    | sending SIGTERM for loop.2    at pid 65181
+system    | sending SIGTERM for exit_0.1  at pid 65182
+system    | sending SIGTERM for loop.1    at pid 65183
+exit_0.1  | terminated by SIGTERM
+loop.1    | terminated by SIGTERM
+loop.2    | terminated by SIGTERM
+exit_0.2  | terminated by SIGTERM
 ```
 
 </details>
