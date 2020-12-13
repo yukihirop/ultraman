@@ -239,7 +239,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "exit 1: Any")]
+    #[should_panic(expected = "exit 0: Any")]
     fn test_check_for_child_termination_thread() {
         let procs = Arc::new(Mutex::new(vec![
             Arc::new(Mutex::new(Process {
@@ -262,6 +262,6 @@ mod tests {
 
         check_for_child_termination_thread(procs2, padding, true)
             .join()
-            .expect("exit 1");
+            .expect("exit 0");
     }
 }

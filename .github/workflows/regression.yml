@@ -5,7 +5,7 @@ name: Regression
 on: [push, pull_request]
 
 jobs:
-  build:
+  test:
 
     strategy:
       matrix:
@@ -27,6 +27,12 @@ jobs:
 
     - name: Run tests
       run: cargo test --locked
+      shell: bash
+      env:
+        SHELL: /bin/bash
 
     - name: Run tests feature variation
       run: cargo test --locked --no-default-features
+      shell: bash
+      env:
+        SHELL: /bin/bash
