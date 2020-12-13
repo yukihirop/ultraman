@@ -12,7 +12,7 @@ export LONG_VERSION
 .PHONY: create_man man install_man test release_linux release_win release_mac
 
 create_man:
-	cargo run --bin man > ./tmp/ultraman.1;
+	cargo run --bin man --features man > ./tmp/ultraman.1;
 
 man: create_man
 	man ./tmp/ultraman.1;
