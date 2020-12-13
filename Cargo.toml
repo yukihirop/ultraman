@@ -9,7 +9,7 @@ categories= ["command-line-utilities"]
 license= "MIT"
 readme = "README.md"
 description = "Manage Procfile-based applications"
-exclude = ["example/*"]
+exclude = ["example/*", "man/*"]
 default-run="ultraman"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -25,18 +25,22 @@ dotenv = "0.15.0"
 handlebars = "3.5.1"
 nix = "0.19.0"
 regex = "1.4.2"
-roff = { version = "0.2.0", git = "https://github.com/yukihirop/roff-rs", tag = "v0.2.0" }
 serde = "1.0.117"
 serde_derive = "1.0.117"
 serde_json = "1.0.59"
 shellwords = "1.1.0"
 signal-hook = "0.1.16"
 structopt = "0.3.20"
+roff = { git = "https://github.com/yukihirop/roff-rs", optional = true }
+
+[features]
+man = [ "roff" ]
 
 [dev-dependencies]
 anyhow = "1.0.34"
 libc = "0.2.80"
 tempfile = "3.1.0"
+
 
 [[bin]]
 name = "ultraman"
@@ -45,3 +49,4 @@ path = "src/main.rs"
 [[bin]]
 name = "man"
 path = "man/main.rs"
+required-features = [ "man" ]
