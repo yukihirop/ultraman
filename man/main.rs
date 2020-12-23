@@ -1,4 +1,4 @@
-#[cfg(feature="man")]
+#[cfg(feature = "man")]
 extern crate roff;
 use roff::*;
 

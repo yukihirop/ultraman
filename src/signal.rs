@@ -196,7 +196,6 @@ mod tests {
         unsafe { libc::raise(SIGINT) };
     }
 
-
     #[test]
     #[ignore]
     fn test_trap_signal_at_multithred() {
