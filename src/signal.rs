@@ -28,33 +28,6 @@ pub fn handle_signal_thread(
     result
 }
 
-pub fn trap_signal(child_id: nix::unistd::Pid) -> Result<(), Box<dyn std::error::Error>> {
-    let signals = Signals::new(&[SIGALRM, SIGHUP, SIGINT, SIGTERM])?;
-
-    for sig in signals.forever() {
-        match sig {
-            SIGINT => {
-                if let Err(e) = signal::kill(child_id, Signal::SIGTERM) {
-                    println!("error: {}", &e);
-
-                    #[cfg(not(test))]
-                    exit(1);
-                    #[cfg(test)]
-                    panic!("exit {}", 1);
-                }
-
-                #[cfg(not(test))]
-                exit(0);
-                #[cfg(test)]
-                panic!("exit 0");
-            }
-            _ => (),
-        }
-    }
-
-    Ok(())
-}
-
 fn trap_signal_at_multithred(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
     padding: usize,
@@ -212,7 +185,6 @@ pub fn kill_children(
 mod tests {
     use super::*;
     use libc;
-    use nix::unistd::{fork, pause, ForkResult};
     use signal_hook::SIGINT;
     use std::process::Command;
     use std::thread::sleep;
@@ -223,30 +195,6 @@ mod tests {
         unsafe { libc::raise(SIGINT) };
     }
 
-    #[test]
-    #[should_panic(expected = "exit 0")]
-    fn test_trap_signal() {
-        let thread_send_sigint = thread::spawn(move || {
-            sleep(Duration::from_secs(5));
-            send_sigint();
-        });
-
-        unsafe {
-            match fork().expect("failed fork at test_trap_signal") {
-                ForkResult::Child => {
-                    Command::new("./test/fixtures/loop.sh")
-                        .arg("trap_signal")
-                        .spawn()
-                        .expect("failed execute trap_signal");
-                    pause()
-                }
-                ForkResult::Parent { child } => {
-                    trap_signal(child).expect("failed test_trap_signal");
-                    thread_send_sigint.join().expect("failed send sigint");
-                }
-            }
-        }
-    }
 
     #[test]
     #[should_panic(expected = "failed handle signals: Any")]
