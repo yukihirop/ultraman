@@ -22,6 +22,11 @@ install_man: create_man
 
 test:
 	cargo test --locked
+	cargo test --locked -- --ignored
+
+test-no-default-features:
+	cargo test --locked --no-default-features
+	cargo test --locked --no-default-features -- --ignored
 
 release_linux:
 	cargo build --locked --release --target=x86_64-unknown-linux-musl

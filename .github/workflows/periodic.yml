@@ -28,7 +28,7 @@ jobs:
     - name: Run tests
       run: |
         cargo update
-        cargo test --locked
+        make test
       shell: bash
       env:
         SHELL: /bin/bash

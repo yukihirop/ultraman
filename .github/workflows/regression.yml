@@ -26,13 +26,13 @@ jobs:
       uses: actions/checkout@v1
 
     - name: Run tests
-      run: cargo test --locked
+      run: make test
       shell: bash
       env:
         SHELL: /bin/bash
 
     - name: Run tests feature variation
-      run: cargo test --locked --no-default-features
+      run: make test-no-default-features
       shell: bash
       env:
         SHELL: /bin/bash

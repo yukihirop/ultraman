@@ -181,6 +181,7 @@ pub fn kill_children(
     }
 }
 
+// Tests that need to send a SIGINT to kill the process can interrupt other tests and are usually ignored
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -197,7 +198,7 @@ mod tests {
 
 
     #[test]
-    #[should_panic(expected = "failed handle signals: Any")]
+    #[ignore]
     fn test_trap_signal_at_multithred() {
         let procs = Arc::new(Mutex::new(vec![
             Arc::new(Mutex::new(Process {
