@@ -1,6 +1,5 @@
 use crate::env::read_env;
 use crate::procfile::read_procfile;
-use crate::signal;
 
 use nix::sys::wait::WaitStatus;
 use nix::unistd::{fork, pause, ForkResult};
@@ -67,13 +66,6 @@ pub fn run(opts: RunOpts) {
                     pause();
                 }
                 ForkResult::Parent { child } => {
-                    let handle_signal_thread = thread::Builder::new()
-                        .name(String::from("handle_signal_thread"))
-                        .spawn(move || {
-                            signal::trap_signal(child).expect("failed trap signal");
-                        })
-                        .expect("failed spawn handle_signal");
-
                     let check_for_child_termination_thread = thread::Builder::new()
                         .name(String::from("check_for_child_termination_thread"))
                         .spawn(move || {
@@ -86,9 +78,6 @@ pub fn run(opts: RunOpts) {
                         })
                         .expect("failed spawn check_for_child_termination");
 
-                    handle_signal_thread
-                        .join()
-                        .expect("failed join handle_signal_thread");
                     check_for_child_termination_thread
                         .join()
                         .expect("failed join handle_signal_thread");

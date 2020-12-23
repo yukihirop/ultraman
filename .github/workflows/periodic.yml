@@ -7,7 +7,7 @@ on:
   - cron: 0 0 * * SUN
 
 jobs:
-  build:
+  test:
 
     strategy:
       matrix:
@@ -28,4 +28,7 @@ jobs:
     - name: Run tests
       run: |
         cargo update
-        cargo test --locked
+        make test
+      shell: bash
+      env:
+        SHELL: /bin/bash

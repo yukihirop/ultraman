@@ -3,3 +3,4 @@
 /.env
 tmp
 supervisord.log
+/containers/registry

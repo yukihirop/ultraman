@@ -1,0 +1,13 @@
+version: "3.0"
+services:
+  test_ubuntu:
+    build:
+      context: .
+      dockerfile: './containers/Dockerfile'
+    volumes:
+      - .:/home/app
+      - ./containers/registry:/usr/local/cargo/registry/
+    environment:
+      - SHELL=/bin/bash
+    entrypoint: /bin/bash -c "while :; do sleep 10; done"
+    

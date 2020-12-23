@@ -141,10 +141,28 @@ cargo run export --help
 
 ## ✍️ Test
 
+`src/signal.rs` usually ignores tests that need to send a SIGINT to kill the process as it can interrupt other tests
+
 ```bash
 cargo test
+cargo test -- --ignored # unit test about src/signal.rs
 # or
 cargo test -- --nocapture
+```
+
+## 👽 Development in Docker
+
+It is useful when a person developing on mac wants to check the operation on ubuntu.
+
+```bash
+{
+    docker-compose build
+    docker-compose up -d
+    docker exec -it ultraman_test_ubuntu_1 /bin/bash
+}
+
+# in docker
+root@65241fa12c67:/home/app# make test
 ```
 
 ## 🧔 Man
