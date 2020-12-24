@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v0.1.1
+
+2020/12/24
+
+- Support to install by homebrew
+
+Please see [milestone v0.1.1](https://github.com/yukihirop/ultraman/milestone/2?closed=1)
+
 ## v0.1.0
 
 2020/12/13
