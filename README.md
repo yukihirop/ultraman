@@ -13,7 +13,7 @@ So the specifications are exactly the same as ruby ​​`foreman`.
 
 ## 🦀 Installation
 
-Download binary
+### Download binary
 
 Download from [release page](https://github.com/yukihirop/ultraman/releases), and extract to the directory in PATH.
 
@@ -22,6 +22,13 @@ If you want to install the `man`,
 ```bash
 git clone git@github.com:yukihirop/ultraman.git && cd ultraman
 make install_man
+```
+
+### Homebrew
+
+```bash
+brew tap yukihirop/homebrew-tap
+brew install ultraman
 ```
 
 ## 💻 Command
