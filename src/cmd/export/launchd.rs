@@ -1,4 +1,4 @@
-use super::base::{EnvParameter, Exportable};
+use super::base::{EnvParameter, Exportable, Template};
 use crate::cmd::export::ExportOpts;
 use crate::env::read_env;
 use crate::process::port_for;
@@ -120,16 +120,32 @@ impl Exportable for Exporter {
         self.base_export().expect("failed execute base_export");
 
         let mut index = 0;
+        let mut clean_paths: Vec<PathBuf> = vec![];
+        let mut tmpl_data: Vec<Template> = vec![];
+
         for (name, pe) in self.procfile.data.iter() {
             let con = pe.concurrency.get();
             for n in 0..con {
                 index += 1;
                 let service_name = format!("{}-{}-{}", self.app(), &name, n + 1);
                 let output_path = self.opts.location.join(&service_name);
-                let mut data = self.make_launchd_data(pe, &service_name, index, n);
-                self.clean(&output_path);
-                self.write_template(&self.launchd_tmpl_path(), &mut data, &output_path);
+
+                clean_paths.push(output_path.clone());
+                tmpl_data.push(Template{
+                    template_path: self.launchd_tmpl_path(),
+                    data: self.make_launchd_data(pe, &service_name, index, n),
+                    output_path,
+                });
             }
+        }
+
+        for path in clean_paths {
+            self.clean(&path);
+        }
+
+        for tmpl in tmpl_data {
+            let mut data = tmpl.data;
+            self.write_template(&tmpl.template_path, &mut data, &tmpl.output_path);
         }
 
         Ok(())

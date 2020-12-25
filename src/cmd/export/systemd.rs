@@ -1,4 +1,4 @@
-use super::base::{EnvParameter, Exportable};
+use super::base::{EnvParameter, Exportable, Template};
 use crate::cmd::export::ExportOpts;
 use crate::process::port_for;
 use crate::procfile::{Procfile, ProcfileEntry};
@@ -117,6 +117,9 @@ impl Exportable for Exporter {
 
         let mut index = 0;
         let mut service_names = vec![];
+        let mut clean_paths: Vec<PathBuf> = vec![];
+        let mut tmpl_data: Vec<Template> = vec![];
+
         for (name, pe) in self.procfile.data.iter() {
             index += 1;
             let con = pe.concurrency.get();
@@ -124,19 +127,36 @@ impl Exportable for Exporter {
                 let process_name = format!("{}.{}", &name, n);
                 let service_filename = format!("{}-{}.service", &name, &process_name);
                 let output_path = self.output_path(service_filename.clone());
-                let mut data = self.make_process_service_data(pe, &process_name, index, n);
+                let data = self.make_process_service_data(pe, &process_name, index, n);
 
-                self.clean(&output_path);
-                self.write_template(&self.process_service_tmpl_path(), &mut data, &output_path);
+                clean_paths.push(output_path.clone());
+                tmpl_data.push(Template{
+                    template_path: self.process_service_tmpl_path(),
+                    data,
+                    output_path
+                });
                 service_names.push(service_filename);
             }
         }
 
         let output_path = self.output_path(format!("{}.target", self.app()));
-        let mut data = self.make_master_target_data(service_names);
+        let data = self.make_master_target_data(service_names);
 
-        self.clean(&output_path);
-        self.write_template(&self.master_target_tmpl_path(), &mut data, &output_path);
+        clean_paths.push(output_path.clone());
+        tmpl_data.push(Template{
+            template_path: self.master_target_tmpl_path(),
+            data,
+            output_path
+        });
+
+        for path in clean_paths {
+            self.clean(&path);
+        }
+
+        for tmpl in tmpl_data {
+            let mut data = tmpl.data;
+            self.write_template(&tmpl.template_path, &mut data, &tmpl.output_path);
+        }
 
         Ok(())
     }

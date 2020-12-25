@@ -1,4 +1,4 @@
-use super::base::Exportable;
+use super::base::{Exportable, Template};
 use crate::cmd::export::ExportOpts;
 use crate::env::read_env;
 use crate::process::port_for;
@@ -123,11 +123,22 @@ impl Exporter {
     }
 }
 
+struct EnvTemplate {
+    template_path: PathBuf,
+    index: usize,
+    con_index: usize,
+}
+
 impl Exportable for Exporter {
     fn export(&self) -> Result<(), Box<dyn std::error::Error>> {
         self.base_export().expect("failed execute base_export");
 
         let mut index = 0;
+        let mut clean_paths: Vec<PathBuf> = vec![];
+        let mut create_recursive_dir_paths: Vec<PathBuf> = vec![];
+        let mut tmpl_data: Vec<Template> = vec![];
+        let mut env_data: Vec<EnvTemplate> = vec![];
+
         for (name, pe) in self.procfile.data.iter() {
             let con = pe.concurrency.get();
             for n in 0..con {
@@ -143,24 +154,53 @@ impl Exportable for Exporter {
                 path_for_run.push(run_file_path);
                 path_for_env.push(env_dir_path);
                 path_for_log.push(log_dir_path);
-                self.create_dir_recursive(&path_for_env);
-                self.create_dir_recursive(&path_for_log);
+                
+                create_recursive_dir_paths.push(path_for_env.clone());
+                create_recursive_dir_paths.push(path_for_log.clone());
 
-                let mut run_data = self.make_run_data(
+                let run_data = self.make_run_data(
                     pe,
                     &PathBuf::from(format!("/etc/service/{}/env", &service_name)),
                 );
-                let mut log_run_data = self.make_log_run_data(&process_name);
+                let log_run_data = self.make_log_run_data(&process_name);
 
-                self.clean(&path_for_run);
-                self.write_template(&self.run_tmpl_path(), &mut run_data, &path_for_run);
+                clean_paths.push(path_for_run.clone());
+                tmpl_data.push(Template{
+                    template_path: self.run_tmpl_path(),
+                    data: run_data,
+                    output_path: path_for_run,
+                });
 
                 path_for_log.push("run");
-                self.clean(&path_for_log);
-                self.write_template(&self.log_run_tmpl_path(), &mut log_run_data, &path_for_log);
-
-                self.write_env(&path_for_env, index, n);
+                clean_paths.push(path_for_log.clone());
+                tmpl_data.push(Template{
+                    template_path: self.log_run_tmpl_path(),
+                    data: log_run_data,
+                    output_path: path_for_log
+                });
+                env_data.push(EnvTemplate{
+                    template_path: path_for_env.clone(),
+                    index,
+                    con_index: n
+                });
             }
+        }
+
+        for path in clean_paths {
+            self.clean(&path);
+        }
+
+        for dir_path in create_recursive_dir_paths {
+            self.create_dir_recursive(&dir_path);
+        }
+
+        for tmpl in tmpl_data {
+            let mut data = tmpl.data;
+            self.write_template(&tmpl.template_path, &mut data, &tmpl.output_path);
+        }
+
+        for e in env_data {
+            self.write_env(&e.template_path, e.index, e.con_index);
         }
 
         Ok(())

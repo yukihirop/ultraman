@@ -16,6 +16,12 @@ pub struct EnvParameter {
     pub(crate) value: String,
 }
 
+pub struct Template {
+    pub(crate) template_path: PathBuf,
+    pub(crate) data: Map<String, Json>,
+    pub(crate) output_path: PathBuf,
+}
+
 pub trait Exportable {
     fn export(&self) -> Result<(), Box<dyn std::error::Error>>;
     //https://yajamon.hatenablog.com/entry/2018/01/30/202849
