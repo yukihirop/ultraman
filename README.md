@@ -19,6 +19,14 @@ Download from [release page](https://github.com/yukihirop/ultraman/releases), an
 
 If you want to install the `man`,
 
+Suppose you unzip the archive in the `./tmp` directory
+
+```bash
+install -Dm644 ./tmp/ultraman.1 /usr/local/share/man/man1/ultraman.1
+```
+
+or
+
 ```bash
 git clone git@github.com:yukihirop/ultraman.git && cd ultraman
 make install_man
