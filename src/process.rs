@@ -13,6 +13,7 @@ use std::thread::{self, JoinHandle};
 #[cfg(not(test))]
 use std::process::exit;
 
+#[derive(Clone)]
 pub struct ProcessOpts {
     pub padding: usize,
     pub is_timestamp: bool,
@@ -75,27 +76,24 @@ where
         .expect("failed exec and output")
 }
 
-pub fn check_for_child_termination_thread(
+pub fn build_check_for_child_termination_thread(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
-    padding: usize,
-    is_timestamp: bool,
+    opts: ProcessOpts,
 ) -> JoinHandle<()> {
-    let result = thread::Builder::new()
+    thread::Builder::new()
         .name(String::from(format!("check child terminated")))
         .spawn(move || {
             loop {
                 // Waiting for the end of any one child process
                 let procs2 = Arc::clone(&procs);
                 let procs3 = Arc::clone(&procs);
-                if let Some((_, code)) = check_for_child_termination(procs2, padding, is_timestamp)
+                if let Some((_, code)) = check_for_child_termination(procs2, opts.padding, opts.is_timestamp)
                 {
-                    signal::kill_children(procs3, padding, Signal::SIGTERM, code, is_timestamp)
+                    signal::kill_children(procs3, opts.padding, Signal::SIGTERM, code, opts.is_timestamp)
                 }
             }
         })
-        .expect("failed check child terminated");
-
-    result
+        .expect("failed check child terminated")
 }
 
 pub fn check_for_child_termination(
@@ -204,7 +202,7 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "exit 0: Any")]
-    fn test_check_for_child_termination_thread() {
+    fn test_build_check_for_child_termination_thread() {
         let procs = Arc::new(Mutex::new(vec![
             Arc::new(Mutex::new(Process {
                 index: 0,
@@ -226,7 +224,7 @@ mod tests {
         let procs2 = Arc::clone(&procs);
         let padding = 10;
 
-        check_for_child_termination_thread(procs2, padding, true)
+        build_check_for_child_termination_thread(procs2, ProcessOpts { padding, is_timestamp: true })
             .join()
             .expect("exit 0");
     }

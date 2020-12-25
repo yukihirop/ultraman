@@ -71,6 +71,7 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
     let barrier = Arc::new(Barrier::new(process_len + 1));
     let mut total = 0;
     let is_timestamp = !opts.is_no_timestamp;
+    let process_opts = ProcessOpts { padding, is_timestamp };
 
     for (name, pe) in procfile.data.iter() {
         let con = pe.concurrency.get();
@@ -86,6 +87,7 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
             let cmd = pe.command.clone();
             let env_path = opts.env_path.clone();
             let port = opts.port.clone();
+            let opts = process_opts.clone();
 
             let exec_and_output_thread = process::build_exec_and_output_thread(move || {
                 let proc = Process::new(
@@ -95,10 +97,7 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
                     port,
                     n,
                     index,
-                    Some(ProcessOpts {
-                        padding,
-                        is_timestamp,
-                    }),
+                    Some(opts),
                 );
                 let proc2 = Arc::new(Mutex::new(proc));
                 let proc3 = Arc::clone(&proc2);
@@ -127,13 +126,10 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
 
     // use handle_signal
     let procs2 = Arc::clone(&procs);
-    proc_handles.push(process::check_for_child_termination_thread(
-        procs,
-        padding,
-        is_timestamp,
-    ));
+    let check_for_child_termination_thread = process::build_check_for_child_termination_thread(procs2, process_opts);
+    proc_handles.push(check_for_child_termination_thread);
 
-    let procs = Arc::clone(&procs2);
+    let procs = Arc::clone(&procs);
     proc_handles.push(signal::handle_signal_thread(
         procs,
         padding,
