@@ -1,4 +1,4 @@
-use super::base::{EnvParameter, Exportable};
+use super::base::{EnvParameter, Exportable, Template};
 use crate::cmd::export::ExportOpts;
 use crate::process::port_for;
 use crate::procfile::{Procfile, ProcfileEntry};
@@ -12,20 +12,7 @@ use std::path::PathBuf;
 
 pub struct Exporter {
     pub procfile: Procfile,
-    // ExportOpts
-    pub format: String,
-    pub location: PathBuf,
-    pub app: Option<String>,
-    pub formation: String,
-    pub log_path: Option<PathBuf>,
-    pub run_path: Option<PathBuf>,
-    pub port: Option<String>,
-    pub template_path: Option<PathBuf>,
-    pub user: Option<String>,
-    pub env_path: PathBuf,
-    pub procfile_path: PathBuf,
-    pub root_path: Option<PathBuf>,
-    pub timeout: String,
+    pub opts: ExportOpts,
 }
 
 #[derive(Serialize)]
@@ -94,7 +81,12 @@ impl Exporter {
         let p = ProcessParams {
             app: self.app(),
             name: app_name.to_string(),
-            port: port_for(self.opts().env_path, self.opts().port, index, con_index + 1),
+            port: port_for(
+                self.opts.env_path.clone(),
+                self.opts.port.clone(),
+                index,
+                con_index + 1,
+            ),
             env_without_port: self.env_without_port(),
             setuid: self.username(),
             chdir: self.root_path().into_os_string().into_string().unwrap(),
@@ -111,19 +103,21 @@ impl Default for Exporter {
             procfile: Procfile {
                 data: HashMap::new(),
             },
-            format: String::from(""),
-            location: PathBuf::from("location"),
-            app: None,
-            formation: String::from("all=1"),
-            log_path: None,
-            run_path: None,
-            port: None,
-            template_path: None,
-            user: None,
-            env_path: PathBuf::from(".env"),
-            procfile_path: PathBuf::from("Procfile"),
-            root_path: Some(env::current_dir().unwrap()),
-            timeout: String::from("5"),
+            opts: ExportOpts {
+                format: String::from(""),
+                location: PathBuf::from("location"),
+                app: None,
+                formation: String::from("all=1"),
+                log_path: None,
+                run_path: None,
+                port: None,
+                template_path: None,
+                user: None,
+                env_path: PathBuf::from(".env"),
+                procfile_path: PathBuf::from("Procfile"),
+                root_path: Some(env::current_dir().unwrap()),
+                timeout: String::from("5"),
+            },
         }
     }
 }
@@ -132,12 +126,18 @@ impl Exportable for Exporter {
     fn export(&self) -> Result<(), Box<dyn std::error::Error>> {
         self.base_export().expect("failed execute base_export");
 
+        let mut clean_paths: Vec<PathBuf> = vec![];
+        let mut tmpl_data: Vec<Template> = vec![];
+
         let master_file = format!("{}.conf", self.app());
         let output_path = self.output_path(master_file);
-        let mut data = Map::new();
 
-        self.clean(&output_path);
-        self.write_template(&self.master_tmpl_path(), &mut data, &output_path);
+        clean_paths.push(output_path.clone());
+        tmpl_data.push(Template {
+            template_path: self.master_tmpl_path(),
+            data: Map::new(),
+            output_path,
+        });
 
         let mut index = 0;
         for (name, pe) in self.procfile.data.iter() {
@@ -145,37 +145,39 @@ impl Exportable for Exporter {
             let con = pe.concurrency.get();
             let process_master_file = format!("{}-{}.conf", self.app(), &name);
             let output_path = self.output_path(process_master_file);
-            let mut data = self.make_process_master_data();
-            self.clean(&output_path);
-            self.write_template(&self.process_master_tmpl_path(), &mut data, &output_path);
+
+            clean_paths.push(output_path.clone());
+            tmpl_data.push(Template {
+                template_path: self.process_master_tmpl_path(),
+                data: self.make_process_master_data(),
+                output_path,
+            });
 
             for n in 0..con {
                 let process_file = format!("{}-{}-{}.conf", self.app(), &name, n);
                 let output_path = self.output_path(process_file);
-                let mut data = self.make_process_data(pe, &name, index, n);
-                self.clean(&output_path);
-                self.write_template(&self.process_tmpl_path(), &mut data, &output_path);
+
+                clean_paths.push(output_path.clone());
+                tmpl_data.push(Template {
+                    template_path: self.process_tmpl_path(),
+                    data: self.make_process_data(pe, &name, index, n),
+                    output_path,
+                });
             }
+        }
+
+        for path in clean_paths {
+            self.clean(&path);
+        }
+
+        for tmpl in tmpl_data {
+            self.write_template(tmpl);
         }
 
         Ok(())
     }
 
-    fn opts(&self) -> ExportOpts {
-        ExportOpts {
-            format: self.format.clone(),
-            location: self.location.clone(),
-            app: self.app.clone(),
-            formation: self.formation.clone(),
-            log_path: self.log_path.clone(),
-            run_path: self.run_path.clone(),
-            port: self.port.clone(),
-            template_path: self.template_path.clone(),
-            user: self.user.clone(),
-            env_path: self.env_path.clone(),
-            procfile_path: self.procfile_path.clone(),
-            root_path: self.root_path.clone(),
-            timeout: self.timeout.clone(),
-        }
+    fn ref_opts(&self) -> &ExportOpts {
+        &self.opts
     }
 }

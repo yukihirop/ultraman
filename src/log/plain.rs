@@ -1,10 +1,10 @@
 use crate::log::{now, Printable};
+use crate::opt::DisplayOpts;
 
 #[derive(Default)]
 pub struct Log {
     pub index: usize,
-    pub padding: usize,
-    pub is_timestamp: bool,
+    pub opts: DisplayOpts,
 }
 
 unsafe impl Sync for Log {}
@@ -23,10 +23,16 @@ impl Log {
 
 impl Printable for Log {
     fn output(&self, proc_name: &str, content: &str) {
-        if self.is_timestamp {
-            println!("{3} {0:1$} | {2}", proc_name, self.padding, content, now())
+        if self.opts.is_timestamp {
+            println!(
+                "{3} {0:1$} | {2}",
+                proc_name,
+                self.opts.padding,
+                content,
+                now()
+            )
         } else {
-            println!("{0:1$} | {2}", proc_name, self.padding, content)
+            println!("{0:1$} | {2}", proc_name, self.opts.padding, content)
         }
     }
 

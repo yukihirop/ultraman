@@ -1,27 +1,26 @@
 use crate::log::{self, LogOpt};
+use crate::opt::DisplayOpts;
 use crate::process::{self, Process};
+
 use nix::sys::signal::{self, Signal};
 use nix::unistd::Pid;
 use signal_hook::{iterator::Signals, SIGALRM, SIGHUP, SIGINT, SIGTERM};
-
-#[cfg(not(test))]
-use std::process::exit;
-
 use std::sync::{Arc, Mutex};
 use std::thread::{self, sleep, JoinHandle};
 use std::time::{Duration, Instant};
 
+#[cfg(not(test))]
+use std::process::exit;
+
 pub fn handle_signal_thread(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
-    padding: usize,
     timeout: u64,
-    is_timestamp: bool,
+    opts: DisplayOpts,
 ) -> JoinHandle<()> {
     let result = thread::Builder::new()
         .name(String::from("handling signal"))
         .spawn(move || {
-            trap_signal_at_multithred(procs, padding, timeout, is_timestamp)
-                .expect("failed trap signals")
+            trap_signal_at_multithred(procs, timeout, opts).expect("failed trap signals")
         })
         .expect("failed handle signals");
 
@@ -30,9 +29,8 @@ pub fn handle_signal_thread(
 
 fn trap_signal_at_multithred(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
-    padding: usize,
     timeout: u64,
-    is_timestamp: bool,
+    opts: DisplayOpts,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let signals = Signals::new(&[SIGALRM, SIGHUP, SIGINT, SIGTERM])?;
 
@@ -43,34 +41,35 @@ fn trap_signal_at_multithred(
                 log::output(
                     "system",
                     "SIGINT received, starting shutdown",
-                    padding - 2,
                     None,
                     &LogOpt {
                         is_color: false,
-                        is_timestamp,
+                        padding: opts.padding - 2,
+                        is_timestamp: opts.is_timestamp,
                     },
                 );
 
                 log::output(
                     "system",
                     "sending SIGTERM to all processes",
-                    padding,
                     None,
                     &LogOpt {
                         is_color: false,
-                        is_timestamp,
+                        padding: opts.padding,
+                        is_timestamp: opts.is_timestamp,
                     },
                 );
-                terminate_gracefully(procs, padding, Signal::SIGTERM, 1, timeout, is_timestamp);
+
+                terminate_gracefully(procs, Signal::SIGTERM, 1, timeout, opts.clone());
 
                 log::output(
                     "system",
                     "exit 0",
-                    padding,
                     None,
                     &LogOpt {
                         is_color: false,
-                        is_timestamp,
+                        padding: opts.padding,
+                        is_timestamp: opts.is_timestamp,
                     },
                 );
                 #[cfg(not(test))]
@@ -87,14 +86,13 @@ fn trap_signal_at_multithred(
 
 pub fn terminate_gracefully(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
-    padding: usize,
     signal: Signal,
     code: i32,
     timeout: u64,
-    is_timestamp: bool,
+    opts: DisplayOpts,
 ) {
     let procs2 = Arc::clone(&procs);
-    kill_children(procs, padding, signal, code, is_timestamp);
+    kill_children(procs, signal, code, opts.clone());
 
     // Wait for all children to stop or until the time comes to kill them all
     let start_time = Instant::now();
@@ -104,7 +102,7 @@ pub fn terminate_gracefully(
         }
 
         let procs3 = Arc::clone(&procs2);
-        process::check_for_child_termination(procs3, padding, is_timestamp);
+        process::check_for_child_termination(procs3, opts.clone());
 
         // Sleep for a moment and do not blow up if more signals are coming our way
         sleep(Duration::from_millis(100));
@@ -114,22 +112,22 @@ pub fn terminate_gracefully(
     log::output(
         "system",
         "sending SIGKILL to all processes",
-        padding,
         None,
         &LogOpt {
             is_color: false,
-            is_timestamp,
+            padding: opts.padding,
+            is_timestamp: opts.is_timestamp,
         },
     );
-    kill_children(procs2, padding, Signal::SIGKILL, 0, is_timestamp);
+
+    kill_children(procs2, Signal::SIGKILL, 0, opts);
 }
 
 pub fn kill_children(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
-    padding: usize,
     signal: Signal,
     _code: i32,
-    is_timestamp: bool,
+    opts: DisplayOpts,
 ) {
     for proc in procs.lock().unwrap().iter() {
         let proc = proc.lock().unwrap();
@@ -140,15 +138,15 @@ pub fn kill_children(
             &format!(
                 "sending {3} for {0:1$} at pid {2}",
                 &proc.name,
-                padding,
+                opts.padding,
                 &child.id(),
                 Signal::as_str(signal),
             ),
-            padding,
             None,
             &LogOpt {
                 is_color: false,
-                is_timestamp,
+                padding: opts.padding,
+                is_timestamp: opts.is_timestamp,
             },
         );
 
@@ -156,20 +154,21 @@ pub fn kill_children(
             log::error(
                 "system",
                 &e,
-                Some(padding),
+                true,
                 &LogOpt {
                     is_color: false,
-                    is_timestamp,
+                    padding: opts.padding,
+                    is_timestamp: opts.is_timestamp,
                 },
             );
             log::output(
                 "system",
                 &format!("exit {}", _code),
-                padding,
                 None,
                 &LogOpt {
                     is_color: false,
-                    is_timestamp,
+                    padding: opts.padding,
+                    is_timestamp: opts.is_timestamp,
                 },
             );
             // https://www.reddit.com/r/rust/comments/emz456/testing_whether_functions_exit/
@@ -207,6 +206,7 @@ mod tests {
                     .arg("trap_signal_at_multithred_1")
                     .spawn()
                     .expect("failed execute test-app-1"),
+                opts: None,
             })),
             Arc::new(Mutex::new(Process {
                 index: 1,
@@ -215,13 +215,21 @@ mod tests {
                     .arg("trap_signal_at_multithred_2")
                     .spawn()
                     .expect("failed execute test-app-2"),
+                opts: None,
             })),
         ]));
 
         let procs2 = Arc::clone(&procs);
         let thread_trap_signal = thread::spawn(move || {
-            trap_signal_at_multithred(procs2, 10, 5, true)
-                .expect("failed trap_signal_at_multithred")
+            trap_signal_at_multithred(
+                procs2,
+                5,
+                DisplayOpts {
+                    padding: 10,
+                    is_timestamp: true,
+                },
+            )
+            .expect("failed trap_signal_at_multithred")
         });
 
         let thread_send_sigint = thread::spawn(move || {

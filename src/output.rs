@@ -1,6 +1,8 @@
 use crate::log::{Log, LogOpt, Printable};
+use crate::opt::DisplayOpts;
 use crate::process::Process;
 use crate::stream_read::{PipeError, PipeStreamReader, PipedLine};
+
 use crossbeam_channel::Select;
 use std::sync::{Arc, Mutex};
 
@@ -9,14 +11,14 @@ pub struct Output {
 }
 
 impl Output {
-    pub fn new(index: usize, padding: usize, is_timestamp: bool) -> Self {
+    pub fn new(index: usize, opts: DisplayOpts) -> Self {
         Output {
             log: Log::new(
                 index,
-                padding,
                 &LogOpt {
                     is_color: true,
-                    is_timestamp,
+                    padding: opts.padding,
+                    is_timestamp: opts.is_timestamp,
                 },
             ),
         }
@@ -115,10 +117,17 @@ mod tests {
                 .stderr(Stdio::piped())
                 .spawn()
                 .expect("failed execute handle_output command"),
+            opts: None,
         }));
 
         let proc2 = Arc::clone(&proc);
-        let output = Output::new(0, 10, true);
+        let output = Output::new(
+            0,
+            DisplayOpts {
+                padding: 10,
+                is_timestamp: true,
+            },
+        );
         output.handle_output(&proc2);
 
         Ok(())

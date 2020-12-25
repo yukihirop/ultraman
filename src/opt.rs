@@ -32,3 +32,20 @@ pub enum Ultraman {
     )]
     Export(ExportOpts),
 }
+
+///// Options not related to commands /////
+
+#[derive(Clone)]
+pub struct DisplayOpts {
+    pub padding: usize,
+    pub is_timestamp: bool,
+}
+
+impl Default for DisplayOpts {
+    fn default() -> Self {
+        DisplayOpts {
+            padding: 0,
+            is_timestamp: true,
+        }
+    }
+}

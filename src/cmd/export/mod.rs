@@ -11,7 +11,7 @@ pub mod supervisord;
 pub mod systemd;
 pub mod upstart;
 
-#[derive(StructOpt, Debug, Default)]
+#[derive(StructOpt, Debug, Default, Clone)]
 #[structopt(setting(clap::AppSettings::ColoredHelp))]
 pub struct ExportOpts {
     /// Specify  process management format
@@ -115,114 +115,42 @@ fn new(opts: &ExportOpts) -> Box<dyn Exportable> {
             // Read the formation from the command line option and always call it before process_len for the convenience of setting concurrency
             procfile.set_concurrency(&opts.formation);
             expo.procfile = procfile;
-            expo.format = opts.format.clone();
-            expo.location = opts.location.clone();
-            expo.app = opts.app.clone();
-            expo.formation = opts.formation.clone();
-            expo.log_path = opts.log_path.clone();
-            expo.run_path = opts.run_path.clone();
-            expo.port = opts.port.clone();
-            expo.template_path = opts.template_path.clone();
-            expo.user = opts.user.clone();
-            expo.env_path = opts.env_path.clone();
-            expo.procfile_path = opts.procfile_path.clone();
-            expo.root_path = opts.root_path.clone();
-            expo.timeout = opts.timeout.clone();
+            expo.opts = opts.clone();
             expo
         }
         ExportFormat::Systemd => {
             let mut expo = systemd::Exporter::boxed_new();
             procfile.set_concurrency(&opts.formation);
             expo.procfile = procfile;
-            expo.format = opts.format.clone();
-            expo.location = opts.location.clone();
-            expo.app = opts.app.clone();
-            expo.formation = opts.formation.clone();
-            expo.log_path = opts.log_path.clone();
-            expo.run_path = opts.run_path.clone();
-            expo.port = opts.port.clone();
-            expo.template_path = opts.template_path.clone();
-            expo.user = opts.user.clone();
-            expo.env_path = opts.env_path.clone();
-            expo.procfile_path = opts.procfile_path.clone();
-            expo.root_path = opts.root_path.clone();
-            expo.timeout = opts.timeout.clone();
+            expo.opts = opts.clone();
             expo
         }
         ExportFormat::Supervisord => {
             let mut expo = supervisord::Exporter::boxed_new();
             procfile.set_concurrency(&opts.formation);
             expo.procfile = procfile;
-            expo.format = opts.format.clone();
-            expo.location = opts.location.clone();
-            expo.app = opts.app.clone();
-            expo.formation = opts.formation.clone();
-            expo.log_path = opts.log_path.clone();
-            expo.run_path = opts.run_path.clone();
-            expo.port = opts.port.clone();
-            expo.template_path = opts.template_path.clone();
-            expo.user = opts.user.clone();
-            expo.env_path = opts.env_path.clone();
-            expo.procfile_path = opts.procfile_path.clone();
-            expo.root_path = opts.root_path.clone();
-            expo.timeout = opts.timeout.clone();
+            expo.opts = opts.clone();
             expo
         }
         ExportFormat::Runit => {
             let mut expo = runit::Exporter::boxed_new();
             procfile.set_concurrency(&opts.formation);
             expo.procfile = procfile;
-            expo.format = opts.format.clone();
-            expo.location = opts.location.clone();
-            expo.app = opts.app.clone();
-            expo.formation = opts.formation.clone();
-            expo.log_path = opts.log_path.clone();
-            expo.run_path = opts.run_path.clone();
-            expo.port = opts.port.clone();
-            expo.template_path = opts.template_path.clone();
-            expo.user = opts.user.clone();
-            expo.env_path = opts.env_path.clone();
-            expo.procfile_path = opts.procfile_path.clone();
-            expo.root_path = opts.root_path.clone();
-            expo.timeout = opts.timeout.clone();
+            expo.opts = opts.clone();
             expo
         }
         ExportFormat::Launchd => {
             let mut expo = launchd::Exporter::boxed_new();
             procfile.set_concurrency(&opts.formation);
             expo.procfile = procfile;
-            expo.format = opts.format.clone();
-            expo.location = opts.location.clone();
-            expo.app = opts.app.clone();
-            expo.formation = opts.formation.clone();
-            expo.log_path = opts.log_path.clone();
-            expo.run_path = opts.run_path.clone();
-            expo.port = opts.port.clone();
-            expo.template_path = opts.template_path.clone();
-            expo.user = opts.user.clone();
-            expo.env_path = opts.env_path.clone();
-            expo.procfile_path = opts.procfile_path.clone();
-            expo.root_path = opts.root_path.clone();
-            expo.timeout = opts.timeout.clone();
+            expo.opts = opts.clone();
             expo
         }
         ExportFormat::Daemon => {
             let mut expo = daemon::Exporter::boxed_new();
             procfile.set_concurrency(&opts.formation);
             expo.procfile = procfile;
-            expo.format = opts.format.clone();
-            expo.location = opts.location.clone();
-            expo.app = opts.app.clone();
-            expo.formation = opts.formation.clone();
-            expo.log_path = opts.log_path.clone();
-            expo.run_path = opts.run_path.clone();
-            expo.port = opts.port.clone();
-            expo.template_path = opts.template_path.clone();
-            expo.user = opts.user.clone();
-            expo.env_path = opts.env_path.clone();
-            expo.procfile_path = opts.procfile_path.clone();
-            expo.root_path = opts.root_path.clone();
-            expo.timeout = opts.timeout.clone();
+            expo.opts = opts.clone();
             expo
         }
     }

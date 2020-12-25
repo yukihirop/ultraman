@@ -16,13 +16,19 @@ pub struct EnvParameter {
     pub(crate) value: String,
 }
 
+pub struct Template {
+    pub(crate) template_path: PathBuf,
+    pub(crate) data: Map<String, Json>,
+    pub(crate) output_path: PathBuf,
+}
+
 pub trait Exportable {
     fn export(&self) -> Result<(), Box<dyn std::error::Error>>;
     //https://yajamon.hatenablog.com/entry/2018/01/30/202849
-    fn opts(&self) -> ExportOpts;
+    fn ref_opts(&self) -> &ExportOpts;
 
     fn base_export(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let opts = self.opts();
+        let opts = self.ref_opts();
         let location = &opts.location;
         let display = location.clone().into_os_string().into_string().unwrap();
         create_dir_all(&location).expect(&format!("Could not create: {}", display));
@@ -33,28 +39,34 @@ pub trait Exportable {
     }
 
     fn app(&self) -> String {
-        self.opts().app.unwrap_or_else(|| "app".to_string())
+        self.ref_opts()
+            .app
+            .clone()
+            .unwrap_or_else(|| "app".to_string())
     }
 
     fn log_path(&self) -> PathBuf {
-        self.opts()
+        self.ref_opts()
             .log_path
+            .clone()
             .unwrap_or_else(|| PathBuf::from(format!("/var/log/{}", self.app())))
     }
 
     fn run_path(&self) -> PathBuf {
-        self.opts()
+        self.ref_opts()
             .run_path
+            .clone()
             .unwrap_or_else(|| PathBuf::from(format!("/var/run/{}", self.app())))
     }
 
     fn username(&self) -> String {
-        self.opts().user.unwrap_or_else(|| self.app())
+        self.ref_opts().user.clone().unwrap_or_else(|| self.app())
     }
 
     fn root_path(&self) -> PathBuf {
-        self.opts()
+        self.ref_opts()
             .root_path
+            .clone()
             .unwrap_or_else(|| env::current_dir().unwrap())
     }
 
@@ -83,36 +95,38 @@ pub trait Exportable {
         println!("[ultraman export] {}", msg)
     }
 
-    fn write_template(
-        &self,
-        template_path: &PathBuf,
-        data: &mut Map<String, Json>,
-        output_path: &PathBuf,
-    ) {
+    fn write_template(&self, tmpl: Template) {
         let handlebars = Handlebars::new();
-        let display_template = template_path
+        let display_template = tmpl
+            .template_path
             .clone()
             .into_os_string()
             .into_string()
             .unwrap();
-        let display_output = output_path.clone().into_os_string().into_string().unwrap();
-        let mut template_source =
-            File::open(template_path).expect(&format!("Could not open file: {}", display_template));
-        let mut output_file = File::create(output_path)
+        let display_output = tmpl
+            .output_path
+            .clone()
+            .into_os_string()
+            .into_string()
+            .unwrap();
+        let mut template_source = File::open(tmpl.template_path)
+            .expect(&format!("Could not open file: {}", display_template));
+        let mut output_file = File::create(tmpl.output_path)
             .expect(&format!("Could not create file: {}", &display_output));
         self.say(&format!("writing: {}", &display_output));
+        let mut data = tmpl.data;
         handlebars
-            .render_template_source_to_write(&mut template_source, data, &mut output_file)
+            .render_template_source_to_write(&mut template_source, &mut data, &mut output_file)
             .expect(&format!("Coult not render file: {}", &display_output));
     }
 
     fn output_path(&self, filename: String) -> PathBuf {
-        let location = self.opts().location;
+        let location = self.ref_opts().location.clone();
         location.join(filename)
     }
 
     fn env_without_port(&self) -> Vec<EnvParameter> {
-        let mut env = read_env(self.opts().env_path).expect("failed read .env");
+        let mut env = read_env(self.ref_opts().env_path.clone()).expect("failed read .env");
         env.remove("PORT");
         let mut env_without_port: Vec<EnvParameter> = vec![];
         for (key, value) in env {
