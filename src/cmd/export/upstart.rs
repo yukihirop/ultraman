@@ -81,7 +81,12 @@ impl Exporter {
         let p = ProcessParams {
             app: self.app(),
             name: app_name.to_string(),
-            port: port_for(self.opts.env_path.clone(), self.opts.port.clone(), index, con_index + 1),
+            port: port_for(
+                self.opts.env_path.clone(),
+                self.opts.port.clone(),
+                index,
+                con_index + 1,
+            ),
             env_without_port: self.env_without_port(),
             setuid: self.username(),
             chdir: self.root_path().into_os_string().into_string().unwrap(),
@@ -112,7 +117,7 @@ impl Default for Exporter {
                 procfile_path: PathBuf::from("Procfile"),
                 root_path: Some(env::current_dir().unwrap()),
                 timeout: String::from("5"),
-            }
+            },
         }
     }
 }
@@ -128,7 +133,7 @@ impl Exportable for Exporter {
         let output_path = self.output_path(master_file);
 
         clean_paths.push(output_path.clone());
-        tmpl_data.push(Template{
+        tmpl_data.push(Template {
             template_path: self.master_tmpl_path(),
             data: Map::new(),
             output_path,
@@ -142,7 +147,7 @@ impl Exportable for Exporter {
             let output_path = self.output_path(process_master_file);
 
             clean_paths.push(output_path.clone());
-            tmpl_data.push(Template{
+            tmpl_data.push(Template {
                 template_path: self.process_master_tmpl_path(),
                 data: self.make_process_master_data(),
                 output_path,
@@ -153,7 +158,7 @@ impl Exportable for Exporter {
                 let output_path = self.output_path(process_file);
 
                 clean_paths.push(output_path.clone());
-                tmpl_data.push(Template{
+                tmpl_data.push(Template {
                     template_path: self.process_tmpl_path(),
                     data: self.make_process_data(pe, &name, index, n),
                     output_path,

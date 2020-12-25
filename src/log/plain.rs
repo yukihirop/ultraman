@@ -1,5 +1,5 @@
-use crate::opt::DisplayOpts;
 use crate::log::{now, Printable};
+use crate::opt::DisplayOpts;
 
 #[derive(Default)]
 pub struct Log {
@@ -24,7 +24,13 @@ impl Log {
 impl Printable for Log {
     fn output(&self, proc_name: &str, content: &str) {
         if self.opts.is_timestamp {
-            println!("{3} {0:1$} | {2}", proc_name, self.opts.padding, content, now())
+            println!(
+                "{3} {0:1$} | {2}",
+                proc_name,
+                self.opts.padding,
+                content,
+                now()
+            )
         } else {
             println!("{0:1$} | {2}", proc_name, self.opts.padding, content)
         }

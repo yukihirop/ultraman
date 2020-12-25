@@ -11,7 +11,7 @@ use std::path::PathBuf;
 
 pub struct Exporter {
     pub procfile: Procfile,
-    pub opts: ExportOpts
+    pub opts: ExportOpts,
 }
 
 #[derive(Serialize)]
@@ -51,7 +51,7 @@ impl Default for Exporter {
                 procfile_path: PathBuf::from("Procfile"),
                 root_path: Some(env::current_dir().unwrap()),
                 timeout: String::from("5"),
-            }
+            },
         }
     }
 }
@@ -100,7 +100,12 @@ impl Exporter {
             app: self.app(),
             user: self.username(),
             work_dir: self.root_path().into_os_string().into_string().unwrap(),
-            port: port_for(self.opts.env_path.clone(), self.opts.port.clone(), index, con_index + 1),
+            port: port_for(
+                self.opts.env_path.clone(),
+                self.opts.port.clone(),
+                index,
+                con_index + 1,
+            ),
             process_name: process_name.to_string(),
             process_command: pe.command.to_string(),
             env_without_port: self.env_without_port(),
@@ -130,10 +135,10 @@ impl Exportable for Exporter {
                 let data = self.make_process_service_data(pe, &process_name, index, n);
 
                 clean_paths.push(output_path.clone());
-                tmpl_data.push(Template{
+                tmpl_data.push(Template {
                     template_path: self.process_service_tmpl_path(),
                     data,
-                    output_path
+                    output_path,
                 });
                 service_names.push(service_filename);
             }
@@ -143,10 +148,10 @@ impl Exportable for Exporter {
         let data = self.make_master_target_data(service_names);
 
         clean_paths.push(output_path.clone());
-        tmpl_data.push(Template{
+        tmpl_data.push(Template {
             template_path: self.master_target_tmpl_path(),
             data,
-            output_path
+            output_path,
         });
 
         for path in clean_paths {

@@ -39,18 +39,23 @@ pub trait Exportable {
     }
 
     fn app(&self) -> String {
-        self.ref_opts().app.clone().unwrap_or_else(|| "app".to_string())
+        self.ref_opts()
+            .app
+            .clone()
+            .unwrap_or_else(|| "app".to_string())
     }
 
     fn log_path(&self) -> PathBuf {
         self.ref_opts()
-            .log_path.clone()
+            .log_path
+            .clone()
             .unwrap_or_else(|| PathBuf::from(format!("/var/log/{}", self.app())))
     }
 
     fn run_path(&self) -> PathBuf {
         self.ref_opts()
-            .run_path.clone()
+            .run_path
+            .clone()
             .unwrap_or_else(|| PathBuf::from(format!("/var/run/{}", self.app())))
     }
 
@@ -60,7 +65,8 @@ pub trait Exportable {
 
     fn root_path(&self) -> PathBuf {
         self.ref_opts()
-            .root_path.clone()
+            .root_path
+            .clone()
             .unwrap_or_else(|| env::current_dir().unwrap())
     }
 
@@ -89,19 +95,22 @@ pub trait Exportable {
         println!("[ultraman export] {}", msg)
     }
 
-    fn write_template(
-        &self,
-        tmpl: Template,
-    ) {
+    fn write_template(&self, tmpl: Template) {
         let handlebars = Handlebars::new();
-        let display_template = tmpl.template_path
+        let display_template = tmpl
+            .template_path
             .clone()
             .into_os_string()
             .into_string()
             .unwrap();
-        let display_output = tmpl.output_path.clone().into_os_string().into_string().unwrap();
-        let mut template_source =
-            File::open(tmpl.template_path).expect(&format!("Could not open file: {}", display_template));
+        let display_output = tmpl
+            .output_path
+            .clone()
+            .into_os_string()
+            .into_string()
+            .unwrap();
+        let mut template_source = File::open(tmpl.template_path)
+            .expect(&format!("Could not open file: {}", display_template));
         let mut output_file = File::create(tmpl.output_path)
             .expect(&format!("Could not create file: {}", &display_output));
         self.say(&format!("writing: {}", &display_output));

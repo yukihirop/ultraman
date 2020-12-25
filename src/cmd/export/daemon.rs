@@ -59,7 +59,7 @@ impl Default for Exporter {
                 procfile_path: PathBuf::from("Procfile"),
                 root_path: Some(env::current_dir().unwrap()),
                 timeout: String::from("5"),
-            }
+            },
         }
     }
 }
@@ -157,7 +157,12 @@ impl Exporter {
     }
 
     fn environment(&self, index: usize, con_index: usize) -> Vec<EnvParameter> {
-        let port = port_for(self.opts.env_path.clone(), self.opts.port.clone(), index, con_index + 1);
+        let port = port_for(
+            self.opts.env_path.clone(),
+            self.opts.port.clone(),
+            index,
+            con_index + 1,
+        );
         let mut env = read_env(self.opts.env_path.clone()).expect("failed read .env");
         env.insert("PORT".to_string(), port);
 
@@ -183,7 +188,7 @@ impl Exportable for Exporter {
         let output_path = self.opts.location.join(format!("{}.conf", self.app()));
 
         clean_paths.push(output_path.clone());
-        tmpl_data.push(Template{
+        tmpl_data.push(Template {
             template_path: self.master_tmpl_path(),
             data: self.make_master_data(),
             output_path,
@@ -199,7 +204,7 @@ impl Exportable for Exporter {
                 .join(format!("{}-{}.conf", self.app(), &name));
 
             clean_paths.push(output_path.clone());
-            tmpl_data.push(Template{
+            tmpl_data.push(Template {
                 template_path: self.process_master_tmpl_path(),
                 data: self.make_process_master_data(),
                 output_path,
@@ -211,7 +216,7 @@ impl Exportable for Exporter {
                 let output_path = self.opts.location.join(&process_name);
 
                 clean_paths.push(output_path.clone());
-                tmpl_data.push(Template{
+                tmpl_data.push(Template {
                     template_path: self.process_tmpl_path(),
                     data: self.make_process_data(pe, &service_name, index, n),
                     output_path,

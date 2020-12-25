@@ -1,7 +1,7 @@
 use crate::env::read_env;
 use crate::log::{self, LogOpt};
-use crate::signal;
 use crate::opt::DisplayOpts;
+use crate::signal;
 use nix::sys::signal::Signal;
 use nix::sys::wait::WaitStatus;
 use nix::{self, unistd::Pid};
@@ -82,8 +82,7 @@ pub fn build_check_for_child_termination_thread(
                 // Waiting for the end of any one child process
                 let procs2 = Arc::clone(&procs);
                 let procs3 = Arc::clone(&procs);
-                if let Some((_, code)) = check_for_child_termination(procs2, opts.clone())
-                {
+                if let Some((_, code)) = check_for_child_termination(procs2, opts.clone()) {
                     signal::kill_children(procs3, Signal::SIGTERM, code, opts.clone())
                 }
             }
@@ -103,15 +102,15 @@ pub fn check_for_child_termination(
                 let proc_name = &proc.name;
                 let proc_index = proc.index;
                 log::output(
-                        &proc_name,
-                        &message,
-                        Some(proc_index),
-                        &LogOpt {
-                            is_color: true,
-                            padding: opts.padding,
-                            is_timestamp: opts.is_timestamp,
-                        },
-                    );
+                    &proc_name,
+                    &message,
+                    Some(proc_index),
+                    &LogOpt {
+                        is_color: true,
+                        padding: opts.padding,
+                        is_timestamp: opts.is_timestamp,
+                    },
+                );
             }
             Pid::from_raw(child_id) != pid
         });
@@ -204,8 +203,14 @@ mod tests {
         let procs2 = Arc::clone(&procs);
         let padding = 10;
 
-        build_check_for_child_termination_thread(procs2, DisplayOpts { padding, is_timestamp: true })
-            .join()
-            .expect("exit 0");
+        build_check_for_child_termination_thread(
+            procs2,
+            DisplayOpts {
+                padding,
+                is_timestamp: true,
+            },
+        )
+        .join()
+        .expect("exit 0");
     }
 }

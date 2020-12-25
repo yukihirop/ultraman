@@ -57,7 +57,7 @@ impl Default for Exporter {
                 procfile_path: PathBuf::from("Procfile"),
                 root_path: Some(env::current_dir().unwrap()),
                 timeout: String::from("5"),
-            }
+            },
         }
     }
 }
@@ -94,7 +94,12 @@ impl Exporter {
     }
 
     fn environment(&self, index: usize, con_index: usize) -> String {
-        let port = port_for(self.opts.env_path.clone(), self.opts.port.clone(), index, con_index + 1);
+        let port = port_for(
+            self.opts.env_path.clone(),
+            self.opts.port.clone(),
+            index,
+            con_index + 1,
+        );
         let mut env = read_env(self.opts.env_path.clone()).expect("failed read .env");
         env.insert("PORT".to_string(), port);
 
@@ -146,7 +151,7 @@ impl Exportable for Exporter {
 
         let output_path = self.output_path("app.conf".to_string());
         self.clean(&output_path);
-        self.write_template(Template{
+        self.write_template(Template {
             template_path: self.app_conf_tmpl_path(),
             data: self.make_app_conf_data(service_names, data),
             output_path,

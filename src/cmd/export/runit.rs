@@ -51,7 +51,7 @@ impl Default for Exporter {
                 procfile_path: PathBuf::from("Procfile"),
                 root_path: Some(env::current_dir().unwrap()),
                 timeout: String::from("5"),
-            }
+            },
         }
     }
 }
@@ -108,7 +108,12 @@ impl Exporter {
 
     fn write_env(&self, output_dir_path: &PathBuf, index: usize, con_index: usize) {
         let mut env = read_env(self.opts.env_path.clone()).expect("failed read .env");
-        let port = port_for(self.opts.env_path.clone(), self.opts.port.clone(), index, con_index + 1);
+        let port = port_for(
+            self.opts.env_path.clone(),
+            self.opts.port.clone(),
+            index,
+            con_index + 1,
+        );
         env.insert("PORT".to_string(), port);
 
         for (key, val) in env.iter() {
@@ -154,7 +159,7 @@ impl Exportable for Exporter {
                 path_for_run.push(run_file_path);
                 path_for_env.push(env_dir_path);
                 path_for_log.push(log_dir_path);
-                
+
                 create_recursive_dir_paths.push(path_for_env.clone());
                 create_recursive_dir_paths.push(path_for_log.clone());
 
@@ -165,7 +170,7 @@ impl Exportable for Exporter {
                 let log_run_data = self.make_log_run_data(&process_name);
 
                 clean_paths.push(path_for_run.clone());
-                tmpl_data.push(Template{
+                tmpl_data.push(Template {
                     template_path: self.run_tmpl_path(),
                     data: run_data,
                     output_path: path_for_run,
@@ -173,15 +178,15 @@ impl Exportable for Exporter {
 
                 path_for_log.push("run");
                 clean_paths.push(path_for_log.clone());
-                tmpl_data.push(Template{
+                tmpl_data.push(Template {
                     template_path: self.log_run_tmpl_path(),
                     data: log_run_data,
-                    output_path: path_for_log
+                    output_path: path_for_log,
                 });
-                env_data.push(EnvTemplate{
+                env_data.push(EnvTemplate {
                     template_path: path_for_env.clone(),
                     index,
-                    con_index: n
+                    con_index: n,
                 });
             }
         }

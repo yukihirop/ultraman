@@ -42,10 +42,10 @@ pub struct DisplayOpts {
 }
 
 impl Default for DisplayOpts {
-    fn default()-> Self {
+    fn default() -> Self {
         DisplayOpts {
             padding: 0,
-            is_timestamp: true
+            is_timestamp: true,
         }
     }
 }

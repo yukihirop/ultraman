@@ -1,5 +1,5 @@
-use crate::opt::DisplayOpts;
 use crate::log::{now, Printable};
+use crate::opt::DisplayOpts;
 use colored::*;
 
 const COLORS: [&str; 12] = [

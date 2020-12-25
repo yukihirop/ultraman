@@ -1,7 +1,7 @@
 use crate::log::{Log, LogOpt, Printable};
+use crate::opt::DisplayOpts;
 use crate::process::Process;
 use crate::stream_read::{PipeError, PipeStreamReader, PipedLine};
-use crate::opt::DisplayOpts;
 
 use crossbeam_channel::Select;
 use std::sync::{Arc, Mutex};
@@ -121,7 +121,13 @@ mod tests {
         }));
 
         let proc2 = Arc::clone(&proc);
-        let output = Output::new(0, DisplayOpts { padding: 10, is_timestamp: true });
+        let output = Output::new(
+            0,
+            DisplayOpts {
+                padding: 10,
+                is_timestamp: true,
+            },
+        );
         output.handle_output(&proc2);
 
         Ok(())

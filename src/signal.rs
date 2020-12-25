@@ -1,6 +1,6 @@
 use crate::log::{self, LogOpt};
-use crate::process::{self, Process};
 use crate::opt::DisplayOpts;
+use crate::process::{self, Process};
 
 use nix::sys::signal::{self, Signal};
 use nix::unistd::Pid;
@@ -20,8 +20,7 @@ pub fn handle_signal_thread(
     let result = thread::Builder::new()
         .name(String::from("handling signal"))
         .spawn(move || {
-            trap_signal_at_multithred(procs, timeout, opts)
-                .expect("failed trap signals")
+            trap_signal_at_multithred(procs, timeout, opts).expect("failed trap signals")
         })
         .expect("failed handle signals");
 
@@ -222,8 +221,15 @@ mod tests {
 
         let procs2 = Arc::clone(&procs);
         let thread_trap_signal = thread::spawn(move || {
-            trap_signal_at_multithred(procs2, 5, DisplayOpts { padding: 10, is_timestamp: true })
-                .expect("failed trap_signal_at_multithred")
+            trap_signal_at_multithred(
+                procs2,
+                5,
+                DisplayOpts {
+                    padding: 10,
+                    is_timestamp: true,
+                },
+            )
+            .expect("failed trap_signal_at_multithred")
         });
 
         let thread_send_sigint = thread::spawn(move || {
