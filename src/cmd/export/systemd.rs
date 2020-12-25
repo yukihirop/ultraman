@@ -11,20 +11,7 @@ use std::path::PathBuf;
 
 pub struct Exporter {
     pub procfile: Procfile,
-    // ExportOpts
-    pub format: String,
-    pub location: PathBuf,
-    pub app: Option<String>,
-    pub formation: String,
-    pub log_path: Option<PathBuf>,
-    pub run_path: Option<PathBuf>,
-    pub port: Option<String>,
-    pub template_path: Option<PathBuf>,
-    pub user: Option<String>,
-    pub env_path: PathBuf,
-    pub procfile_path: PathBuf,
-    pub root_path: Option<PathBuf>,
-    pub timeout: String,
+    pub opts: ExportOpts
 }
 
 #[derive(Serialize)]
@@ -50,19 +37,21 @@ impl Default for Exporter {
             procfile: Procfile {
                 data: HashMap::new(),
             },
-            format: String::from(""),
-            location: PathBuf::from("location"),
-            app: None,
-            formation: String::from("all=1"),
-            log_path: None,
-            run_path: None,
-            port: None,
-            template_path: None,
-            user: None,
-            env_path: PathBuf::from(".env"),
-            procfile_path: PathBuf::from("Procfile"),
-            root_path: Some(env::current_dir().unwrap()),
-            timeout: String::from("5"),
+            opts: ExportOpts {
+                format: String::from(""),
+                location: PathBuf::from("location"),
+                app: None,
+                formation: String::from("all=1"),
+                log_path: None,
+                run_path: None,
+                port: None,
+                template_path: None,
+                user: None,
+                env_path: PathBuf::from(".env"),
+                procfile_path: PathBuf::from("Procfile"),
+                root_path: Some(env::current_dir().unwrap()),
+                timeout: String::from("5"),
+            }
         }
     }
 }
@@ -111,11 +100,11 @@ impl Exporter {
             app: self.app(),
             user: self.username(),
             work_dir: self.root_path().into_os_string().into_string().unwrap(),
-            port: port_for(self.opts().env_path, self.opts().port, index, con_index + 1),
+            port: port_for(self.opts.env_path.clone(), self.opts.port.clone(), index, con_index + 1),
             process_name: process_name.to_string(),
             process_command: pe.command.to_string(),
             env_without_port: self.env_without_port(),
-            timeout: self.opts().timeout,
+            timeout: self.opts.timeout.clone(),
         };
         data.insert("process_service".to_string(), to_json(&ps));
         data
@@ -153,20 +142,6 @@ impl Exportable for Exporter {
     }
 
     fn opts(&self) -> ExportOpts {
-        ExportOpts {
-            format: self.format.clone(),
-            location: self.location.clone(),
-            app: self.app.clone(),
-            formation: self.formation.clone(),
-            log_path: self.log_path.clone(),
-            run_path: self.run_path.clone(),
-            port: self.port.clone(),
-            template_path: self.template_path.clone(),
-            user: self.user.clone(),
-            env_path: self.env_path.clone(),
-            procfile_path: self.procfile_path.clone(),
-            root_path: self.root_path.clone(),
-            timeout: self.timeout.clone(),
-        }
+        self.opts.clone()
     }
 }

@@ -14,20 +14,7 @@ use std::path::PathBuf;
 
 pub struct Exporter {
     pub procfile: Procfile,
-    // ExportOpts
-    pub format: String,
-    pub location: PathBuf,
-    pub app: Option<String>,
-    pub formation: String,
-    pub log_path: Option<PathBuf>,
-    pub run_path: Option<PathBuf>,
-    pub port: Option<String>,
-    pub template_path: Option<PathBuf>,
-    pub user: Option<String>,
-    pub env_path: PathBuf,
-    pub procfile_path: PathBuf,
-    pub root_path: Option<PathBuf>,
-    pub timeout: String,
+    pub opts: ExportOpts,
 }
 
 #[derive(Serialize)]
@@ -50,19 +37,21 @@ impl Default for Exporter {
             procfile: Procfile {
                 data: HashMap::new(),
             },
-            format: String::from(""),
-            location: PathBuf::from("location"),
-            app: None,
-            formation: String::from("all=1"),
-            log_path: None,
-            run_path: None,
-            port: None,
-            template_path: None,
-            user: None,
-            env_path: PathBuf::from(".env"),
-            procfile_path: PathBuf::from("Procfile"),
-            root_path: Some(env::current_dir().unwrap()),
-            timeout: String::from("5"),
+            opts: ExportOpts {
+                format: String::from(""),
+                location: PathBuf::from("location"),
+                app: None,
+                formation: String::from("all=1"),
+                log_path: None,
+                run_path: None,
+                port: None,
+                template_path: None,
+                user: None,
+                env_path: PathBuf::from(".env"),
+                procfile_path: PathBuf::from("Procfile"),
+                root_path: Some(env::current_dir().unwrap()),
+                timeout: String::from("5"),
+            }
         }
     }
 }
@@ -118,8 +107,8 @@ impl Exporter {
     }
 
     fn write_env(&self, output_dir_path: &PathBuf, index: usize, con_index: usize) {
-        let mut env = read_env(self.opts().env_path).expect("failed read .env");
-        let port = port_for(self.opts().env_path, self.opts().port, index, con_index + 1);
+        let mut env = read_env(self.opts.env_path.clone()).expect("failed read .env");
+        let port = port_for(self.opts.env_path.clone(), self.opts.port.clone(), index, con_index + 1);
         env.insert("PORT".to_string(), port);
 
         for (key, val) in env.iter() {
@@ -145,7 +134,7 @@ impl Exportable for Exporter {
                 index += 1;
                 let process_name = format!("{}-{}", &name, n + 1);
                 let service_name = format!("{}-{}-{}", self.app(), &name, n + 1);
-                let mut path_for_run = self.opts().location;
+                let mut path_for_run = self.opts.location.clone();
                 let mut path_for_env = path_for_run.clone();
                 let mut path_for_log = path_for_run.clone();
                 let run_file_path = PathBuf::from(format!("{}/run", &service_name));
@@ -178,20 +167,6 @@ impl Exportable for Exporter {
     }
 
     fn opts(&self) -> ExportOpts {
-        ExportOpts {
-            format: self.format.clone(),
-            location: self.location.clone(),
-            app: self.app.clone(),
-            formation: self.formation.clone(),
-            log_path: self.log_path.clone(),
-            run_path: self.run_path.clone(),
-            port: self.port.clone(),
-            template_path: self.template_path.clone(),
-            user: self.user.clone(),
-            env_path: self.env_path.clone(),
-            procfile_path: self.procfile_path.clone(),
-            root_path: self.root_path.clone(),
-            timeout: self.timeout.clone(),
-        }
+        self.opts.clone()
     }
 }
