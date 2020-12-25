@@ -127,15 +127,14 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
 
     // use handle_signal
     let procs2 = Arc::clone(&procs);
-    let check_for_child_termination_thread = process::build_check_for_child_termination_thread(procs2, display_opts);
+    let check_for_child_termination_thread = process::build_check_for_child_termination_thread(procs2, display_opts.clone());
     proc_handles.push(check_for_child_termination_thread);
 
     let procs = Arc::clone(&procs);
     proc_handles.push(signal::handle_signal_thread(
         procs,
-        padding,
         opts.timeout.parse::<u64>().unwrap(),
-        is_timestamp,
+        display_opts,
     ));
 
     for handle in proc_handles {

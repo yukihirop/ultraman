@@ -82,9 +82,9 @@ pub fn build_check_for_child_termination_thread(
                 // Waiting for the end of any one child process
                 let procs2 = Arc::clone(&procs);
                 let procs3 = Arc::clone(&procs);
-                if let Some((_, code)) = check_for_child_termination(procs2, opts.padding, opts.is_timestamp)
+                if let Some((_, code)) = check_for_child_termination(procs2, opts.clone())
                 {
-                    signal::kill_children(procs3, opts.padding, Signal::SIGTERM, code, opts.is_timestamp)
+                    signal::kill_children(procs3, Signal::SIGTERM, code, opts.clone())
                 }
             }
         })
@@ -93,8 +93,7 @@ pub fn build_check_for_child_termination_thread(
 
 pub fn check_for_child_termination(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
-    padding: usize,
-    is_timestamp: bool,
+    opts: DisplayOpts,
 ) -> Option<(Pid, i32)> {
     let child_termination_fn = Box::new(move |pid: Pid, message: &str| {
         procs.lock().unwrap().retain(|p| {
@@ -106,11 +105,11 @@ pub fn check_for_child_termination(
                 log::output(
                         &proc_name,
                         &message,
-                        padding,
+                        opts.padding,
                         Some(proc_index),
                         &LogOpt {
                             is_color: true,
-                            is_timestamp,
+                            is_timestamp: opts.is_timestamp,
                         },
                     );
             }
