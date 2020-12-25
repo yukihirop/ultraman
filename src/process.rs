@@ -1,6 +1,7 @@
 use crate::env::read_env;
 use crate::log::{self, LogOpt};
 use crate::signal;
+use crate::opt::DisplayOpts;
 use nix::sys::signal::Signal;
 use nix::sys::wait::WaitStatus;
 use nix::{self, unistd::Pid};
@@ -13,17 +14,11 @@ use std::thread::{self, JoinHandle};
 #[cfg(not(test))]
 use std::process::exit;
 
-#[derive(Clone)]
-pub struct ProcessOpts {
-    pub padding: usize,
-    pub is_timestamp: bool,
-}
-
 pub struct Process {
     pub index: usize,
     pub name: String,
     pub child: Child,
-    pub opts: Option<ProcessOpts>,
+    pub opts: Option<DisplayOpts>,
 }
 
 impl Process {
@@ -34,7 +29,7 @@ impl Process {
         port: Option<String>,
         concurrency_index: usize,
         index: usize,
-        opts: Option<ProcessOpts>,
+        opts: Option<DisplayOpts>,
     ) -> Self {
         let mut read_env = read_env(env_path.clone()).expect("failed read .env");
         read_env.insert(
@@ -78,7 +73,7 @@ where
 
 pub fn build_check_for_child_termination_thread(
     procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
-    opts: ProcessOpts,
+    opts: DisplayOpts,
 ) -> JoinHandle<()> {
     thread::Builder::new()
         .name(String::from(format!("check child terminated")))
@@ -210,7 +205,7 @@ mod tests {
         let procs2 = Arc::clone(&procs);
         let padding = 10;
 
-        build_check_for_child_termination_thread(procs2, ProcessOpts { padding, is_timestamp: true })
+        build_check_for_child_termination_thread(procs2, DisplayOpts { padding, is_timestamp: true })
             .join()
             .expect("exit 0");
     }

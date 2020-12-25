@@ -32,3 +32,11 @@ pub enum Ultraman {
     )]
     Export(ExportOpts),
 }
+
+///// Options not related to commands /////
+
+#[derive(Clone)]
+pub struct DisplayOpts {
+    pub padding: usize,
+    pub is_timestamp: bool,
+}

@@ -1,7 +1,8 @@
 use crate::output;
-use crate::process::{self, Process, ProcessOpts};
+use crate::process::{self, Process};
 use crate::procfile::read_procfile;
 use crate::signal;
+use crate::opt::DisplayOpts;
 
 use std::path::PathBuf;
 use std::sync::{Arc, Barrier, Mutex};
@@ -71,7 +72,7 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
     let barrier = Arc::new(Barrier::new(process_len + 1));
     let mut total = 0;
     let is_timestamp = !opts.is_no_timestamp;
-    let process_opts = ProcessOpts { padding, is_timestamp };
+    let display_opts = DisplayOpts { padding, is_timestamp };
 
     for (name, pe) in procfile.data.iter() {
         let con = pe.concurrency.get();
@@ -87,7 +88,7 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
             let cmd = pe.command.clone();
             let env_path = opts.env_path.clone();
             let port = opts.port.clone();
-            let opts = process_opts.clone();
+            let opts = display_opts.clone();
 
             let exec_and_output_thread = process::build_exec_and_output_thread(move || {
                 let proc = Process::new(
@@ -126,7 +127,7 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
 
     // use handle_signal
     let procs2 = Arc::clone(&procs);
-    let check_for_child_termination_thread = process::build_check_for_child_termination_thread(procs2, process_opts);
+    let check_for_child_termination_thread = process::build_check_for_child_termination_thread(procs2, display_opts);
     proc_handles.push(check_for_child_termination_thread);
 
     let procs = Arc::clone(&procs);
