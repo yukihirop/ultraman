@@ -1,4 +1,4 @@
-use super::base::Exportable;
+use super::base::{Exportable, Template};
 use crate::cmd::export::ExportOpts;
 use crate::env::read_env;
 use crate::process::port_for;
@@ -145,9 +145,12 @@ impl Exportable for Exporter {
         }
 
         let output_path = self.output_path("app.conf".to_string());
-        let mut data = self.make_app_conf_data(service_names, data);
         self.clean(&output_path);
-        self.write_template(&self.app_conf_tmpl_path(), &mut data, &output_path);
+        self.write_template(Template{
+            template_path: self.app_conf_tmpl_path(),
+            data: self.make_app_conf_data(service_names, data),
+            output_path,
+        });
 
         Ok(())
     }

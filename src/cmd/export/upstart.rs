@@ -166,8 +166,7 @@ impl Exportable for Exporter {
         }
 
         for tmpl in tmpl_data {
-            let mut data = tmpl.data;
-            self.write_template(&tmpl.template_path, &mut data, &tmpl.output_path);
+            self.write_template(tmpl);
         }
 
         Ok(())

@@ -91,24 +91,23 @@ pub trait Exportable {
 
     fn write_template(
         &self,
-        template_path: &PathBuf,
-        data: &mut Map<String, Json>,
-        output_path: &PathBuf,
+        tmpl: Template,
     ) {
         let handlebars = Handlebars::new();
-        let display_template = template_path
+        let display_template = tmpl.template_path
             .clone()
             .into_os_string()
             .into_string()
             .unwrap();
-        let display_output = output_path.clone().into_os_string().into_string().unwrap();
+        let display_output = tmpl.output_path.clone().into_os_string().into_string().unwrap();
         let mut template_source =
-            File::open(template_path).expect(&format!("Could not open file: {}", display_template));
-        let mut output_file = File::create(output_path)
+            File::open(tmpl.template_path).expect(&format!("Could not open file: {}", display_template));
+        let mut output_file = File::create(tmpl.output_path)
             .expect(&format!("Could not create file: {}", &display_output));
         self.say(&format!("writing: {}", &display_output));
+        let mut data = tmpl.data;
         handlebars
-            .render_template_source_to_write(&mut template_source, data, &mut output_file)
+            .render_template_source_to_write(&mut template_source, &mut data, &mut output_file)
             .expect(&format!("Coult not render file: {}", &display_output));
     }
 
