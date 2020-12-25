@@ -135,7 +135,7 @@ impl Exportable for Exporter {
         Ok(())
     }
 
-    fn opts(&self) -> ExportOpts {
-        self.opts.clone()
+    fn ref_opts(&self) -> &ExportOpts {
+        &self.opts
     }
 }

@@ -19,10 +19,10 @@ pub struct EnvParameter {
 pub trait Exportable {
     fn export(&self) -> Result<(), Box<dyn std::error::Error>>;
     //https://yajamon.hatenablog.com/entry/2018/01/30/202849
-    fn opts(&self) -> ExportOpts;
+    fn ref_opts(&self) -> &ExportOpts;
 
     fn base_export(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let opts = self.opts();
+        let opts = self.ref_opts();
         let location = &opts.location;
         let display = location.clone().into_os_string().into_string().unwrap();
         create_dir_all(&location).expect(&format!("Could not create: {}", display));
@@ -33,28 +33,28 @@ pub trait Exportable {
     }
 
     fn app(&self) -> String {
-        self.opts().app.unwrap_or_else(|| "app".to_string())
+        self.ref_opts().app.clone().unwrap_or_else(|| "app".to_string())
     }
 
     fn log_path(&self) -> PathBuf {
-        self.opts()
-            .log_path
+        self.ref_opts()
+            .log_path.clone()
             .unwrap_or_else(|| PathBuf::from(format!("/var/log/{}", self.app())))
     }
 
     fn run_path(&self) -> PathBuf {
-        self.opts()
-            .run_path
+        self.ref_opts()
+            .run_path.clone()
             .unwrap_or_else(|| PathBuf::from(format!("/var/run/{}", self.app())))
     }
 
     fn username(&self) -> String {
-        self.opts().user.unwrap_or_else(|| self.app())
+        self.ref_opts().user.clone().unwrap_or_else(|| self.app())
     }
 
     fn root_path(&self) -> PathBuf {
-        self.opts()
-            .root_path
+        self.ref_opts()
+            .root_path.clone()
             .unwrap_or_else(|| env::current_dir().unwrap())
     }
 
@@ -107,12 +107,12 @@ pub trait Exportable {
     }
 
     fn output_path(&self, filename: String) -> PathBuf {
-        let location = self.opts().location;
+        let location = self.ref_opts().location.clone();
         location.join(filename)
     }
 
     fn env_without_port(&self) -> Vec<EnvParameter> {
-        let mut env = read_env(self.opts().env_path).expect("failed read .env");
+        let mut env = read_env(self.ref_opts().env_path.clone()).expect("failed read .env");
         env.remove("PORT");
         let mut env_without_port: Vec<EnvParameter> = vec![];
         for (key, value) in env {
