@@ -1,3 +1,4 @@
+use crate::opt::DisplayOpts;
 use crate::log::{now, Printable};
 use colored::*;
 
@@ -19,8 +20,7 @@ const COLORS: [&str; 12] = [
 #[derive(Default)]
 pub struct Log {
     pub index: usize,
-    pub padding: usize,
-    pub is_timestamp: bool,
+    pub opts: DisplayOpts,
 }
 
 unsafe impl Sync for Log {}
@@ -41,11 +41,11 @@ impl Printable for Log {
     fn output(&self, proc_name: &str, content: &str) {
         let color = COLORS[self.index % COLORS.len()];
 
-        if self.is_timestamp {
+        if self.opts.is_timestamp {
             println!(
                 "{3} {0:1$} | {2}",
                 proc_name.color(color),
-                self.padding,
+                self.opts.padding,
                 content.color(color),
                 now().color(color)
             )
@@ -53,7 +53,7 @@ impl Printable for Log {
             println!(
                 "{0:1$} | {2}",
                 proc_name.color(color),
-                self.padding,
+                self.opts.padding,
                 content.color(color),
             )
         }

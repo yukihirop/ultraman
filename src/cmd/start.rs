@@ -77,7 +77,7 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
     for (name, pe) in procfile.data.iter() {
         let con = pe.concurrency.get();
         let index = total;
-        let output = Arc::new(output::Output::new(index, padding, is_timestamp));
+        let output = Arc::new(output::Output::new(index, display_opts.clone()));
         total += 1;
 
         for n in 0..con {

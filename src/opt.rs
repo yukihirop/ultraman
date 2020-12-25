@@ -40,3 +40,12 @@ pub struct DisplayOpts {
     pub padding: usize,
     pub is_timestamp: bool,
 }
+
+impl Default for DisplayOpts {
+    fn default()-> Self {
+        DisplayOpts {
+            padding: 0,
+            is_timestamp: true
+        }
+    }
+}

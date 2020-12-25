@@ -105,10 +105,10 @@ pub fn check_for_child_termination(
                 log::output(
                         &proc_name,
                         &message,
-                        opts.padding,
                         Some(proc_index),
                         &LogOpt {
                             is_color: true,
+                            padding: opts.padding,
                             is_timestamp: opts.is_timestamp,
                         },
                     );

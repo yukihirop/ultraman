@@ -42,10 +42,10 @@ fn trap_signal_at_multithred(
                 log::output(
                     "system",
                     "SIGINT received, starting shutdown",
-                    opts.padding - 2,
                     None,
                     &LogOpt {
                         is_color: false,
+                        padding: opts.padding - 2,
                         is_timestamp: opts.is_timestamp,
                     },
                 );
@@ -53,10 +53,10 @@ fn trap_signal_at_multithred(
                 log::output(
                     "system",
                     "sending SIGTERM to all processes",
-                    opts.padding,
                     None,
                     &LogOpt {
                         is_color: false,
+                        padding: opts.padding,
                         is_timestamp: opts.is_timestamp,
                     },
                 );
@@ -66,10 +66,10 @@ fn trap_signal_at_multithred(
                 log::output(
                     "system",
                     "exit 0",
-                    opts.padding,
                     None,
                     &LogOpt {
                         is_color: false,
+                        padding: opts.padding,
                         is_timestamp: opts.is_timestamp,
                     },
                 );
@@ -113,10 +113,10 @@ pub fn terminate_gracefully(
     log::output(
         "system",
         "sending SIGKILL to all processes",
-        opts.padding,
         None,
         &LogOpt {
             is_color: false,
+            padding: opts.padding,
             is_timestamp: opts.is_timestamp,
         },
     );
@@ -143,10 +143,10 @@ pub fn kill_children(
                 &child.id(),
                 Signal::as_str(signal),
             ),
-            opts.padding,
             None,
             &LogOpt {
                 is_color: false,
+                padding: opts.padding,
                 is_timestamp: opts.is_timestamp,
             },
         );
@@ -158,16 +158,17 @@ pub fn kill_children(
                 Some(opts.padding),
                 &LogOpt {
                     is_color: false,
+                    padding: opts.padding,
                     is_timestamp: opts.is_timestamp,
                 },
             );
             log::output(
                 "system",
                 &format!("exit {}", _code),
-                opts.padding,
                 None,
                 &LogOpt {
                     is_color: false,
+                    padding: opts.padding,
                     is_timestamp: opts.is_timestamp,
                 },
             );

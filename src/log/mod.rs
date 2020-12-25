@@ -1,3 +1,4 @@
+use crate::opt::DisplayOpts;
 use chrono::Local;
 
 pub mod color;
@@ -13,39 +14,55 @@ pub struct Log;
 #[derive(Clone)]
 pub struct LogOpt {
     pub is_color: bool,
+    pub padding: usize,
     pub is_timestamp: bool,
 }
 
 impl Log {
-    pub fn new(index: usize, padding: usize, opt: &LogOpt) -> Box<dyn Printable + Sync + Send> {
+    pub fn new(index: usize, opt: &LogOpt) -> Box<dyn Printable + Sync + Send> {
         if opt.is_color {
             let mut color = color::Log::boxed_new();
             color.index = index;
-            color.padding = padding;
-            color.is_timestamp = opt.is_timestamp;
+            color.opts = Self::display_opts(opt);
             color
         } else {
             let mut plain = plain::Log::boxed_new();
             plain.index = index;
-            plain.padding = padding;
-            plain.is_timestamp = opt.is_timestamp;
+            plain.opts = Self::display_opts(opt);
             plain
+        }
+    }
+
+    fn display_opts(opt: &LogOpt) -> DisplayOpts {
+        DisplayOpts {
+            padding: opt.padding,
+            is_timestamp: opt.is_timestamp,
         }
     }
 }
 
-pub fn output(proc_name: &str, content: &str, padding: usize, index: Option<usize>, opt: &LogOpt) {
+pub fn output(proc_name: &str, content: &str, index: Option<usize>, opt: &LogOpt) {
     let index = index.unwrap_or_else(|| 0);
-    let log = Log::new(index, padding, opt);
+    let log = Log::new(index, opt);
     log.output(proc_name, content)
 }
 
 pub fn error(proc_name: &str, err: &dyn std::error::Error, padding: Option<usize>, opt: &LogOpt) {
     let content = &format!("error: {:?}", err);
     if let Some(p) = padding {
-        output(proc_name, content, p, None, opt);
+        let remake_opt = LogOpt {
+            is_color: opt.is_color,
+            padding: p,
+            is_timestamp: opt.is_timestamp,
+        };
+        output(proc_name, content, None, &remake_opt);
     } else {
-        output(proc_name, content, proc_name.len() + 1, None, opt);
+        let remake_opt = LogOpt {
+            is_color: opt.is_color,
+            padding: proc_name.len() + 1,
+            is_timestamp: opt.is_timestamp,
+        };
+        output(proc_name, content, None, &remake_opt);
     }
 }
 
@@ -64,9 +81,9 @@ mod tests {
     fn test_output_when_coloring() -> anyhow::Result<()> {
         let log = Log::new(
             0,
-            10,
             &LogOpt {
                 is_color: true,
+                padding: 10,
                 is_timestamp: true,
             },
         );
@@ -79,9 +96,9 @@ mod tests {
     fn test_output_when_not_coloring() -> anyhow::Result<()> {
         let log = Log::new(
             0,
-            10,
             &LogOpt {
                 is_color: false,
+                padding: 10,
                 is_timestamp: true,
             },
         );
@@ -105,9 +122,9 @@ mod tests {
         let error = TestError("test error");
         let log = Log::new(
             0,
-            10,
             &LogOpt {
                 is_color: true,
+                padding: 10,
                 is_timestamp: true,
             },
         );
