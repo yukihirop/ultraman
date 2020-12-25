@@ -155,7 +155,7 @@ pub fn kill_children(
             log::error(
                 "system",
                 &e,
-                Some(opts.padding),
+                true,
                 &LogOpt {
                     is_color: false,
                     padding: opts.padding,

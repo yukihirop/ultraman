@@ -47,15 +47,10 @@ pub fn output(proc_name: &str, content: &str, index: Option<usize>, opt: &LogOpt
     log.output(proc_name, content)
 }
 
-pub fn error(proc_name: &str, err: &dyn std::error::Error, padding: Option<usize>, opt: &LogOpt) {
+pub fn error(proc_name: &str, err: &dyn std::error::Error, is_padding: bool, opt: &LogOpt) {
     let content = &format!("error: {:?}", err);
-    if let Some(p) = padding {
-        let remake_opt = LogOpt {
-            is_color: opt.is_color,
-            padding: p,
-            is_timestamp: opt.is_timestamp,
-        };
-        output(proc_name, content, None, &remake_opt);
+    if is_padding {
+        output(proc_name, content, None, &opt);
     } else {
         let remake_opt = LogOpt {
             is_color: opt.is_color,
