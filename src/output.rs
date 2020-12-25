@@ -115,6 +115,7 @@ mod tests {
                 .stderr(Stdio::piped())
                 .spawn()
                 .expect("failed execute handle_output command"),
+            opts: None,
         }));
 
         let proc2 = Arc::clone(&proc);

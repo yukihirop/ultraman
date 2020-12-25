@@ -1,88 +1,78 @@
 use crate::env::read_env;
 use crate::log::{self, LogOpt};
-use crate::output;
 use crate::signal;
 use nix::sys::signal::Signal;
 use nix::sys::wait::WaitStatus;
 use nix::{self, unistd::Pid};
+use std::env::{self as os_env};
+use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
+use std::sync::{Arc, Mutex};
+use std::thread::{self, JoinHandle};
 
 #[cfg(not(test))]
 use std::process::exit;
 
-use std::env::{self as os_env};
-use std::path::PathBuf;
-use std::sync::{Arc, Barrier, Mutex};
-use std::thread::{self, JoinHandle};
+pub struct ProcessOpts {
+    pub padding: usize,
+    pub is_timestamp: bool,
+}
 
 pub struct Process {
     pub index: usize,
     pub name: String,
     pub child: Child,
+    pub opts: Option<ProcessOpts>,
 }
 
-// https://qiita.com/quercus491/items/9f8f590c9734c81da2bd
-pub fn each_handle_exec_and_output(
-    procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>>,
-    padding: usize,
-    barrier: Arc<Barrier>,
-    output: Arc<output::Output>,
-) -> Box<dyn Fn(String, usize, String, PathBuf, Option<String>, usize) -> JoinHandle<()>> {
-    Box::new(
-        // MEMO: Refactor when you understand your lifetime
-        move |process_name: String,
-              con: usize,
-              cmd: String,
-              env_path: PathBuf,
-              port: Option<String>,
-              index: usize| {
-            let output = output.clone();
-            let procs = procs.clone();
-            let barrier = barrier.clone();
+impl Process {
+    pub fn new(
+        process_name: String,
+        cmd: String,
+        env_path: PathBuf,
+        port: Option<String>,
+        concurrency_index: usize,
+        index: usize,
+        opts: Option<ProcessOpts>,
+    ) -> Self {
+        let mut read_env = read_env(env_path.clone()).expect("failed read .env");
+        read_env.insert(
+            String::from("PORT"),
+            port_for(env_path, port, index, concurrency_index),
+        );
+        read_env.insert(
+            String::from("PS"),
+            ps_for(process_name.clone(), concurrency_index + 1),
+        );
+        let shell = os_env::var("SHELL").expect("$SHELL is not set");
 
-            let result = thread::Builder::new()
-                .name(String::from("handle exec and output"))
-                .spawn(move || {
-                    let mut read_env = read_env(env_path.clone()).expect("failed read .env");
-                    read_env.insert(String::from("PORT"), port_for(env_path, port, index, con));
-                    read_env.insert(String::from("PS"), ps_for(process_name.clone(), con + 1));
-                    let shell = os_env::var("SHELL").expect("$SHELL is not set");
+        Process {
+            index,
+            name: ps_for(process_name, concurrency_index + 1),
+            child: Command::new(shell)
+                .arg("-c")
+                .arg(cmd)
+                .stdout(Stdio::piped())
+                .stderr(Stdio::piped())
+                .envs(read_env)
+                .spawn()
+                .expect("failed execute command"),
+            opts,
+        }
+    }
+}
 
-                    let tmp_proc = Process {
-                        index,
-                        name: ps_for(process_name, con + 1),
-                        child: Command::new(shell)
-                            .arg("-c")
-                            .arg(cmd)
-                            .stdout(Stdio::piped())
-                            .stderr(Stdio::piped())
-                            .envs(read_env)
-                            .spawn()
-                            .expect("failed execute command"),
-                    };
-                    let proc = Arc::new(Mutex::new(tmp_proc));
-                    let proc2 = Arc::clone(&proc);
-
-                    let child_id = proc.lock().unwrap().child.id() as i32;
-                    output.log.output(
-                        "system",
-                        &format!(
-                            "{0:1$} start at pid: {2}",
-                            &proc.lock().unwrap().name,
-                            padding,
-                            &child_id
-                        ),
-                    );
-
-                    procs.lock().unwrap().push(proc);
-                    barrier.wait();
-
-                    output.handle_output(&proc2);
-                })
-                .expect("failed exec and output");
-            result
-        },
-    )
+// https://stackoverflow.com/questions/34439977/lifetime-of-variables-passed-to-a-new-thread
+pub fn build_exec_and_output_thread<F>(yielder: F) -> JoinHandle<()>
+where
+    F: FnOnce() + Sync + Send + 'static,
+{
+    thread::Builder::new()
+        .name(String::from("handle exec and output"))
+        .spawn(move || {
+            yielder();
+        })
+        .expect("failed exec and output")
 }
 
 pub fn check_for_child_termination_thread(
@@ -211,32 +201,6 @@ fn base_port(env_path: PathBuf, port: Option<String>) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use anyhow;
-    use std::sync::Barrier;
-
-    #[test]
-    fn test_each_handle_exec_and_output() -> anyhow::Result<()> {
-        let procs: Arc<Mutex<Vec<Arc<Mutex<Process>>>>> = Arc::new(Mutex::new(vec![]));
-        let procs2 = Arc::clone(&procs);
-
-        let padding = 10;
-        let barrier = Arc::new(Barrier::new(1));
-        let output = Arc::new(output::Output::new(0, padding, true));
-
-        let each_fn_thread = each_handle_exec_and_output(procs2, padding, barrier, output);
-        each_fn_thread(
-            String::from("each_handle_exec_and_output"),
-            0,
-            String::from("./test/fixtures/for.sh"),
-            PathBuf::from("./test/fixtures/.env"),
-            None,
-            1,
-        )
-        .join()
-        .expect("failed join each thread");
-
-        Ok(())
-    }
 
     #[test]
     #[should_panic(expected = "exit 0: Any")]
@@ -248,6 +212,7 @@ mod tests {
                 child: Command::new("./test/fixtures/exit_0.sh")
                     .spawn()
                     .expect("failed execute check_for_child_termination_thread-1"),
+                opts: None,
             })),
             Arc::new(Mutex::new(Process {
                 index: 1,
@@ -255,6 +220,7 @@ mod tests {
                 child: Command::new("./test/fixtures/exit_1.sh")
                     .spawn()
                     .expect("failed execute check_for_child_termination_thread-2"),
+                opts: None,
             })),
         ]));
         let procs2 = Arc::clone(&procs);

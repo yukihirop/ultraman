@@ -1,5 +1,5 @@
 use crate::output;
-use crate::process;
+use crate::process::{self, Process, ProcessOpts};
 use crate::procfile::read_procfile;
 use crate::signal;
 
@@ -69,28 +69,57 @@ pub fn run(opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
     let padding = procfile.padding();
 
     let barrier = Arc::new(Barrier::new(process_len + 1));
-    let mut index = 0;
+    let mut total = 0;
     let is_timestamp = !opts.is_no_timestamp;
 
     for (name, pe) in procfile.data.iter() {
         let con = pe.concurrency.get();
+        let index = total;
         let output = Arc::new(output::Output::new(index, padding, is_timestamp));
-        let before_index = index;
-        index += 1;
+        total += 1;
 
         for n in 0..con {
             let barrier = barrier.clone();
             let procs = procs.clone();
             let output = output.clone();
-            let name = name.clone();
-            let pe_command = pe.command.clone();
+            let process_name = name.clone();
+            let cmd = pe.command.clone();
             let env_path = opts.env_path.clone();
             let port = opts.port.clone();
 
-            let each_fn = process::each_handle_exec_and_output(procs, padding, barrier, output);
-            let each_handle_exec_and_output =
-                each_fn(name, n, pe_command, env_path, port, before_index);
-            proc_handles.push(each_handle_exec_and_output);
+            let exec_and_output_thread = process::build_exec_and_output_thread(move || {
+                let proc = Process::new(
+                    process_name,
+                    cmd,
+                    env_path,
+                    port,
+                    n,
+                    index,
+                    Some(ProcessOpts {
+                        padding,
+                        is_timestamp,
+                    }),
+                );
+                let proc2 = Arc::new(Mutex::new(proc));
+                let proc3 = Arc::clone(&proc2);
+                let child_id = proc2.lock().unwrap().child.id() as i32;
+
+                output.log.output(
+                    "system",
+                    &format!(
+                        "{0:1$} start at pid: {2}",
+                        &proc2.lock().unwrap().name,
+                        padding,
+                        &child_id
+                    ),
+                );
+
+                procs.lock().unwrap().push(proc2);
+                barrier.wait();
+
+                output.handle_output(&proc3);
+            });
+            proc_handles.push(exec_and_output_thread);
         }
     }
 

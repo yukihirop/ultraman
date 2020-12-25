@@ -207,6 +207,7 @@ mod tests {
                     .arg("trap_signal_at_multithred_1")
                     .spawn()
                     .expect("failed execute test-app-1"),
+                opts: None,
             })),
             Arc::new(Mutex::new(Process {
                 index: 1,
@@ -215,6 +216,7 @@ mod tests {
                     .arg("trap_signal_at_multithred_2")
                     .spawn()
                     .expect("failed execute test-app-2"),
+                opts: None,
             })),
         ]));
 
