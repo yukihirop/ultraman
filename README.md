@@ -1,5 +1,10 @@
 # Ultraman (Rust Foreman)
 
+![Release](https://github.com/yukihirop/ultraman/workflows/Release/badge.svg)
+![Periodic](https://github.com/yukihirop/ultraman/workflows/Periodic/badge.svg)
+![Regression](https://github.com/yukihirop/ultraman/workflows/Regression/badge.svg)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/yukihirop/ultraman/main/LICENSE)
+
 Manage Procfile-based applications.
 
 This is a [foreman](https://github.com/ddollar/foreman) rust implementation made with ruby.  
