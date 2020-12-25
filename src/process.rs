@@ -101,6 +101,28 @@ pub fn check_for_child_termination(
     padding: usize,
     is_timestamp: bool,
 ) -> Option<(Pid, i32)> {
+    let child_termination_fn = Box::new(move |pid: Pid, message: &str| {
+        procs.lock().unwrap().retain(|p| {
+            let child_id = p.lock().unwrap().child.id() as i32;
+            if Pid::from_raw(child_id) == pid {
+                let proc = p.lock().unwrap();
+                let proc_name = &proc.name;
+                let proc_index = proc.index;
+                log::output(
+                        &proc_name,
+                        &message,
+                        padding,
+                        Some(proc_index),
+                        &LogOpt {
+                            is_color: true,
+                            is_timestamp,
+                        },
+                    );
+            }
+            Pid::from_raw(child_id) != pid
+        });
+    });
+
     // Waiting for the end of any one child process
     match nix::sys::wait::waitpid(
         Pid::from_raw(-1),
@@ -108,47 +130,11 @@ pub fn check_for_child_termination(
     ) {
         Ok(exit_status) => match exit_status {
             WaitStatus::Exited(pid, code) => {
-                procs.lock().unwrap().retain(|p| {
-                    let child_id = p.lock().unwrap().child.id() as i32;
-                    if Pid::from_raw(child_id) == pid {
-                        let proc = p.lock().unwrap();
-                        let proc_name = &proc.name;
-                        let proc_index = proc.index;
-                        log::output(
-                            &proc_name,
-                            &format!("exited with code {}", code),
-                            padding,
-                            Some(proc_index),
-                            &LogOpt {
-                                is_color: true,
-                                is_timestamp,
-                            },
-                        );
-                    }
-                    Pid::from_raw(child_id) != pid
-                });
+                child_termination_fn(pid, &format!("exited with code {}", code));
                 return Some((pid, code));
             }
             WaitStatus::Signaled(pid, signal, _) => {
-                procs.lock().unwrap().retain(|p| {
-                    let child_id = p.lock().unwrap().child.id() as i32;
-                    if Pid::from_raw(child_id) == pid {
-                        let proc = p.lock().unwrap();
-                        let proc_name = &proc.name;
-                        let proc_index = proc.index;
-                        log::output(
-                            &proc_name,
-                            &format!("terminated by {}", signal.as_str()),
-                            padding,
-                            Some(proc_index),
-                            &LogOpt {
-                                is_color: true,
-                                is_timestamp,
-                            },
-                        );
-                    }
-                    Pid::from_raw(child_id) != pid
-                });
+                child_termination_fn(pid, &format!("terminated by {}", signal.as_str()));
                 return None;
             }
             _ => return None,
