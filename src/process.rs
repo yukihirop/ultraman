@@ -85,6 +85,9 @@ pub fn build_check_for_child_termination_thread(
                 if let Some((_, code)) = check_for_child_termination(procs2, opts.clone()) {
                     signal::kill_children(procs3, Signal::SIGTERM, code, opts.clone())
                 }
+                // check_for_child_termination returns immediately, so let's sleep
+                // a little to avoid pegging CPU.
+                std::thread::sleep(std::time::Duration::from_millis(10));
             }
         })
         .expect("failed check child terminated")
