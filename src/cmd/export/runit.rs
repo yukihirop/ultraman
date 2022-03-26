@@ -41,16 +41,16 @@ impl Default for Exporter {
                 format: String::from(""),
                 location: PathBuf::from("location"),
                 app: None,
-                formation: String::from("all=1"),
+                formation: Some(String::from("all=1")),
                 log_path: None,
                 run_path: None,
                 port: None,
                 template_path: None,
                 user: None,
-                env_path: PathBuf::from(".env"),
-                procfile_path: PathBuf::from("Procfile"),
+                env_path: Some(PathBuf::from(".env")),
+                procfile_path: Some(PathBuf::from("Procfile")),
                 root_path: Some(env::current_dir().unwrap()),
-                timeout: String::from("5"),
+                timeout: Some(String::from("5")),
             },
         }
     }
@@ -107,9 +107,9 @@ impl Exporter {
     }
 
     fn write_env(&self, output_dir_path: &PathBuf, index: usize, con_index: usize) {
-        let mut env = read_env(self.opts.env_path.clone()).expect("failed read .env");
+        let mut env = read_env(self.opts.env_path.clone().unwrap()).expect("failed read .env");
         let port = port_for(
-            &self.opts.env_path,
+            &self.opts.env_path.clone().unwrap(),
             self.opts.port.clone(),
             index,
             con_index + 1,

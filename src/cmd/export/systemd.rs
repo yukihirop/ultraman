@@ -41,16 +41,16 @@ impl Default for Exporter {
                 format: String::from(""),
                 location: PathBuf::from("location"),
                 app: None,
-                formation: String::from("all=1"),
+                formation: Some(String::from("all=1")),
                 log_path: None,
                 run_path: None,
                 port: None,
                 template_path: None,
                 user: None,
-                env_path: PathBuf::from(".env"),
-                procfile_path: PathBuf::from("Procfile"),
+                env_path: Some(PathBuf::from(".env")),
+                procfile_path: Some(PathBuf::from("Procfile")),
                 root_path: Some(env::current_dir().unwrap()),
-                timeout: String::from("5"),
+                timeout: Some(String::from("5")),
             },
         }
     }
@@ -101,7 +101,7 @@ impl Exporter {
             user: self.username(),
             work_dir: self.root_path().into_os_string().into_string().unwrap(),
             port: port_for(
-                &self.opts.env_path,
+                &self.opts.env_path.clone().unwrap(),
                 self.opts.port.clone(),
                 index,
                 con_index + 1,
@@ -109,7 +109,7 @@ impl Exporter {
             process_name: process_name.to_string(),
             process_command: pe.command.to_string(),
             env_without_port: self.env_without_port(),
-            timeout: self.opts.timeout.clone(),
+            timeout: self.opts.timeout.clone().unwrap(),
         };
         data.insert("process_service".to_string(), to_json(&ps));
         data
