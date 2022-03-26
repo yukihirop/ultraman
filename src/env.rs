@@ -7,9 +7,10 @@ pub type Env = HashMap<String, String>;
 pub fn read_env(filepath: PathBuf) -> Result<Env, Box<dyn std::error::Error>> {
     let mut env: Env = HashMap::new();
 
-    if let Some(iter) = dotenv::from_path_iter(filepath.as_path()).ok() {
-        for item in iter {
-            let (key, val) = item.expect("Could not convert .env to tuple");
+    if let Some(()) = dotenv::from_path(filepath.as_path()).ok() {
+        let env_vars: Vec<(String, String)> = dotenv::vars().collect();
+        for pair in env_vars {
+            let (key, val) = pair;
             env.insert(key, val);
         }
         return Ok(env);
@@ -42,7 +43,8 @@ PS=1
 
         assert_eq!(result.get("PORT").unwrap(), "5000");
         assert_eq!(result.get("PS").unwrap(), "1");
-        assert_eq!(result.get("CARGO_PKG_VERSION"), None);
+        assert_eq!(result.get("CARGO_PKG_VERSION").unwrap(), "0.1.2");
+        assert_eq!(result.get("DO_NOT_EXIST_ENV"), None);
 
         Ok(())
     }
