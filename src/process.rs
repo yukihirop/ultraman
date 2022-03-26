@@ -158,8 +158,7 @@ pub fn port_for(
     index: usize,
     instance_index: usize,
 ) -> String {
-    let result =
-        base_port(env_path, port).parse::<usize>().unwrap() + index * 100 + instance_index;
+    let result = base_port(env_path, port).parse::<usize>().unwrap() + index * 100 + instance_index;
     result.to_string()
 }
 
