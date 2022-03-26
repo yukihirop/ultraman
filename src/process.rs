@@ -159,7 +159,7 @@ pub fn port_for(
     concurrency: usize,
 ) -> String {
     let result =
-        base_port(env_path, port).parse::<usize>().unwrap() + index * 100 + concurrency - 1;
+        base_port(env_path, port).parse::<usize>().unwrap() + index * 100 + concurrency;
     result.to_string()
 }
 
