@@ -34,7 +34,7 @@ impl Process {
         let mut read_env = read_env(env_path.clone()).expect("failed read .env");
         read_env.insert(
             String::from("PORT"),
-            port_for(env_path, port, index, instance_index),
+            port_for(&env_path, port, index, instance_index),
         );
         read_env.insert(
             String::from("PS"),
@@ -153,7 +153,7 @@ fn ps_for(process_name: String, instance_index: usize) -> String {
 }
 
 pub fn port_for(
-    env_path: PathBuf,
+    env_path: &PathBuf,
     port: Option<String>,
     index: usize,
     instance_index: usize,
@@ -162,8 +162,8 @@ pub fn port_for(
     result.to_string()
 }
 
-fn base_port(env_path: PathBuf, port: Option<String>) -> String {
-    let env = read_env(env_path).unwrap();
+fn base_port(env_path: &PathBuf, port: Option<String>) -> String {
+    let env = read_env(env_path.clone()).unwrap();
     let default_port = String::from("5000");
 
     if let Some(p) = port {

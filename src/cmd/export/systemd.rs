@@ -101,7 +101,7 @@ impl Exporter {
             user: self.username(),
             work_dir: self.root_path().into_os_string().into_string().unwrap(),
             port: port_for(
-                self.opts.env_path.clone(),
+                &self.opts.env_path,
                 self.opts.port.clone(),
                 index,
                 con_index + 1,

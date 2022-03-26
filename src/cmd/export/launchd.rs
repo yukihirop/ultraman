@@ -100,7 +100,7 @@ impl Exporter {
 
     fn environment(&self, index: usize, con_index: usize) -> Vec<EnvParameter> {
         let port = port_for(
-            self.opts.env_path.clone(),
+            &self.opts.env_path,
             self.opts.port.clone(),
             index,
             con_index + 1,

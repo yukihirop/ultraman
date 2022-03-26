@@ -82,7 +82,7 @@ impl Exporter {
             app: self.app(),
             name: app_name.to_string(),
             port: port_for(
-                self.opts.env_path.clone(),
+                &self.opts.env_path,
                 self.opts.port.clone(),
                 index,
                 con_index + 1,

@@ -3,8 +3,12 @@ use std::fs;
 use std::path::PathBuf;
 use yaml_rust::{Yaml, YamlLoader};
 
+pub const DEFAULT_FORMATION: &'static str = "all=1";
+pub const DEFAULT_ENV: &'static str = ".env";
+pub const DEFAULT_PROCFILE: &'static str = "Procfile";
+pub const DEFAULT_TIMEOUT: &'static str = "5";
+
 // Ultraman settings read and parse .ultraman written in yaml
-#[allow(dead_code)]
 pub fn read_config(filepath: PathBuf) -> Result<Yaml, Box<dyn std::error::Error>> {
     let filepath_str = filepath.to_str().unwrap();
     let config_str = fs::read_to_string(&filepath)

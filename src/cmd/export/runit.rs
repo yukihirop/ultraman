@@ -109,7 +109,7 @@ impl Exporter {
     fn write_env(&self, output_dir_path: &PathBuf, index: usize, con_index: usize) {
         let mut env = read_env(self.opts.env_path.clone()).expect("failed read .env");
         let port = port_for(
-            self.opts.env_path.clone(),
+            &self.opts.env_path,
             self.opts.port.clone(),
             index,
             con_index + 1,

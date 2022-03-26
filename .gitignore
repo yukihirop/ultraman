@@ -4,3 +4,4 @@
 tmp
 supervisord.log
 /containers/registry
+.ultraman
