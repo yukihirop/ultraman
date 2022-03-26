@@ -27,24 +27,24 @@ impl Process {
         cmd: String,
         env_path: PathBuf,
         port: Option<String>,
-        concurrency_index: usize,
+        instance_index: usize,
         index: usize,
         opts: Option<DisplayOpts>,
     ) -> Self {
         let mut read_env = read_env(env_path.clone()).expect("failed read .env");
         read_env.insert(
             String::from("PORT"),
-            port_for(env_path, port, index, concurrency_index),
+            port_for(env_path, port, index, instance_index),
         );
         read_env.insert(
             String::from("PS"),
-            ps_for(process_name.clone(), concurrency_index + 1),
+            ps_for(process_name.clone(), instance_index + 1),
         );
         let shell = os_env::var("SHELL").expect("$SHELL is not set");
 
         Process {
             index,
-            name: ps_for(process_name, concurrency_index + 1),
+            name: ps_for(process_name, instance_index + 1),
             child: Command::new(shell)
                 .arg("-c")
                 .arg(cmd)
@@ -148,18 +148,18 @@ pub fn check_for_child_termination(
     };
 }
 
-fn ps_for(process_name: String, concurrency: usize) -> String {
-    format!("{}.{}", process_name, concurrency)
+fn ps_for(process_name: String, instance_index: usize) -> String {
+    format!("{}.{}", process_name, instance_index)
 }
 
 pub fn port_for(
     env_path: PathBuf,
     port: Option<String>,
     index: usize,
-    concurrency: usize,
+    instance_index: usize,
 ) -> String {
     let result =
-        base_port(env_path, port).parse::<usize>().unwrap() + index * 100 + concurrency;
+        base_port(env_path, port).parse::<usize>().unwrap() + index * 100 + instance_index;
     result.to_string()
 }
 
