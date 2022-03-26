@@ -12,7 +12,7 @@ The following options control how the application is run:
 |<kbd>-f</kbd>|<kbd>--procfile</kbd>|`Procfile`|Specify an alternate Procfile to load, implies -d at the Procfile root|
 |<kbd>-p</kbd>|<kbd>--port</kbd>||Specify which port to use as the base for this application. Should be a multiple of 1000|
 |<kbd>-a</kbd>|<kbd>--app</kbd>||Use this name rather than the application's root directory name as the name of the application when exporting|
-|<kbd>-l</kdb>|<kbd>--long</kdb>||Specify the directory to place process logs in|
+|<kbd>-l</kdb>|<kbd>--log</kdb>||Specify the directory to place process logs in|
 |<kbd>-r</kbd>|<kbd>--run</kdb>||Specify the pid file directory, defaults to /var/run/<application>|
 |<kbd>-T</kbd>|<kbd>--template</kdb>||Specify an template to use for creating export files|
 |<kbd>-u</kbd>|<kbd>--user</kdb>||Specify the user the application should be run as. Defaults to the app name|
