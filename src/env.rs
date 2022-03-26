@@ -43,7 +43,7 @@ PS=1
 
         assert_eq!(result.get("PORT").unwrap(), "5000");
         assert_eq!(result.get("PS").unwrap(), "1");
-        assert_eq!(result.get("CARGO_PKG_VERSION").unwrap(), "0.1.2");
+        assert_ne!(result.get("CARGO_PKG_VERSION"), None);
         assert_eq!(result.get("DO_NOT_EXIST_ENV"), None);
 
         Ok(())
