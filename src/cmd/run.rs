@@ -88,11 +88,11 @@ fn merged_opts(input_opts: &RunOpts, dotconfig: Config) -> RunOpts {
         app_name: input_opts.app_name.to_string(),
         env_path: match &input_opts.env_path {
             Some(r) => Some(PathBuf::from(r)),
-            None => dotconfig.env_path,
+            None => Some(dotconfig.env_path),
         },
         procfile_path: match &input_opts.procfile_path {
             Some(r) => Some(PathBuf::from(r)),
-            None => dotconfig.procfile_path,
+            None => Some(dotconfig.procfile_path),
         },
     }
 }

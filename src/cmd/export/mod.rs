@@ -168,23 +168,23 @@ fn merged_opts(input_opts: &ExportOpts, dotconfig: Config) -> ExportOpts {
         location: input_opts.clone().location,
         formation: match &input_opts.formation {
             Some(r) => Some(r.to_string()),
-            None => dotconfig.formation,
+            None => Some(dotconfig.formation),
         },
         env_path: match &input_opts.env_path {
             Some(r) => Some(PathBuf::from(r)),
-            None => dotconfig.env_path,
+            None => Some(dotconfig.env_path),
         },
         procfile_path: match &input_opts.procfile_path {
             Some(r) => Some(PathBuf::from(r)),
-            None => dotconfig.procfile_path,
+            None => Some(dotconfig.procfile_path),
+        },
+        timeout: match &input_opts.timeout {
+            Some(r) => Some(r.to_string()),
+            None => Some(dotconfig.timeout.to_string()),
         },
         port: match &input_opts.port {
             Some(r) => Some(r.to_string()),
             None => dotconfig.port.map(|r| r.to_string()),
-        },
-        timeout: match &input_opts.timeout {
-            Some(r) => Some(r.to_string()),
-            None => dotconfig.timeout.map(|r| r.to_string()),
         },
         app: match &input_opts.app {
             Some(r) => Some(r.to_string()),
