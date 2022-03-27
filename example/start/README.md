@@ -38,7 +38,7 @@ cargo run start \
   -f ./Procfile \
   -p 7000 \
   -t 10 \
-  -n
+  -n false
 ```
 
 <details>
@@ -81,7 +81,7 @@ cargo run start \
   --procfile ./Procfile \
   --port 7000 \
   --timeout 10 \
-  --no-timestamp
+  --no-timestamp false
 ```
 
 <details>

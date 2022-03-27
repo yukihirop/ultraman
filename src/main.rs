@@ -2,6 +2,7 @@ use opt::{Opt, Ultraman};
 use structopt::StructOpt;
 
 mod cmd;
+mod config;
 mod env;
 mod log;
 mod opt;
