@@ -136,7 +136,7 @@ pub fn check_for_child_termination(
             _ => return None,
         },
         Err(e) => {
-            if let nix::Error::Sys(nix::errno::Errno::ECHILD) = e {
+            if let nix::errno::Errno::ECHILD = e {
                 // close loop (thread finished)
                 #[cfg(not(test))]
                 exit(0);
