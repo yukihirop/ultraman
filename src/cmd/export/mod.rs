@@ -1,11 +1,8 @@
 use crate::cmd::export::base::Exportable;
+use crate::config::{read_config, Config};
 use crate::procfile::read_procfile;
-use crate::config::{
-    read_config, DEFAULT_ENV, DEFAULT_FORMATION, DEFAULT_PROCFILE, DEFAULT_TIMEOUT
-};
 use std::path::PathBuf;
 use structopt::{clap, StructOpt};
-use yaml_rust::{Yaml};
 
 pub mod base;
 pub mod daemon;
@@ -31,11 +28,7 @@ pub struct ExportOpts {
     pub app: Option<String>,
 
     /// Specify the number of each process type to run. The value passed in should be in the format process=num,process=num
-    #[structopt(
-        name = "APP=NUMBER",
-        short = "m",
-        long = "formation"
-    )]
+    #[structopt(name = "APP=NUMBER", short = "m", long = "formation")]
     pub formation: Option<String>,
 
     /// Specify the directory to place process logs in
@@ -59,21 +52,11 @@ pub struct ExportOpts {
     pub user: Option<String>,
 
     /// Specify an environment file to load
-    #[structopt(
-        name = "ENV",
-        short = "e",
-        long = "env",
-        parse(from_os_str)
-    )]
+    #[structopt(name = "ENV", short = "e", long = "env", parse(from_os_str))]
     pub env_path: Option<PathBuf>,
 
     /// Specify an Procfile to load
-    #[structopt(
-        name = "PROCFILE",
-        short = "f",
-        long = "procfile",
-        parse(from_os_str)
-    )]
+    #[structopt(name = "PROCFILE", short = "f", long = "procfile", parse(from_os_str))]
     pub procfile_path: Option<PathBuf>,
 
     /// Specify an alternate application root. This defaults to the directory containing the Procfile.
@@ -81,11 +64,7 @@ pub struct ExportOpts {
     pub root_path: Option<PathBuf>,
 
     /// Specify the amount of time (in seconds) processes have to shutdown gracefully before receiving a SIGTERM
-    #[structopt(
-        name = "TIMEOUT (sec)",
-        short = "t",
-        long = "timeout"
-    )]
+    #[structopt(name = "TIMEOUT (sec)", short = "t", long = "timeout")]
     pub timeout: Option<String>,
 }
 
@@ -100,7 +79,7 @@ enum ExportFormat {
 
 pub fn run(input_opts: ExportOpts) -> Result<(), Box<dyn std::error::Error>> {
     let dotconfig = read_config(PathBuf::from(".ultraman")).unwrap();
-    let opts = merged_opts(&input_opts, &dotconfig);
+    let opts = merged_opts(&input_opts, dotconfig);
     let exporter = new(&opts);
     exporter.export().expect("failed ultraman export");
 
@@ -183,89 +162,54 @@ fn export_format(format: &str) -> ExportFormat {
     }
 }
 
-fn merged_opts(input_opts: &ExportOpts, dotconfig: &Yaml) -> ExportOpts {
+fn merged_opts(input_opts: &ExportOpts, dotconfig: Config) -> ExportOpts {
     ExportOpts {
         format: input_opts.format.to_string(),
         location: input_opts.clone().location,
         formation: match &input_opts.formation {
             Some(r) => Some(r.to_string()),
-            None => Some(
-                dotconfig["formation"]
-                    .as_str()
-                    .map(|r| r.to_string())
-                    .unwrap_or(DEFAULT_FORMATION.to_string()),
-            ),
+            None => dotconfig.formation,
         },
         env_path: match &input_opts.env_path {
             Some(r) => Some(PathBuf::from(r)),
-            None => Some(
-                dotconfig["env"]
-                    .as_str()
-                    .map(|r| PathBuf::from(r))
-                    .unwrap_or(PathBuf::from(DEFAULT_ENV)),
-            ),
+            None => dotconfig.env_path,
         },
         procfile_path: match &input_opts.procfile_path {
             Some(r) => Some(PathBuf::from(r)),
-            None => Some(
-                dotconfig["procfile"]
-                    .as_str()
-                    .map(|r| PathBuf::from(r))
-                    .unwrap_or(PathBuf::from(DEFAULT_PROCFILE)),
-            ),
+            None => dotconfig.procfile_path,
         },
         port: match &input_opts.port {
             Some(r) => Some(r.to_string()),
-            None => dotconfig["port"].as_i64().map(|r| r.to_string()),
+            None => dotconfig.port.map(|r| r.to_string()),
         },
         timeout: match &input_opts.timeout {
             Some(r) => Some(r.to_string()),
-            None => Some(
-                dotconfig["timeout"]
-                    .as_i64()
-                    .map(|r| r.to_string())
-                    .unwrap_or(DEFAULT_TIMEOUT.to_string()),
-            ),
+            None => dotconfig.timeout.map(|r| r.to_string()),
         },
         app: match &input_opts.app {
             Some(r) => Some(r.to_string()),
-            None => Some(dotconfig["app"].as_str().unwrap().to_string())
+            None => dotconfig.app,
         },
         log_path: match &input_opts.log_path {
             Some(r) => Some(PathBuf::from(r)),
-            None => match dotconfig["log"].as_str() {
-                Some(r) => Some(PathBuf::from(r)),
-                None => None
-            }
+            None => dotconfig.log_path,
         },
         root_path: match &input_opts.root_path {
             Some(r) => Some(PathBuf::from(r)),
-            None => match dotconfig["root"].as_str() {
-                Some(r) => Some(PathBuf::from(r)),
-                None => None
-            }
+            None => dotconfig.root_path,
         },
         run_path: match &input_opts.run_path {
             Some(r) => Some(PathBuf::from(r)),
-            None => match dotconfig["run"].as_str() {
-                Some(r) => Some(PathBuf::from(r)),
-                None => None
-            }
+            None => dotconfig.run_path,
         },
         template_path: match &input_opts.template_path {
             Some(r) => Some(PathBuf::from(r)),
-            None => match dotconfig["template"].as_str() {
-                Some(r) => Some(PathBuf::from(r)),
-                None => None
-            }
+            None => dotconfig.template_path,
         },
         user: match &input_opts.user {
             Some(r) => Some(r.to_string()),
-            None => match dotconfig["user"].as_str() {
-                Some(r) => Some(r.to_string()),
-                None => None
-            }
-        }
+            None => dotconfig.user,
+        },
     }
 }
 
@@ -276,7 +220,7 @@ mod tests {
     use std::io::Write;
     use tempfile::tempdir;
 
-    fn prepare_dotconfig() -> Yaml {
+    fn prepare_dotconfig() -> Config {
         let dir = tempdir().ok().unwrap();
         let file_path = dir.path().join(".ultraman");
         let mut file = File::create(file_path.clone()).ok().unwrap();
@@ -286,8 +230,8 @@ mod tests {
             r#"
 format: systemd
 location: /etc/location
-procfile: ./Procfile
-env: .env
+procfile: ./tmp/Procfile
+env: ./tmp/.env
 
 formation: app=1,web=2
 port: 6000
@@ -315,7 +259,7 @@ hoge: hogehoge
     fn test_merged_opts_when_prefer_dotconfig() -> anyhow::Result<()> {
         let input_opts = ExportOpts {
             format: String::from("upstart"),
-            location: PathBuf::from("./tmp/location"),
+            location: PathBuf::from("./test/location"),
             formation: None,
             env_path: None,
             procfile_path: None,
@@ -330,20 +274,32 @@ hoge: hogehoge
         };
 
         let dotconfig = prepare_dotconfig();
-        let result = merged_opts(&input_opts, &dotconfig);
+        let result = merged_opts(&input_opts, dotconfig);
 
         assert_eq!(result.format, "upstart");
-        assert_eq!(result.location, PathBuf::from("./tmp/location"));
+        assert_eq!(result.location, PathBuf::from("./test/location"));
         assert_eq!(result.formation.unwrap(), "app=1,web=2");
-        assert_eq!(result.env_path.unwrap(), PathBuf::from(".env"));
-        assert_eq!(result.procfile_path.unwrap(), PathBuf::from("./Procfile"));
+        assert_eq!(result.env_path.unwrap(), PathBuf::from("./tmp/.env"));
+        assert_eq!(
+            result.procfile_path.unwrap(),
+            PathBuf::from("./tmp/Procfile")
+        );
         assert_eq!(result.port.unwrap(), "6000");
         assert_eq!(result.timeout.unwrap(), "5000");
         assert_eq!(result.app.unwrap(), "app-for-runit");
-        assert_eq!(result.log_path.unwrap(), PathBuf::from("/var/app/log/ultraman.log"));
+        assert_eq!(
+            result.log_path.unwrap(),
+            PathBuf::from("/var/app/log/ultraman.log")
+        );
         assert_eq!(result.root_path.unwrap(), PathBuf::from("/home/app"));
-        assert_eq!(result.run_path.unwrap(), PathBuf::from("/tmp/pids/ultraman.pid"));
-        assert_eq!(result.template_path.unwrap(), PathBuf::from("../../src/cmd/export/templates/supervisord"));
+        assert_eq!(
+            result.run_path.unwrap(),
+            PathBuf::from("/tmp/pids/ultraman.pid")
+        );
+        assert_eq!(
+            result.template_path.unwrap(),
+            PathBuf::from("../../src/cmd/export/templates/supervisord")
+        );
         assert_eq!(result.user.unwrap(), "root");
 
         Ok(())
@@ -368,7 +324,7 @@ hoge: hogehoge
         };
 
         let dotconfig = prepare_dotconfig();
-        let result = merged_opts(&input_opts, &dotconfig);
+        let result = merged_opts(&input_opts, dotconfig);
 
         assert_eq!(result.format, "upstart");
         assert_eq!(result.location, PathBuf::from("./test/location"));
@@ -384,7 +340,10 @@ hoge: hogehoge
         assert_eq!(result.log_path.unwrap(), PathBuf::from("./test/log"));
         assert_eq!(result.root_path.unwrap(), PathBuf::from("./test/root"));
         assert_eq!(result.run_path.unwrap(), PathBuf::from("./test/run"));
-        assert_eq!(result.template_path.unwrap(), PathBuf::from("./test/template"));
+        assert_eq!(
+            result.template_path.unwrap(),
+            PathBuf::from("./test/template")
+        );
         assert_eq!(result.user.unwrap(), "user");
 
         Ok(())

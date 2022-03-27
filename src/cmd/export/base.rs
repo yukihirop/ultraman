@@ -126,7 +126,8 @@ pub trait Exportable {
     }
 
     fn env_without_port(&self) -> Vec<EnvParameter> {
-        let mut env = read_env(self.ref_opts().env_path.clone().unwrap()).expect("failed read .env");
+        let mut env =
+            read_env(self.ref_opts().env_path.clone().unwrap()).expect("failed read .env");
         env.remove("PORT");
         let mut env_without_port: Vec<EnvParameter> = vec![];
         for (key, value) in env {

@@ -1,6 +1,4 @@
-use crate::config::{
-    read_config, DEFAULT_ENV, DEFAULT_FORMATION, DEFAULT_PROCFILE, DEFAULT_TIMEOUT,
-};
+use crate::config::{read_config, Config};
 use crate::opt::DisplayOpts;
 use crate::output;
 use crate::process::{self, Process};
@@ -10,7 +8,6 @@ use crate::signal;
 use std::path::PathBuf;
 use std::sync::{Arc, Barrier, Mutex};
 use structopt::{clap, StructOpt};
-use yaml_rust::Yaml;
 
 #[derive(StructOpt, Debug)]
 #[structopt(setting(clap::AppSettings::ColoredHelp))]
@@ -44,7 +41,7 @@ pub fn run(input_opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
     let mut proc_handles = vec![];
     let procs: Arc<Mutex<Vec<Arc<Mutex<process::Process>>>>> = Arc::new(Mutex::new(vec![]));
     let dotconfig = read_config(PathBuf::from(".ultraman")).unwrap();
-    let opts = merged_opts(&input_opts, &dotconfig);
+    let opts = merged_opts(&input_opts, dotconfig);
 
     let procfile = read_procfile(opts.procfile_path.unwrap()).expect("failed read Procfile");
     // Read the formation from the command line option and always call it before process_len for the convenience of setting concurrency
@@ -132,51 +129,31 @@ pub fn run(input_opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn merged_opts(input_opts: &StartOpts, dotconfig: &Yaml) -> StartOpts {
+fn merged_opts(input_opts: &StartOpts, dotconfig: Config) -> StartOpts {
     StartOpts {
         formation: match &input_opts.formation {
             Some(r) => Some(r.to_string()),
-            None => Some(
-                dotconfig["formation"]
-                    .as_str()
-                    .map(|r| r.to_string())
-                    .unwrap_or(DEFAULT_FORMATION.to_string()),
-            ),
+            None => dotconfig.formation,
         },
         env_path: match &input_opts.env_path {
             Some(r) => Some(PathBuf::from(r)),
-            None => Some(
-                dotconfig["env"]
-                    .as_str()
-                    .map(|r| PathBuf::from(r))
-                    .unwrap_or(PathBuf::from(DEFAULT_ENV)),
-            ),
+            None => dotconfig.env_path,
         },
         procfile_path: match &input_opts.procfile_path {
             Some(r) => Some(PathBuf::from(r)),
-            None => Some(
-                dotconfig["procfile"]
-                    .as_str()
-                    .map(|r| PathBuf::from(r))
-                    .unwrap_or(PathBuf::from(DEFAULT_PROCFILE)),
-            ),
+            None => dotconfig.procfile_path,
         },
         port: match &input_opts.port {
             Some(r) => Some(r.to_string()),
-            None => dotconfig["port"].as_i64().map(|r| r.to_string()),
+            None => dotconfig.port.map(|r| r.to_string()),
         },
         timeout: match &input_opts.timeout {
             Some(r) => Some(r.to_string()),
-            None => Some(
-                dotconfig["timeout"]
-                    .as_i64()
-                    .map(|r| r.to_string())
-                    .unwrap_or(DEFAULT_TIMEOUT.to_string()),
-            ),
+            None => dotconfig.timeout.map(|r| r.to_string()),
         },
         is_no_timestamp: match &input_opts.is_no_timestamp {
             Some(r) => Some(r.clone()),
-            None => Some(dotconfig["no-timestamp"].as_bool().unwrap_or(false)),
+            None => dotconfig.is_no_timestamp,
         },
     }
 }
@@ -188,7 +165,7 @@ mod tests {
     use std::io::Write;
     use tempfile::tempdir;
 
-    fn prepare_dotconfig() -> Yaml {
+    fn prepare_dotconfig() -> Config {
         let dir = tempdir().ok().unwrap();
         let file_path = dir.path().join(".ultraman");
         let mut file = File::create(file_path.clone()).ok().unwrap();
@@ -233,7 +210,7 @@ hoge: hogehoge
         };
 
         let dotconfig = prepare_dotconfig();
-        let result = merged_opts(&input_opts, &dotconfig);
+        let result = merged_opts(&input_opts, dotconfig);
 
         assert_eq!(result.formation.unwrap(), "app=1,web=2");
         assert_eq!(result.env_path.unwrap(), PathBuf::from(".env"));
@@ -257,7 +234,7 @@ hoge: hogehoge
         };
 
         let dotconfig = prepare_dotconfig();
-        let result = merged_opts(&input_opts, &dotconfig);
+        let result = merged_opts(&input_opts, dotconfig);
 
         assert_eq!(result.formation.unwrap(), "app=2,web=2,server=2");
         assert_eq!(result.env_path.unwrap(), PathBuf::from("./tmp/.env"));

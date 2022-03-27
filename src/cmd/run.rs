@@ -1,4 +1,4 @@
-use crate::config::{read_config, DEFAULT_ENV, DEFAULT_PROCFILE};
+use crate::config::{read_config, Config};
 use crate::env::read_env;
 use crate::procfile::read_procfile;
 
@@ -10,7 +10,6 @@ use std::path::PathBuf;
 use std::process::{exit, Command};
 use std::thread;
 use structopt::{clap, StructOpt};
-use yaml_rust::Yaml;
 
 #[derive(StructOpt, Debug)]
 #[structopt(setting(clap::AppSettings::ColoredHelp))]
@@ -30,7 +29,7 @@ pub struct RunOpts {
 
 pub fn run(input_opts: RunOpts) {
     let dotconfig = read_config(PathBuf::from(".ultraman")).unwrap();
-    let opts = merged_opts(&input_opts, &dotconfig);
+    let opts = merged_opts(&input_opts, dotconfig);
 
     let app_name = opts.app_name;
     let procfile_path = opts.procfile_path.unwrap();
@@ -84,26 +83,16 @@ pub fn run(input_opts: RunOpts) {
     }
 }
 
-fn merged_opts(input_opts: &RunOpts, dotconfig: &Yaml) -> RunOpts {
+fn merged_opts(input_opts: &RunOpts, dotconfig: Config) -> RunOpts {
     RunOpts {
         app_name: input_opts.app_name.to_string(),
         env_path: match &input_opts.env_path {
             Some(r) => Some(PathBuf::from(r)),
-            None => Some(
-                dotconfig["env"]
-                    .as_str()
-                    .map(|r| PathBuf::from(r))
-                    .unwrap_or(PathBuf::from(DEFAULT_ENV)),
-            ),
+            None => dotconfig.env_path,
         },
         procfile_path: match &input_opts.procfile_path {
             Some(r) => Some(PathBuf::from(r)),
-            None => Some(
-                dotconfig["procfile"]
-                    .as_str()
-                    .map(|r| PathBuf::from(r))
-                    .unwrap_or(PathBuf::from(DEFAULT_PROCFILE)),
-            ),
+            None => dotconfig.procfile_path,
         },
     }
 }
@@ -115,7 +104,7 @@ mod tests {
     use std::io::Write;
     use tempfile::tempdir;
 
-    fn prepare_dotconfig() -> Yaml {
+    fn prepare_dotconfig() -> Config {
         let dir = tempdir().ok().unwrap();
         let file_path = dir.path().join(".ultraman");
         let mut file = File::create(file_path.clone()).ok().unwrap();
@@ -123,8 +112,8 @@ mod tests {
         writeln!(
             file,
             r#"
-procfile: ./Procfile
-env: .env
+procfile: ./tmp/Procfile
+env: ./tmp/.env
 
 formation: app=1,web=2
 port: 6000
@@ -157,11 +146,14 @@ hoge: hogehoge
         };
 
         let dotconfig = prepare_dotconfig();
-        let result = merged_opts(&input_opts, &dotconfig);
+        let result = merged_opts(&input_opts, dotconfig);
 
         assert_eq!(result.app_name, String::from("web"));
-        assert_eq!(result.env_path.unwrap(), PathBuf::from(".env"));
-        assert_eq!(result.procfile_path.unwrap(), PathBuf::from("./Procfile"));
+        assert_eq!(result.env_path.unwrap(), PathBuf::from("./tmp/.env"));
+        assert_eq!(
+            result.procfile_path.unwrap(),
+            PathBuf::from("./tmp/Procfile")
+        );
 
         Ok(())
     }
@@ -170,18 +162,18 @@ hoge: hogehoge
     fn test_merged_opts_when_prefer_input_opts() -> anyhow::Result<()> {
         let input_opts = RunOpts {
             app_name: String::from("web"),
-            env_path: Some(PathBuf::from("./tmp/.env")),
-            procfile_path: Some(PathBuf::from("./tmp/Procfile")),
+            env_path: Some(PathBuf::from("./test/.env")),
+            procfile_path: Some(PathBuf::from("./test/Procfile")),
         };
 
         let dotconfig = prepare_dotconfig();
-        let result = merged_opts(&input_opts, &dotconfig);
+        let result = merged_opts(&input_opts, dotconfig);
 
         assert_eq!(result.app_name, String::from("web"));
-        assert_eq!(result.env_path.unwrap(), PathBuf::from("./tmp/.env"));
+        assert_eq!(result.env_path.unwrap(), PathBuf::from("./test/.env"));
         assert_eq!(
             result.procfile_path.unwrap(),
-            PathBuf::from("./tmp/Procfile")
+            PathBuf::from("./test/Procfile")
         );
 
         Ok(())
