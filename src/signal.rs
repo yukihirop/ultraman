@@ -4,7 +4,8 @@ use crate::process::{self, Process};
 
 use nix::sys::signal::{self, Signal};
 use nix::unistd::Pid;
-use signal_hook::{iterator::Signals, SIGALRM, SIGHUP, SIGINT, SIGTERM};
+use signal_hook::{iterator::Signals};
+use signal_hook::consts::signal::{SIGALRM, SIGHUP, SIGINT, SIGTERM};
 use std::sync::{Arc, Mutex};
 use std::thread::{self, sleep, JoinHandle};
 use std::time::{Duration, Instant};
@@ -32,7 +33,7 @@ fn trap_signal_at_multithred(
     timeout: u64,
     opts: DisplayOpts,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let signals = Signals::new(&[SIGALRM, SIGHUP, SIGINT, SIGTERM])?;
+    let mut signals = Signals::new(&[SIGALRM, SIGHUP, SIGINT, SIGTERM])?;
 
     for sig in signals.forever() {
         match sig {
@@ -185,7 +186,7 @@ pub fn kill_children(
 mod tests {
     use super::*;
     use libc;
-    use signal_hook::SIGINT;
+    use signal_hook::consts::signal::SIGINT;
     use std::process::Command;
     use std::thread::sleep;
     use std::time::Duration;

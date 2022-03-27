@@ -9,6 +9,7 @@ use std::env;
 use std::fs::File;
 use std::fs::{create_dir_all, remove_file};
 use std::path::PathBuf;
+use std::io::Read;
 
 #[derive(Serialize)]
 pub struct EnvParameter {
@@ -109,14 +110,16 @@ pub trait Exportable {
             .into_os_string()
             .into_string()
             .unwrap();
-        let mut template_source = File::open(tmpl.template_path)
-            .expect(&format!("Could not open file: {}", display_template));
         let mut output_file = File::create(tmpl.output_path)
             .expect(&format!("Could not create file: {}", &display_output));
         self.say(&format!("writing: {}", &display_output));
         let mut data = tmpl.data;
+        let mut template_source = File::open(tmpl.template_path)
+            .expect(&format!("Could not open file: {}", display_template));
+        let mut template_str = String::new();
+        template_source.read_to_string(&mut template_str).expect(&format!("Could not read file: {}", display_template));
         handlebars
-            .render_template_source_to_write(&mut template_source, &mut data, &mut output_file)
+            .render_template_to_write(&mut template_str, &mut data, &mut output_file)
             .expect(&format!("Coult not render file: {}", &display_output));
     }
 

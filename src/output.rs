@@ -3,7 +3,7 @@ use crate::opt::DisplayOpts;
 use crate::process::Process;
 use crate::stream_read::{PipeError, PipeStreamReader, PipedLine};
 
-use crossbeam_channel::Select;
+use crossbeam::channel::Select;
 use std::sync::{Arc, Mutex};
 
 pub struct Output {
