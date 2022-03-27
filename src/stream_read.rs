@@ -1,4 +1,4 @@
-use crossbeam_channel::{unbounded, Receiver};
+use crossbeam::channel::{unbounded, Receiver};
 use std::io;
 use std::string::FromUtf8Error;
 use std::thread::spawn;
