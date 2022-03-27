@@ -1,3 +1,4 @@
+use crate::config::{read_config, Config};
 use crate::env::read_env;
 use crate::procfile::read_procfile;
 
@@ -18,30 +19,21 @@ pub struct RunOpts {
     pub app_name: String,
 
     /// Specify an environment file to load
-    #[structopt(
-        name = "ENV",
-        short = "e",
-        long = "env",
-        parse(from_os_str),
-        default_value = ".env"
-    )]
-    pub env_path: PathBuf,
+    #[structopt(name = "ENV", short = "e", long = "env", parse(from_os_str))]
+    pub env_path: Option<PathBuf>,
 
     /// Specify an Procfile to load
-    #[structopt(
-        name = "PROCFILE",
-        short = "f",
-        long = "procfile",
-        parse(from_os_str),
-        default_value = "Procfile"
-    )]
-    pub procfile_path: PathBuf,
+    #[structopt(name = "PROCFILE", short = "f", long = "procfile", parse(from_os_str))]
+    pub procfile_path: Option<PathBuf>,
 }
 
-pub fn run(opts: RunOpts) {
+pub fn run(input_opts: RunOpts) {
+    let dotconfig = read_config(PathBuf::from(".ultraman")).unwrap();
+    let opts = merged_opts(&input_opts, dotconfig);
+
     let app_name = opts.app_name;
-    let procfile_path = opts.procfile_path;
-    let env_path = opts.env_path;
+    let procfile_path = opts.procfile_path.unwrap();
+    let env_path = opts.env_path.unwrap();
 
     let procfile = read_procfile(procfile_path).expect("failed read Procfile");
     let pe = procfile.find_by(&app_name);
@@ -88,5 +80,102 @@ pub fn run(opts: RunOpts) {
                 println!("error: {}", &e)
             }
         }
+    }
+}
+
+fn merged_opts(input_opts: &RunOpts, dotconfig: Config) -> RunOpts {
+    RunOpts {
+        app_name: input_opts.app_name.to_string(),
+        env_path: match &input_opts.env_path {
+            Some(r) => Some(PathBuf::from(r)),
+            None => Some(dotconfig.env_path),
+        },
+        procfile_path: match &input_opts.procfile_path {
+            Some(r) => Some(PathBuf::from(r)),
+            None => Some(dotconfig.procfile_path),
+        },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::File;
+    use std::io::Write;
+    use tempfile::tempdir;
+
+    fn prepare_dotconfig() -> Config {
+        let dir = tempdir().ok().unwrap();
+        let file_path = dir.path().join(".ultraman");
+        let mut file = File::create(file_path.clone()).ok().unwrap();
+        // Writing a comment causes a parse error
+        writeln!(
+            file,
+            r#"
+procfile: ./tmp/Procfile
+env: ./tmp/.env
+
+formation: app=1,web=2
+port: 6000
+timeout: 5000
+
+no-timestamp: true
+
+app: app-for-runit
+log: /var/app/log/ultraman.log
+run: /tmp/pids/ultraman.pid
+template: ../../src/cmd/export/templates/supervisord
+user: root
+root: /home/app
+
+hoge: hogehoge
+      "#
+        )
+        .unwrap();
+
+        let dotconfig = read_config(file_path).expect("failed read .ultraman");
+        dotconfig
+    }
+
+    #[test]
+    fn test_merged_opts_when_prefer_dotconfig() -> anyhow::Result<()> {
+        let input_opts = RunOpts {
+            app_name: String::from("web"),
+            env_path: None,
+            procfile_path: None,
+        };
+
+        let dotconfig = prepare_dotconfig();
+        let result = merged_opts(&input_opts, dotconfig);
+
+        assert_eq!(result.app_name, String::from("web"));
+        assert_eq!(result.env_path.unwrap(), PathBuf::from("./tmp/.env"));
+        assert_eq!(
+            result.procfile_path.unwrap(),
+            PathBuf::from("./tmp/Procfile")
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_merged_opts_when_prefer_input_opts() -> anyhow::Result<()> {
+        let input_opts = RunOpts {
+            app_name: String::from("web"),
+            env_path: Some(PathBuf::from("./test/.env")),
+            procfile_path: Some(PathBuf::from("./test/Procfile")),
+        };
+
+        let dotconfig = prepare_dotconfig();
+        let result = merged_opts(&input_opts, dotconfig);
+
+        assert_eq!(result.app_name, String::from("web"));
+        assert_eq!(result.env_path.unwrap(), PathBuf::from("./test/.env"));
+        assert_eq!(
+            result.procfile_path.unwrap(),
+            PathBuf::from("./test/Procfile")
+        );
+
+        Ok(())
     }
 }

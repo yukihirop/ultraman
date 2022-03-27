@@ -1,9 +1,13 @@
 #[cfg(feature = "man")]
 extern crate roff;
 use roff::*;
+use chrono;
 
 fn main() {
-    let page = Roff::new("ultraman", 1, "December 2020", "Ultraman 0.1.0", "Ultraman Manual")
+    let current = format!("Ultraman {}", env!("CARGO_PKG_VERSION"));
+    let current_date = chrono::Utc::now();
+    let footer = format!("{}", current_date.format("%B %Y"));
+    let page = Roff::new("ultraman", 1, footer.as_str(), current.as_str(), "Ultraman Manual")
     .section("name", &["ultraman - modify files by randomly changing bits"])
     .section("synopsis", &[
       lf(&[bold("ultraman"), " ".into(), bold("start"), " ".into(), "[process]".into()]),
@@ -170,6 +174,32 @@ fn main() {
         lf(&["FOO=foo"]),
         lf(&["BAZ=bar"]),
       ]),
+    ])
+    .section("default options", &[
+      s(&["If a ".into(), bold(".ultraman"), " file exists in the current directory, default options will read from it. This file should".into()]),
+      s(&["be in YAML format with the long option name as keys.Exammple:"]),
+      nf(4, &[
+        lf(&["formation: alpha=0,bravo=1"]),
+        lf(&["port: 15000"])
+      ])
+    ])
+    .section("examples", &[
+      s(&["Start one instance of each process type, interleave the output on stdout:"]),
+      nf(4, &[
+        lf(&["$ ultraman start"])
+      ]),
+      s(&["Export the application in upstart format:"]),
+      nf(4, &[
+        lf(&["$ ultraman export upstart /etc/init"])
+      ]),
+      s(&["Run one process type from the application defined in a specific Procfile:"]),
+      nf(4, &[
+        lf(&["$ ultraman start alpha -f ~/myapp/Procfile"])
+      ]),
+      s(&["Start all processes except the one named worker:"]),
+      nf(4, &[
+        lf(&["$ ultraman start -m all=1,worker=0"])
+      ])
     ])
     .section("copyright", &[
       s(&[bold("Ultraman"), " ".into(), "Copyright (C) 2020 yukihirop https://github.com/yukihirop/ultraman".into()])

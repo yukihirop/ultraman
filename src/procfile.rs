@@ -5,8 +5,9 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 
+use crate::config::DEFAULT_FORMATION;
+
 const PROCFILE_REGEXP: &'static str = r"\A([A-Za-z0-9_-]+):\s*(.+)$";
-const DEFAULT_FORMATION: &'static str = "all=1";
 
 pub struct ProcfileEntry {
     pub command: String,
