@@ -20,17 +20,17 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 chrono = "0.4.19"
 colored = "2.0.0"
-crossbeam-channel = "0.5.0"
+crossbeam-channel = "0.5.4"
 dotenv = "0.15.0"
 handlebars = "3.5.1"
 nix = "0.19.0"
-regex = "1.4.2"
-serde = "1.0.117"
-serde_derive = "1.0.117"
-serde_json = "1.0.59"
+regex = "1.5.5"
+serde = "1.0.136"
+serde_derive = "1.0.136"
+serde_json = "1.0.79"
 shellwords = "1.1.0"
 signal-hook = "0.1.16"
-structopt = "0.3.20"
+structopt = "0.3.26"
 # https://doc.rust-lang.org/nightly/cargo/reference/specifying-dependencies.html?highlight=git,version#multiple-locations
 roff = { git = "https://github.com/yukihirop/roff-rs", version = ">=0.1.0", optional = true }
 yaml-rust = "0.4.5"
@@ -39,9 +39,9 @@ yaml-rust = "0.4.5"
 man = [ "roff" ]
 
 [dev-dependencies]
-anyhow = "1.0.34"
-libc = "0.2.80"
-tempfile = "3.1.0"
+anyhow = "1.0.56"
+libc = "0.2.121"
+tempfile = "3.3.0"
 
 
 [[bin]]
