@@ -131,7 +131,7 @@ impl Exportable for Exporter {
             for n in 0..con {
                 let process_name = format!("{}.{}", &name, n);
                 let service_filename = format!("{}-{}.service", &name, &process_name);
-                let output_path = self.output_path(service_filename.clone());
+                let output_path = self.output_path(&service_filename);
                 let data = self.make_process_service_data(pe, &process_name, index, n);
 
                 clean_paths.push(output_path.clone());
@@ -144,7 +144,7 @@ impl Exportable for Exporter {
             }
         }
 
-        let output_path = self.output_path(format!("{}.target", self.app()));
+        let output_path = self.output_path(&format!("{}.target", self.app()));
         let data = self.make_master_target_data(service_names);
 
         clean_paths.push(output_path.clone());

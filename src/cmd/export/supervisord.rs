@@ -149,7 +149,7 @@ impl Exportable for Exporter {
             }
         }
 
-        let output_path = self.output_path("app.conf".to_string());
+        let output_path = self.output_path("app.conf");
         self.clean(&output_path);
         self.write_template(Template {
             template_path: self.app_conf_tmpl_path(),

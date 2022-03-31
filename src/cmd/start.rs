@@ -76,8 +76,8 @@ pub fn run(input_opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
 
             let exec_and_output_thread = process::build_exec_and_output_thread(move || {
                 let proc = Process::new(
-                    process_name,
-                    cmd,
+                    &process_name,
+                    &cmd,
                     env_path.unwrap(),
                     port,
                     n,

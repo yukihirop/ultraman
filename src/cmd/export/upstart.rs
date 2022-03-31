@@ -130,7 +130,7 @@ impl Exportable for Exporter {
         let mut tmpl_data: Vec<Template> = vec![];
 
         let master_file = format!("{}.conf", self.app());
-        let output_path = self.output_path(master_file);
+        let output_path = self.output_path(&master_file);
 
         clean_paths.push(output_path.clone());
         tmpl_data.push(Template {
@@ -144,7 +144,7 @@ impl Exportable for Exporter {
             index += 1;
             let con = pe.concurrency.get();
             let process_master_file = format!("{}-{}.conf", self.app(), &name);
-            let output_path = self.output_path(process_master_file);
+            let output_path = self.output_path(&process_master_file);
 
             clean_paths.push(output_path.clone());
             tmpl_data.push(Template {
@@ -155,7 +155,7 @@ impl Exportable for Exporter {
 
             for n in 0..con {
                 let process_file = format!("{}-{}-{}.conf", self.app(), &name, n);
-                let output_path = self.output_path(process_file);
+                let output_path = self.output_path(&process_file);
 
                 clean_paths.push(output_path.clone());
                 tmpl_data.push(Template {

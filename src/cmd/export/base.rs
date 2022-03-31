@@ -123,7 +123,7 @@ pub trait Exportable {
             .expect(&format!("Coult not render file: {}", &display_output));
     }
 
-    fn output_path(&self, filename: String) -> PathBuf {
+    fn output_path(&self, filename: &str) -> PathBuf {
         let location = self.ref_opts().location.clone();
         location.join(filename)
     }

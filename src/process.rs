@@ -23,8 +23,8 @@ pub struct Process {
 
 impl Process {
     pub fn new(
-        process_name: String,
-        cmd: String,
+        process_name: &str,
+        cmd: &str,
         env_path: PathBuf,
         port: Option<String>,
         instance_index: usize,
@@ -38,7 +38,7 @@ impl Process {
         );
         read_env.insert(
             String::from("PS"),
-            ps_for(process_name.clone(), instance_index + 1),
+            ps_for(process_name, instance_index + 1),
         );
         let shell = os_env::var("SHELL").expect("$SHELL is not set");
 
@@ -148,7 +148,7 @@ pub fn check_for_child_termination(
     };
 }
 
-fn ps_for(process_name: String, instance_index: usize) -> String {
+fn ps_for(process_name: &str, instance_index: usize) -> String {
     format!("{}.{}", process_name, instance_index)
 }
 
@@ -169,7 +169,7 @@ fn base_port(env_path: &PathBuf, port: Option<String>) -> String {
     if let Some(p) = port {
         p
     } else if let Some(p) = env.get("PORT") {
-        p.clone()
+        p.to_string()
     } else if let Ok(p) = os_env::var("PORT") {
         p
     } else {
