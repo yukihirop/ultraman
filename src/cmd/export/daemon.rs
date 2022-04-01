@@ -167,7 +167,7 @@ impl<'a> Exporter<'a> {
             con_index + 1,
         );
         let mut env = read_env(self.opts.env_path.clone().unwrap()).expect("failed read .env");
-        env.insert("PORT".to_string(), port);
+        env.insert("PORT".to_string(), port.to_string());
 
         let mut result = vec![];
         for (key, val) in env.iter() {

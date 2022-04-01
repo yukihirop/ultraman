@@ -117,7 +117,7 @@ impl<'a> Exporter<'a> {
             index,
             con_index + 1,
         );
-        env.insert("PORT".to_string(), port);
+        env.insert("PORT".to_string(), port.to_string());
 
         for (key, val) in env.iter() {
             let path = output_dir_path.join(&key);

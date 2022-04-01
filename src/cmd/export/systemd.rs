@@ -26,7 +26,7 @@ struct ProcessServiceParams<'a> {
     app: &'a str,
     user: &'a str,
     work_dir: String,
-    port: String,
+    port: &'a u32,
     process_name: &'a str,
     process_command: &'a str,
     env_without_port: Vec<EnvParameter>,
@@ -107,7 +107,7 @@ impl<'a> Exporter<'a> {
             app: self.app(),
             user: self.username(),
             work_dir: self.root_path().into_os_string().into_string().unwrap(),
-            port: port_for(
+            port: &port_for(
                 &self.opts.env_path.clone().unwrap(),
                 self.opts.port.clone(),
                 index,

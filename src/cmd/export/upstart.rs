@@ -26,7 +26,7 @@ struct ProcessMasterParams<'a> {
 struct ProcessParams<'a> {
     app: &'a str,
     name: &'a str,
-    port: &'a str,
+    port: &'a u32,
     env_without_port: Vec<EnvParameter>,
     setuid: &'a str,
     chdir: &'a str,
