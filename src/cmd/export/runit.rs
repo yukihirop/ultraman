@@ -19,15 +19,15 @@ pub struct Exporter {
 
 #[derive(Serialize)]
 struct RunParams<'a> {
-    work_dir: String,
+    work_dir: &'a str,
     user: &'a str,
-    env_dir_path: String,
-    process_command: String,
+    env_dir_path: &'a str,
+    process_command: &'a str,
 }
 
 #[derive(Serialize)]
 struct LogRunParams<'a> {
-    log_path: String,
+    log_path: &'a str,
     user: &'a str,
 }
 
@@ -82,10 +82,10 @@ impl Exporter {
     fn make_run_data(&self, pe: &ProcfileEntry, env_dir_path: &PathBuf) -> Map<String, Json> {
         let mut data = Map::new();
         let rp = RunParams {
-            work_dir: self.root_path().into_os_string().into_string().unwrap(),
+            work_dir: &self.root_path().into_os_string().into_string().unwrap(),
             user: self.username(),
-            env_dir_path: env_dir_path.clone().into_os_string().into_string().unwrap(),
-            process_command: pe.command.to_string(),
+            env_dir_path: env_dir_path.as_os_str().to_str().unwrap(),
+            process_command: &pe.command,
         };
         data.insert("run".to_string(), to_json(&rp));
         data
@@ -99,7 +99,7 @@ impl Exporter {
             &process_name
         );
         let lr = LogRunParams {
-            log_path,
+            log_path: &log_path,
             user: self.username(),
         };
         data.insert("log_run".to_string(), to_json(&lr));

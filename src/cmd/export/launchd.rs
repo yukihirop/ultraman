@@ -17,13 +17,13 @@ pub struct Exporter {
 
 #[derive(Serialize)]
 struct LaunchdParams<'a> {
-    label: String,
+    label: &'a str,
     env: Vec<EnvParameter>,
-    command_args: Vec<String>,
-    stdout_path: String,
-    stderr_path: String,
+    command_args: Vec<&'a str>,
+    stdout_path: &'a str,
+    stderr_path: &'a str,
     user: &'a str,
-    work_dir: String,
+    work_dir: &'a str,
 }
 
 impl Default for Exporter {
@@ -77,23 +77,23 @@ impl Exporter {
         let mut data = Map::new();
         let log_display = self.log_path().into_os_string().into_string().unwrap();
         let lp = LaunchdParams {
-            label: service_name.to_string(),
+            label: service_name,
             env: self.environment(index, con_index),
             command_args: self.command_args(pe),
-            stdout_path: format!("{}/{}.log", &log_display, &service_name),
-            stderr_path: format!("{}/{}.error.log", &log_display, &service_name),
+            stdout_path: &format!("{}/{}.log", &log_display, &service_name),
+            stderr_path: &format!("{}/{}.error.log", &log_display, &service_name),
             user: self.username(),
-            work_dir: self.root_path().into_os_string().into_string().unwrap(),
+            work_dir: &self.root_path().into_os_string().into_string().unwrap(),
         };
         data.insert("launchd".to_string(), to_json(&lp));
         data
     }
 
-    fn command_args(&self, pe: &ProcfileEntry) -> Vec<String> {
+    fn command_args<'a>(&self, pe: &'a ProcfileEntry) -> Vec<&'a str> {
         let data = pe.command.split(" ").collect::<Vec<_>>();
-        let mut result = vec![];
+        let mut result: Vec<&'a str> = vec![];
         for item in data {
-            result.push(item.to_string())
+            result.push(item)
         }
         result
     }

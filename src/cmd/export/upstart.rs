@@ -24,7 +24,7 @@ struct ProcessMasterParams<'a> {
 struct ProcessParams<'a> {
     app: &'a str,
     name: &'a str,
-    port: String,
+    port: &'a str,
     env_without_port: Vec<EnvParameter>,
     setuid: &'a str,
     chdir: &'a str,
@@ -81,7 +81,7 @@ impl Exporter {
         let p = ProcessParams {
             app: self.app(),
             name: app_name,
-            port: port_for(
+            port: &port_for(
                 &self.opts.env_path.clone().unwrap(),
                 self.opts.port.clone(),
                 index,

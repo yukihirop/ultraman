@@ -15,8 +15,8 @@ pub struct Exporter {
 }
 
 #[derive(Serialize)]
-struct MasterTargetParams {
-    service_names: String,
+struct MasterTargetParams<'a> {
+    service_names: &'a str,
 }
 
 #[derive(Serialize)]
@@ -25,10 +25,10 @@ struct ProcessServiceParams<'a> {
     user: &'a str,
     work_dir: String,
     port: String,
-    process_name: String,
-    process_command: String,
+    process_name: &'a str,
+    process_command: &'a str,
     env_without_port: Vec<EnvParameter>,
-    timeout: String,
+    timeout: &'a str,
 }
 
 impl Default for Exporter {
@@ -82,7 +82,7 @@ impl Exporter {
     fn make_master_target_data(&self, service_names: Vec<String>) -> Map<String, Json> {
         let mut data = Map::new();
         let mt = MasterTargetParams {
-            service_names: service_names.join(" "),
+            service_names: &service_names.iter().map(|v| v.as_str()).collect::<Vec<_>>().join(" "),
         };
         data.insert("master_target".to_string(), to_json(&mt));
         data
@@ -106,10 +106,10 @@ impl Exporter {
                 index,
                 con_index + 1,
             ),
-            process_name: process_name.to_string(),
-            process_command: pe.command.to_string(),
+            process_name,
+            process_command: &pe.command,
             env_without_port: self.env_without_port(),
-            timeout: self.opts.timeout.clone().unwrap(),
+            timeout: self.opts.timeout.as_ref().unwrap(),
         };
         data.insert("process_service".to_string(), to_json(&ps));
         data

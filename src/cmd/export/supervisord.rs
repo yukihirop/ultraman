@@ -33,7 +33,7 @@ struct AppConfDataParams<'a> {
 #[derive(Serialize)]
 struct AppConfParams<'a> {
     app: &'a str,
-    service_names: String,
+    service_names: &'a str,
     data: Vec<AppConfDataParams<'a>>,
 }
 
@@ -86,7 +86,7 @@ impl Exporter {
         let mut tmpldata = Map::new();
         let ac = AppConfParams {
             app: self.app(),
-            service_names: service_names.join(","),
+            service_names: &service_names.iter().map(|v| v.as_str()).collect::<Vec<_>>().join(","),
             data,
         };
         tmpldata.insert("app_conf".to_string(), to_json(&ac));
