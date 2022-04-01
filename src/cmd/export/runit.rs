@@ -11,10 +11,12 @@ use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
+use std::marker::PhantomData;
 
-pub struct Exporter {
+pub struct Exporter<'a> {
     pub procfile: Procfile,
     pub opts: ExportOpts,
+    _marker: PhantomData<&'a ()>
 }
 
 #[derive(Serialize)]
@@ -31,7 +33,7 @@ struct LogRunParams<'a> {
     user: &'a str,
 }
 
-impl Default for Exporter {
+impl<'a> Default for Exporter<'a> {
     fn default() -> Self {
         Exporter {
             procfile: Procfile {
@@ -52,11 +54,12 @@ impl Default for Exporter {
                 root_path: Some(env::current_dir().unwrap()),
                 timeout: Some(String::from("5")),
             },
+            _marker: PhantomData
         }
     }
 }
 
-impl Exporter {
+impl<'a> Exporter<'a> {
     fn boxed(self) -> Box<Self> {
         Box::new(self)
     }
@@ -128,13 +131,14 @@ impl Exporter {
     }
 }
 
-struct EnvTemplate {
+struct EnvTemplate<'a> {
     template_path: PathBuf,
     index: usize,
     con_index: usize,
+    _marker: PhantomData<&'a ()>
 }
 
-impl Exportable for Exporter {
+impl<'a> Exportable for Exporter<'a> {
     fn export(&self) -> Result<(), Box<dyn std::error::Error>> {
         self.base_export().expect("failed execute base_export");
 
@@ -187,6 +191,7 @@ impl Exportable for Exporter {
                     template_path: path_for_env.clone(),
                     index,
                     con_index: n,
+                    _marker: PhantomData
                 });
             }
         }

@@ -9,10 +9,12 @@ use serde_json::value::{Map, Value as Json};
 use std::collections::HashMap;
 use std::env;
 use std::path::PathBuf;
+use std::marker::PhantomData;
 
-pub struct Exporter {
+pub struct Exporter<'a> {
     pub procfile: Procfile,
     pub opts: ExportOpts,
+    _marker: PhantomData<&'a ()>
 }
 
 #[derive(Serialize)]
@@ -26,7 +28,7 @@ struct LaunchdParams<'a> {
     work_dir: &'a str,
 }
 
-impl Default for Exporter {
+impl<'a> Default for Exporter<'a> {
     fn default() -> Self {
         Exporter {
             procfile: Procfile {
@@ -47,11 +49,12 @@ impl Default for Exporter {
                 root_path: Some(env::current_dir().unwrap()),
                 timeout: Some(String::from("5")),
             },
+            _marker: PhantomData
         }
     }
 }
 
-impl Exporter {
+impl<'a> Exporter<'a> {
     fn boxed(self) -> Box<Self> {
         Box::new(self)
     }
@@ -89,7 +92,7 @@ impl Exporter {
         data
     }
 
-    fn command_args<'a>(&self, pe: &'a ProcfileEntry) -> Vec<&'a str> {
+    fn command_args(&self, pe: &'a ProcfileEntry) -> Vec<&'a str> {
         let data = pe.command.split(" ").collect::<Vec<_>>();
         let mut result: Vec<&'a str> = vec![];
         for item in data {
@@ -120,7 +123,7 @@ impl Exporter {
     }
 }
 
-impl Exportable for Exporter {
+impl<'a> Exportable for Exporter<'a> {
     fn export(&self) -> Result<(), Box<dyn std::error::Error>> {
         self.base_export().expect("failed execute base_export");
 
