@@ -60,7 +60,7 @@ impl<'a> Default for Exporter<'a> {
                 env_path: Some(PathBuf::from(".env")),
                 procfile_path: Some(PathBuf::from("Procfile")),
                 root_path: Some(env::current_dir().unwrap()),
-                timeout: Some(String::from("5")),
+                timeout: Some(5),
             },
             _marker: PhantomData,
         }

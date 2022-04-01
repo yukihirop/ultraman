@@ -30,7 +30,7 @@ struct ProcessServiceParams<'a> {
     process_name: &'a str,
     process_command: &'a str,
     env_without_port: Vec<EnvParameter>,
-    timeout: &'a str,
+    timeout: &'a u64,
 }
 
 impl<'a> Default for Exporter<'a> {
@@ -52,7 +52,7 @@ impl<'a> Default for Exporter<'a> {
                 env_path: Some(PathBuf::from(".env")),
                 procfile_path: Some(PathBuf::from("Procfile")),
                 root_path: Some(env::current_dir().unwrap()),
-                timeout: Some(String::from("5")),
+                timeout: Some(5),
             },
             _marker: PhantomData,
         }
@@ -109,7 +109,7 @@ impl<'a> Exporter<'a> {
             work_dir: self.root_path().into_os_string().into_string().unwrap(),
             port: &port_for(
                 &self.opts.env_path.clone().unwrap(),
-                self.opts.port.clone(),
+                self.opts.port,
                 index,
                 con_index + 1,
             ),

@@ -26,7 +26,7 @@ impl Process {
         process_name: &str,
         cmd: &str,
         env_path: PathBuf,
-        port: Option<String>,
+        port: Option<u32>,
         instance_index: usize,
         index: usize,
         opts: Option<DisplayOpts>,
@@ -151,19 +151,19 @@ fn ps_for(process_name: &str, instance_index: usize) -> String {
 
 pub fn port_for(
     env_path: &PathBuf,
-    port: Option<String>,
+    port: Option<u32>,
     index: usize,
     instance_index: usize,
 ) -> u32 {
     base_port(env_path, port) + (index * 100 + instance_index) as u32
 }
 
-fn base_port(env_path: &PathBuf, port: Option<String>) -> u32 {
+fn base_port(env_path: &PathBuf, port: Option<u32>) -> u32 {
     let env = read_env(env_path.clone()).unwrap();
     let default_port = 5000;
 
     if let Some(p) = port {
-        p.parse::<u32>().unwrap()
+        p
     } else if let Some(p) = env.get("PORT") {
         p.parse::<u32>().unwrap()
     } else if let Ok(p) = os_env::var("PORT") {

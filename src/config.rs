@@ -6,7 +6,7 @@ use yaml_rust::YamlLoader;
 pub const DEFAULT_FORMATION: &'static str = "all=1";
 const DEFAULT_ENV: &'static str = ".env";
 const DEFAULT_PROCFILE: &'static str = "Procfile";
-const DEFAULT_TIMEOUT: i64 = 5;
+const DEFAULT_TIMEOUT: u64 = 5;
 const DEFAULT_NO_TIMESTAMP: bool = false;
 
 #[derive(Debug)]
@@ -14,7 +14,7 @@ pub struct Config {
     pub procfile_path: PathBuf,
     pub env_path: PathBuf,
     pub formation: String,
-    pub timeout: i64,
+    pub timeout: u64,
     pub is_no_timestamp: bool,
     pub port: Option<i64>,
     pub app: Option<String>,
@@ -65,7 +65,7 @@ pub fn read_config(filepath: PathBuf) -> Result<Config, Box<dyn std::error::Erro
                 Some(r) => r.to_string(),
                 None => DEFAULT_FORMATION.to_string(),
             },
-            timeout: doc["timeout"].as_i64().unwrap_or(DEFAULT_TIMEOUT),
+            timeout: doc["timeout"].as_i64().map(|r| r as u64).unwrap_or(DEFAULT_TIMEOUT),
             is_no_timestamp: doc["no-timestamp"]
                 .as_bool()
                 .unwrap_or(DEFAULT_NO_TIMESTAMP),
