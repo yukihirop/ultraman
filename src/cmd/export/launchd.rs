@@ -16,13 +16,13 @@ pub struct Exporter {
 }
 
 #[derive(Serialize)]
-struct LaunchdParams {
+struct LaunchdParams<'a> {
     label: String,
     env: Vec<EnvParameter>,
     command_args: Vec<String>,
     stdout_path: String,
     stderr_path: String,
-    user: String,
+    user: &'a str,
     work_dir: String,
 }
 

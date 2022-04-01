@@ -18,17 +18,17 @@ pub struct Exporter {
 }
 
 #[derive(Serialize)]
-struct RunParams {
+struct RunParams<'a> {
     work_dir: String,
-    user: String,
+    user: &'a str,
     env_dir_path: String,
     process_command: String,
 }
 
 #[derive(Serialize)]
-struct LogRunParams {
+struct LogRunParams<'a> {
     log_path: String,
-    user: String,
+    user: &'a str,
 }
 
 impl Default for Exporter {

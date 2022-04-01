@@ -16,27 +16,27 @@ pub struct Exporter {
 }
 
 #[derive(Serialize)]
-struct MasterParams {
-    user: String,
-    log_dir_path: String,
-    run_dir_path: String,
+struct MasterParams<'a> {
+    user: &'a str,
+    log_dir_path: &'a str,
+    run_dir_path: &'a str,
 }
 
 #[derive(Serialize)]
-struct ProcessMasterParams {
-    app: String,
+struct ProcessMasterParams<'a> {
+    app: &'a str,
 }
 
 #[derive(Serialize)]
-struct ProcessParams {
-    service_name: String,
+struct ProcessParams<'a> {
+    service_name: &'a str,
     env: Vec<EnvParameter>,
-    user: String,
-    work_dir: String,
-    pid_path: String,
-    command: String,
-    command_args: String,
-    log_path: String,
+    user: &'a str,
+    work_dir: &'a str,
+    pid_path: &'a str,
+    command: &'a str,
+    command_args: &'a str,
+    log_path: &'a str,
 }
 
 impl Default for Exporter {
@@ -91,8 +91,8 @@ impl Exporter {
     fn make_master_data(&self) -> Map<String, Json> {
         let mut data = Map::new();
         let mp = MasterParams {
-            log_dir_path: self.log_path().into_os_string().into_string().unwrap(),
-            run_dir_path: self.run_path().into_os_string().into_string().unwrap(),
+            log_dir_path: &self.log_path().into_os_string().into_string().unwrap(),
+            run_dir_path: &self.run_path().into_os_string().into_string().unwrap(),
             user: self.username(),
         };
         data.insert("master".to_string(), to_json(&mp));
@@ -115,19 +115,19 @@ impl Exporter {
     ) -> Map<String, Json> {
         let mut data = Map::new();
         let pp = ProcessParams {
-            service_name: service_name.to_string(),
+            service_name: service_name,
             env: self.environment(index, con_index),
             user: self.username(),
-            work_dir: self.root_path().into_os_string().into_string().unwrap(),
-            pid_path: self
+            work_dir: &self.root_path().into_os_string().into_string().unwrap(),
+            pid_path: &self
                 .run_path()
                 .join(format!("{}.pid", &service_name))
                 .into_os_string()
                 .into_string()
                 .unwrap(),
-            command: self.command_args(pe).get(0).unwrap().to_string(),
-            command_args: self.command_args_str(pe),
-            log_path: self
+            command: &self.command_args(pe).get(0).unwrap().to_string(),
+            command_args: &self.command_args_str(pe),
+            log_path: &self
                 .log_path()
                 .join(format!("{}.log", &service_name))
                 .into_os_string()

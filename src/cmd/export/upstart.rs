@@ -16,19 +16,19 @@ pub struct Exporter {
 }
 
 #[derive(Serialize)]
-struct ProcessMasterParams {
-    app: String,
+struct ProcessMasterParams<'a> {
+    app: &'a str,
 }
 
 #[derive(Serialize)]
-struct ProcessParams {
-    app: String,
-    name: String,
+struct ProcessParams<'a> {
+    app: &'a str,
+    name: &'a str,
     port: String,
     env_without_port: Vec<EnvParameter>,
-    setuid: String,
-    chdir: String,
-    exec: String,
+    setuid: &'a str,
+    chdir: &'a str,
+    exec: &'a str,
 }
 
 // http://takoyaking.hatenablog.com/entry/anonymous_lifetime
@@ -80,7 +80,7 @@ impl Exporter {
 
         let p = ProcessParams {
             app: self.app(),
-            name: app_name.to_string(),
+            name: app_name,
             port: port_for(
                 &self.opts.env_path.clone().unwrap(),
                 self.opts.port.clone(),
@@ -89,8 +89,8 @@ impl Exporter {
             ),
             env_without_port: self.env_without_port(),
             setuid: self.username(),
-            chdir: self.root_path().into_os_string().into_string().unwrap(),
-            exec: pe.command.to_string(),
+            chdir: &self.root_path().into_os_string().into_string().unwrap(),
+            exec: &pe.command,
         };
         data.insert("process".to_string(), to_json(&p));
         data

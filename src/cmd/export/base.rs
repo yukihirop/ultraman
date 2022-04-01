@@ -11,6 +11,7 @@ use std::fs::{create_dir_all, remove_file};
 use std::path::PathBuf;
 use std::io::Read;
 
+// Lifetime cannot be set because it will be HashMap data with anonymous runtime
 #[derive(Serialize)]
 pub struct EnvParameter {
     pub(crate) key: String,
@@ -39,11 +40,11 @@ pub trait Exportable {
         Ok(())
     }
 
-    fn app(&self) -> String {
+    fn app(&self) -> &str {
         self.ref_opts()
             .app
-            .clone()
-            .unwrap_or_else(|| "app".to_string())
+            .as_deref()
+            .unwrap_or_else(|| "app")
     }
 
     fn log_path(&self) -> PathBuf {
@@ -60,8 +61,8 @@ pub trait Exportable {
             .unwrap_or_else(|| PathBuf::from(format!("/var/run/{}", self.app())))
     }
 
-    fn username(&self) -> String {
-        self.ref_opts().user.clone().unwrap_or_else(|| self.app())
+    fn username(&self) -> &str {
+        self.ref_opts().user.as_deref().unwrap_or_else(|| self.app())
     }
 
     fn root_path(&self) -> PathBuf {

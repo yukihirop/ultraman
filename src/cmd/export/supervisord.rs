@@ -20,8 +20,8 @@ pub struct Exporter {
 }
 
 #[derive(Serialize)]
-struct AppConfDataParams {
-    user: String,
+struct AppConfDataParams<'a> {
+    user: &'a str,
     work_dir: String,
     program: String,
     process_command: String,
@@ -31,10 +31,10 @@ struct AppConfDataParams {
 }
 
 #[derive(Serialize)]
-struct AppConfParams {
-    app: String,
+struct AppConfParams<'a> {
+    app: &'a str,
     service_names: String,
-    data: Vec<AppConfDataParams>,
+    data: Vec<AppConfDataParams<'a>>,
 }
 
 impl Default for Exporter {

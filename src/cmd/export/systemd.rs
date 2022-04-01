@@ -20,9 +20,9 @@ struct MasterTargetParams {
 }
 
 #[derive(Serialize)]
-struct ProcessServiceParams {
-    app: String,
-    user: String,
+struct ProcessServiceParams<'a> {
+    app: &'a str,
+    user: &'a str,
     work_dir: String,
     port: String,
     process_name: String,
