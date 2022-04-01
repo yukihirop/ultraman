@@ -10,13 +10,13 @@ use std::collections::HashMap;
 use std::env;
 use std::fs::File;
 use std::io::Write;
-use std::path::PathBuf;
 use std::marker::PhantomData;
+use std::path::PathBuf;
 
 pub struct Exporter<'a> {
     pub procfile: Procfile,
     pub opts: ExportOpts,
-    _marker: PhantomData<&'a ()>
+    _marker: PhantomData<&'a ()>,
 }
 
 #[derive(Serialize)]
@@ -54,7 +54,7 @@ impl<'a> Default for Exporter<'a> {
                 root_path: Some(env::current_dir().unwrap()),
                 timeout: Some(String::from("5")),
             },
-            _marker: PhantomData
+            _marker: PhantomData,
         }
     }
 }
@@ -135,7 +135,7 @@ struct EnvTemplate<'a> {
     template_path: PathBuf,
     index: usize,
     con_index: usize,
-    _marker: PhantomData<&'a ()>
+    _marker: PhantomData<&'a ()>,
 }
 
 impl<'a> Exportable for Exporter<'a> {
@@ -191,7 +191,7 @@ impl<'a> Exportable for Exporter<'a> {
                     template_path: path_for_env.clone(),
                     index,
                     con_index: n,
-                    _marker: PhantomData
+                    _marker: PhantomData,
                 });
             }
         }

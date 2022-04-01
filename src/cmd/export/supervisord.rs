@@ -10,15 +10,15 @@ use serde_json::value::{Map, Value as Json};
 use shellwords::escape;
 use std::collections::HashMap;
 use std::env;
-use std::path::PathBuf;
 use std::marker::PhantomData;
+use std::path::PathBuf;
 
 const ENV_REGEXP: &'static str = "\\$\\{*(?P<envname>[A-Za-z0-9_-]+)\\}*";
 
 pub struct Exporter<'a> {
     pub procfile: Procfile,
     pub opts: ExportOpts,
-    _marker: PhantomData<&'a ()>
+    _marker: PhantomData<&'a ()>,
 }
 
 #[derive(Serialize)]
@@ -60,7 +60,7 @@ impl<'a> Default for Exporter<'a> {
                 root_path: Some(env::current_dir().unwrap()),
                 timeout: Some(String::from("5")),
             },
-            _marker: PhantomData
+            _marker: PhantomData,
         }
     }
 }
@@ -89,7 +89,11 @@ impl<'a> Exporter<'a> {
         let mut tmpldata = Map::new();
         let ac = AppConfParams {
             app: self.app(),
-            service_names: &service_names.iter().map(|v| v.as_str()).collect::<Vec<_>>().join(","),
+            service_names: &service_names
+                .iter()
+                .map(|v| v.as_str())
+                .collect::<Vec<_>>()
+                .join(","),
             data,
         };
         tmpldata.insert("app_conf".to_string(), to_json(&ac));

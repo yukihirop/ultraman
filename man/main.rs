@@ -1,7 +1,7 @@
 #[cfg(feature = "man")]
 extern crate roff;
-use roff::*;
 use chrono;
+use roff::*;
 
 fn main() {
     let current = format!("Ultraman {}", env!("CARGO_PKG_VERSION"));

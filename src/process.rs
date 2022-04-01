@@ -36,10 +36,7 @@ impl Process {
             String::from("PORT"),
             port_for(&env_path, port, index, instance_index),
         );
-        read_env.insert(
-            String::from("PS"),
-            ps_for(process_name, instance_index + 1),
-        );
+        read_env.insert(String::from("PS"), ps_for(process_name, instance_index + 1));
         let shell = os_env::var("SHELL").expect("$SHELL is not set");
 
         Process {

@@ -8,13 +8,13 @@ use serde_derive::Serialize;
 use serde_json::value::{Map, Value as Json};
 use std::collections::HashMap;
 use std::env;
-use std::path::PathBuf;
 use std::marker::PhantomData;
+use std::path::PathBuf;
 
 pub struct Exporter<'a> {
     pub procfile: Procfile,
     pub opts: ExportOpts,
-    _marker: PhantomData<&'a ()>
+    _marker: PhantomData<&'a ()>,
 }
 
 #[derive(Serialize)]
@@ -120,7 +120,7 @@ impl<'a> Default for Exporter<'a> {
                 root_path: Some(env::current_dir().unwrap()),
                 timeout: Some(String::from("5")),
             },
-            _marker: PhantomData
+            _marker: PhantomData,
         }
     }
 }
