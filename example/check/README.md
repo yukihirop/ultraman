@@ -1,6 +1,6 @@
 # Ultraman check example
 
-`ultraman` checks if one or more processes are defined in the Procfile.  
+`ultraman check` checks if one or more processes are defined in the Procfile.  
 It does not check the contents of the process.
 
 |short|long|default|description|
