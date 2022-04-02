@@ -65,7 +65,10 @@ pub fn read_config(filepath: PathBuf) -> Result<Config, Box<dyn std::error::Erro
                 Some(r) => r.to_string(),
                 None => DEFAULT_FORMATION.to_string(),
             },
-            timeout: doc["timeout"].as_i64().map(|r| r as u64).unwrap_or(DEFAULT_TIMEOUT),
+            timeout: doc["timeout"]
+                .as_i64()
+                .map(|r| r as u64)
+                .unwrap_or(DEFAULT_TIMEOUT),
             is_no_timestamp: doc["no-timestamp"]
                 .as_bool()
                 .unwrap_or(DEFAULT_NO_TIMESTAMP),

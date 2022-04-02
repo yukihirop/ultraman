@@ -149,12 +149,7 @@ fn ps_for(process_name: &str, instance_index: usize) -> String {
     format!("{}.{}", process_name, instance_index)
 }
 
-pub fn port_for(
-    env_path: &PathBuf,
-    port: Option<u32>,
-    index: usize,
-    instance_index: usize,
-) -> u32 {
+pub fn port_for(env_path: &PathBuf, port: Option<u32>, index: usize, instance_index: usize) -> u32 {
     base_port(env_path, port) + (index * 100 + instance_index) as u32
 }
 
