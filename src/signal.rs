@@ -4,8 +4,8 @@ use crate::process::{self, Process};
 
 use nix::sys::signal::{self, Signal};
 use nix::unistd::Pid;
-use signal_hook::{iterator::Signals};
 use signal_hook::consts::signal::{SIGALRM, SIGHUP, SIGINT, SIGTERM};
+use signal_hook::iterator::Signals;
 use std::sync::{Arc, Mutex};
 use std::thread::{self, sleep, JoinHandle};
 use std::time::{Duration, Instant};

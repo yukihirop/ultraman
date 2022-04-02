@@ -8,9 +8,10 @@ use serde_json::value::{Map, Value as Json};
 use std::env;
 use std::fs::File;
 use std::fs::{create_dir_all, remove_file};
-use std::path::PathBuf;
 use std::io::Read;
+use std::path::PathBuf;
 
+// Lifetime cannot be set because it will be HashMap data with anonymous runtime
 #[derive(Serialize)]
 pub struct EnvParameter {
     pub(crate) key: String,
@@ -39,11 +40,8 @@ pub trait Exportable {
         Ok(())
     }
 
-    fn app(&self) -> String {
-        self.ref_opts()
-            .app
-            .clone()
-            .unwrap_or_else(|| "app".to_string())
+    fn app(&self) -> &str {
+        self.ref_opts().app.as_deref().unwrap_or_else(|| "app")
     }
 
     fn log_path(&self) -> PathBuf {
@@ -60,8 +58,11 @@ pub trait Exportable {
             .unwrap_or_else(|| PathBuf::from(format!("/var/run/{}", self.app())))
     }
 
-    fn username(&self) -> String {
-        self.ref_opts().user.clone().unwrap_or_else(|| self.app())
+    fn username(&self) -> &str {
+        self.ref_opts()
+            .user
+            .as_deref()
+            .unwrap_or_else(|| self.app())
     }
 
     fn root_path(&self) -> PathBuf {
@@ -117,13 +118,15 @@ pub trait Exportable {
         let mut template_source = File::open(tmpl.template_path)
             .expect(&format!("Could not open file: {}", display_template));
         let mut template_str = String::new();
-        template_source.read_to_string(&mut template_str).expect(&format!("Could not read file: {}", display_template));
+        template_source
+            .read_to_string(&mut template_str)
+            .expect(&format!("Could not read file: {}", display_template));
         handlebars
             .render_template_to_write(&mut template_str, &mut data, &mut output_file)
             .expect(&format!("Coult not render file: {}", &display_output));
     }
 
-    fn output_path(&self, filename: String) -> PathBuf {
+    fn output_path(&self, filename: &str) -> PathBuf {
         let location = self.ref_opts().location.clone();
         location.join(filename)
     }

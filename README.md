@@ -133,6 +133,8 @@ $ ultraman start
 
 </details>
 
+![](./docs/ctrl_c.drawio.png)
+
 ## 🌎 Environment
 
 - rustc 1.59.0 (9d1b2106e 2022-02-23)

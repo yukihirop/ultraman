@@ -10,18 +10,20 @@ use serde_json::value::{Map, Value as Json};
 use shellwords::escape;
 use std::collections::HashMap;
 use std::env;
+use std::marker::PhantomData;
 use std::path::PathBuf;
 
 const ENV_REGEXP: &'static str = "\\$\\{*(?P<envname>[A-Za-z0-9_-]+)\\}*";
 
-pub struct Exporter {
+pub struct Exporter<'a> {
     pub procfile: Procfile,
     pub opts: ExportOpts,
+    _marker: PhantomData<&'a ()>,
 }
 
 #[derive(Serialize)]
-struct AppConfDataParams {
-    user: String,
+struct AppConfDataParams<'a> {
+    user: &'a str,
     work_dir: String,
     program: String,
     process_command: String,
@@ -31,13 +33,13 @@ struct AppConfDataParams {
 }
 
 #[derive(Serialize)]
-struct AppConfParams {
-    app: String,
-    service_names: String,
-    data: Vec<AppConfDataParams>,
+struct AppConfParams<'a> {
+    app: &'a str,
+    service_names: &'a str,
+    data: Vec<AppConfDataParams<'a>>,
 }
 
-impl Default for Exporter {
+impl<'a> Default for Exporter<'a> {
     fn default() -> Self {
         Exporter {
             procfile: Procfile {
@@ -56,13 +58,14 @@ impl Default for Exporter {
                 env_path: Some(PathBuf::from(".env")),
                 procfile_path: Some(PathBuf::from("Procfile")),
                 root_path: Some(env::current_dir().unwrap()),
-                timeout: Some(String::from("5")),
+                timeout: Some(5),
             },
+            _marker: PhantomData,
         }
     }
 }
 
-impl Exporter {
+impl<'a> Exporter<'a> {
     fn boxed(self) -> Box<Self> {
         Box::new(self)
     }
@@ -86,7 +89,11 @@ impl Exporter {
         let mut tmpldata = Map::new();
         let ac = AppConfParams {
             app: self.app(),
-            service_names: service_names.join(","),
+            service_names: &service_names
+                .iter()
+                .map(|v| v.as_str())
+                .collect::<Vec<_>>()
+                .join(","),
             data,
         };
         tmpldata.insert("app_conf".to_string(), to_json(&ac));
@@ -101,7 +108,7 @@ impl Exporter {
             con_index + 1,
         );
         let mut env = read_env(self.opts.env_path.clone().unwrap()).expect("failed read .env");
-        env.insert("PORT".to_string(), port);
+        env.insert("PORT".to_string(), port.to_string());
 
         let mut result = vec![];
         for (key, val) in env.iter() {
@@ -119,7 +126,7 @@ impl Exporter {
     }
 }
 
-impl Exportable for Exporter {
+impl<'a> Exportable for Exporter<'a> {
     fn export(&self) -> Result<(), Box<dyn std::error::Error>> {
         self.base_export().expect("failed execute base_export");
 
@@ -149,7 +156,7 @@ impl Exportable for Exporter {
             }
         }
 
-        let output_path = self.output_path("app.conf".to_string());
+        let output_path = self.output_path("app.conf");
         self.clean(&output_path);
         self.write_template(Template {
             template_path: self.app_conf_tmpl_path(),
