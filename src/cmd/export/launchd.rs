@@ -8,25 +8,27 @@ use serde_derive::Serialize;
 use serde_json::value::{Map, Value as Json};
 use std::collections::HashMap;
 use std::env;
+use std::marker::PhantomData;
 use std::path::PathBuf;
 
-pub struct Exporter {
+pub struct Exporter<'a> {
     pub procfile: Procfile,
     pub opts: ExportOpts,
+    _marker: PhantomData<&'a ()>,
 }
 
 #[derive(Serialize)]
-struct LaunchdParams {
-    label: String,
+struct LaunchdParams<'a> {
+    label: &'a str,
     env: Vec<EnvParameter>,
-    command_args: Vec<String>,
-    stdout_path: String,
-    stderr_path: String,
-    user: String,
-    work_dir: String,
+    command_args: Vec<&'a str>,
+    stdout_path: &'a str,
+    stderr_path: &'a str,
+    user: &'a str,
+    work_dir: &'a str,
 }
 
-impl Default for Exporter {
+impl<'a> Default for Exporter<'a> {
     fn default() -> Self {
         Exporter {
             procfile: Procfile {
@@ -45,13 +47,14 @@ impl Default for Exporter {
                 env_path: Some(PathBuf::from(".env")),
                 procfile_path: Some(PathBuf::from("Procfile")),
                 root_path: Some(env::current_dir().unwrap()),
-                timeout: Some(String::from("5")),
+                timeout: Some(5),
             },
+            _marker: PhantomData,
         }
     }
 }
 
-impl Exporter {
+impl<'a> Exporter<'a> {
     fn boxed(self) -> Box<Self> {
         Box::new(self)
     }
@@ -77,23 +80,23 @@ impl Exporter {
         let mut data = Map::new();
         let log_display = self.log_path().into_os_string().into_string().unwrap();
         let lp = LaunchdParams {
-            label: service_name.to_string(),
+            label: service_name,
             env: self.environment(index, con_index),
             command_args: self.command_args(pe),
-            stdout_path: format!("{}/{}.log", &log_display, &service_name),
-            stderr_path: format!("{}/{}.error.log", &log_display, &service_name),
+            stdout_path: &format!("{}/{}.log", &log_display, &service_name),
+            stderr_path: &format!("{}/{}.error.log", &log_display, &service_name),
             user: self.username(),
-            work_dir: self.root_path().into_os_string().into_string().unwrap(),
+            work_dir: &self.root_path().into_os_string().into_string().unwrap(),
         };
         data.insert("launchd".to_string(), to_json(&lp));
         data
     }
 
-    fn command_args(&self, pe: &ProcfileEntry) -> Vec<String> {
+    fn command_args(&self, pe: &'a ProcfileEntry) -> Vec<&'a str> {
         let data = pe.command.split(" ").collect::<Vec<_>>();
-        let mut result = vec![];
+        let mut result: Vec<&'a str> = vec![];
         for item in data {
-            result.push(item.to_string())
+            result.push(item)
         }
         result
     }
@@ -106,7 +109,7 @@ impl Exporter {
             con_index + 1,
         );
         let mut env = read_env(self.opts.env_path.clone().unwrap()).expect("failed read .env");
-        env.insert("PORT".to_string(), port);
+        env.insert("PORT".to_string(), port.to_string());
 
         let mut result = vec![];
         for (key, val) in env.iter() {
@@ -120,7 +123,7 @@ impl Exporter {
     }
 }
 
-impl Exportable for Exporter {
+impl<'a> Exportable for Exporter<'a> {
     fn export(&self) -> Result<(), Box<dyn std::error::Error>> {
         self.base_export().expect("failed execute base_export");
 

@@ -48,7 +48,7 @@ brew install ultraman
 
 ```
 $ ultraman --help
-ultraman 0.1.0
+ultraman 0.3.0
 Ultraman is a manager for Procfile-based applications. Its aim is to abstract away the details of the Procfile format,
 and allow you to either run your application directly or export it to some other process management format.
 
@@ -60,6 +60,7 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
+    check     Validate your application's Procfile
     export    Export the application to another process management format
     help      Prints this message or the help of the given subcommand(s)
     run       Run a command using your application's environment
@@ -133,6 +134,8 @@ $ ultraman start
 
 </details>
 
+![](./docs/ctrl_c.drawio.png)
+
 ## 🌎 Environment
 
 - rustc 1.59.0 (9d1b2106e 2022-02-23)
@@ -142,9 +145,10 @@ $ ultraman start
 
 |command|link|
 |-------|----|
-|`ultraman start`|[README.md](https://github.com/yukihirop/ultraman/tree/main/example/start/README.md)|
-|`ultraman run`|[README.md](https://github.com/yukihirop/ultraman/tree/main/example/run/README.md)|
-|`ultraman export`|[README.md](https://github.com/yukihirop/ultraman/tree/main/example/export/README.md)|
+|`ultraman start`|[README.md](./example/start/README.md)|
+|`ultraman run`|[README.md](./example/run/README.md)|
+|`ultraman export`|[README.md](./example/export/README.md)|
+|`ultraman check`|[README.md](./example/check/README.md)|
 
 ## 💪 Development
 

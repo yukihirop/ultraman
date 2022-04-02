@@ -23,10 +23,10 @@ pub struct Process {
 
 impl Process {
     pub fn new(
-        process_name: String,
-        cmd: String,
+        process_name: &str,
+        cmd: &str,
         env_path: PathBuf,
-        port: Option<String>,
+        port: Option<u32>,
         instance_index: usize,
         index: usize,
         opts: Option<DisplayOpts>,
@@ -34,12 +34,9 @@ impl Process {
         let mut read_env = read_env(env_path.clone()).expect("failed read .env");
         read_env.insert(
             String::from("PORT"),
-            port_for(&env_path, port, index, instance_index),
+            port_for(&env_path, port, index, instance_index).to_string(),
         );
-        read_env.insert(
-            String::from("PS"),
-            ps_for(process_name.clone(), instance_index + 1),
-        );
+        read_env.insert(String::from("PS"), ps_for(process_name, instance_index + 1));
         let shell = os_env::var("SHELL").expect("$SHELL is not set");
 
         Process {
@@ -148,30 +145,24 @@ pub fn check_for_child_termination(
     };
 }
 
-fn ps_for(process_name: String, instance_index: usize) -> String {
+fn ps_for(process_name: &str, instance_index: usize) -> String {
     format!("{}.{}", process_name, instance_index)
 }
 
-pub fn port_for(
-    env_path: &PathBuf,
-    port: Option<String>,
-    index: usize,
-    instance_index: usize,
-) -> String {
-    let result = base_port(env_path, port).parse::<usize>().unwrap() + index * 100 + instance_index;
-    result.to_string()
+pub fn port_for(env_path: &PathBuf, port: Option<u32>, index: usize, instance_index: usize) -> u32 {
+    base_port(env_path, port) + (index * 100 + instance_index) as u32
 }
 
-fn base_port(env_path: &PathBuf, port: Option<String>) -> String {
+fn base_port(env_path: &PathBuf, port: Option<u32>) -> u32 {
     let env = read_env(env_path.clone()).unwrap();
-    let default_port = String::from("5000");
+    let default_port = 5000;
 
     if let Some(p) = port {
         p
     } else if let Some(p) = env.get("PORT") {
-        p.clone()
+        p.parse::<u32>().unwrap()
     } else if let Ok(p) = os_env::var("PORT") {
-        p
+        p.parse::<u32>().unwrap()
     } else {
         default_port
     }

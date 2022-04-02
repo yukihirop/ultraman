@@ -9,7 +9,7 @@ The following options control how the application is run:
 |-----|----|-------|-----------|
 |<kbd>-m</kbd>|<kbd>--formation</kbd>|`all=1`|Specify the number of each process type to run. The value passed in should be in the format process=num,process=num|
 |<kbd>-e</kbd>|<kbd>--env</kbd>|`.env`|Specify an environment file to load|
-|<kbd>-f</kbd>|<kbd>--procfile</kbd>|`Procfile`|Specify an alternate Procfile to load, implies -d at the Procfile root|
+|<kbd>-f</kbd>|<kbd>--procfile</kbd>|`Procfile`|Specify an alternate Procfile to load|
 |<kbd>-p</kbd>|<kbd>--port</kbd>||Specify which port to use as the base for this application. Should be a multiple of 1000|
 |<kbd>-a</kbd>|<kbd>--app</kbd>||Use this name rather than the application's root directory name as the name of the application when exporting|
 |<kbd>-l</kdb>|<kbd>--log</kdb>||Specify the directory to place process logs in|

@@ -8,31 +8,33 @@ use serde_derive::Serialize;
 use serde_json::value::{Map, Value as Json};
 use std::collections::HashMap;
 use std::env;
+use std::marker::PhantomData;
 use std::path::PathBuf;
 
-pub struct Exporter {
+pub struct Exporter<'a> {
     pub procfile: Procfile,
     pub opts: ExportOpts,
+    _marker: PhantomData<&'a ()>,
 }
 
 #[derive(Serialize)]
-struct ProcessMasterParams {
-    app: String,
+struct ProcessMasterParams<'a> {
+    app: &'a str,
 }
 
 #[derive(Serialize)]
-struct ProcessParams {
-    app: String,
-    name: String,
-    port: String,
+struct ProcessParams<'a> {
+    app: &'a str,
+    name: &'a str,
+    port: &'a u32,
     env_without_port: Vec<EnvParameter>,
-    setuid: String,
-    chdir: String,
-    exec: String,
+    setuid: &'a str,
+    chdir: &'a str,
+    exec: &'a str,
 }
 
 // http://takoyaking.hatenablog.com/entry/anonymous_lifetime
-impl Exporter {
+impl<'a> Exporter<'a> {
     fn boxed(self) -> Box<Self> {
         Box::new(self)
     }
@@ -80,8 +82,8 @@ impl Exporter {
 
         let p = ProcessParams {
             app: self.app(),
-            name: app_name.to_string(),
-            port: port_for(
+            name: app_name,
+            port: &port_for(
                 &self.opts.env_path.clone().unwrap(),
                 self.opts.port.clone(),
                 index,
@@ -89,15 +91,15 @@ impl Exporter {
             ),
             env_without_port: self.env_without_port(),
             setuid: self.username(),
-            chdir: self.root_path().into_os_string().into_string().unwrap(),
-            exec: pe.command.to_string(),
+            chdir: &self.root_path().into_os_string().into_string().unwrap(),
+            exec: &pe.command,
         };
         data.insert("process".to_string(), to_json(&p));
         data
     }
 }
 
-impl Default for Exporter {
+impl<'a> Default for Exporter<'a> {
     fn default() -> Self {
         Exporter {
             procfile: Procfile {
@@ -116,13 +118,14 @@ impl Default for Exporter {
                 env_path: Some(PathBuf::from(".env")),
                 procfile_path: Some(PathBuf::from("Procfile")),
                 root_path: Some(env::current_dir().unwrap()),
-                timeout: Some(String::from("5")),
+                timeout: Some(5),
             },
+            _marker: PhantomData,
         }
     }
 }
 
-impl Exportable for Exporter {
+impl<'a> Exportable for Exporter<'a> {
     fn export(&self) -> Result<(), Box<dyn std::error::Error>> {
         self.base_export().expect("failed execute base_export");
 
@@ -130,7 +133,7 @@ impl Exportable for Exporter {
         let mut tmpl_data: Vec<Template> = vec![];
 
         let master_file = format!("{}.conf", self.app());
-        let output_path = self.output_path(master_file);
+        let output_path = self.output_path(&master_file);
 
         clean_paths.push(output_path.clone());
         tmpl_data.push(Template {
@@ -144,7 +147,7 @@ impl Exportable for Exporter {
             index += 1;
             let con = pe.concurrency.get();
             let process_master_file = format!("{}-{}.conf", self.app(), &name);
-            let output_path = self.output_path(process_master_file);
+            let output_path = self.output_path(&process_master_file);
 
             clean_paths.push(output_path.clone());
             tmpl_data.push(Template {
@@ -155,7 +158,7 @@ impl Exportable for Exporter {
 
             for n in 0..con {
                 let process_file = format!("{}-{}-{}.conf", self.app(), &name, n);
-                let output_path = self.output_path(process_file);
+                let output_path = self.output_path(&process_file);
 
                 clean_paths.push(output_path.clone());
                 tmpl_data.push(Template {

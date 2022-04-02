@@ -41,7 +41,7 @@ pub struct ExportOpts {
 
     /// Specify which port to use as the base for this application. Should be a multiple of 1000
     #[structopt(name = "PORT", short = "p", long = "port")]
-    pub port: Option<String>,
+    pub port: Option<u32>,
 
     /// Specify an template to use for creating export files
     #[structopt(name = "TEMPLATE", short = "T", long = "template")]
@@ -65,7 +65,7 @@ pub struct ExportOpts {
 
     /// Specify the amount of time (in seconds) processes have to shutdown gracefully before receiving a SIGTERM
     #[structopt(name = "TIMEOUT (sec)", short = "t", long = "timeout")]
-    pub timeout: Option<String>,
+    pub timeout: Option<u64>,
 }
 
 enum ExportFormat {
@@ -179,12 +179,12 @@ fn merged_opts(input_opts: &ExportOpts, dotconfig: Config) -> ExportOpts {
             None => Some(dotconfig.procfile_path),
         },
         timeout: match &input_opts.timeout {
-            Some(r) => Some(r.to_string()),
-            None => Some(dotconfig.timeout.to_string()),
+            Some(r) => Some(*r),
+            None => Some(dotconfig.timeout),
         },
         port: match &input_opts.port {
-            Some(r) => Some(r.to_string()),
-            None => dotconfig.port.map(|r| r.to_string()),
+            Some(r) => Some(*r),
+            None => dotconfig.port.map(|r| r as u32),
         },
         app: match &input_opts.app {
             Some(r) => Some(r.to_string()),
@@ -284,8 +284,8 @@ hoge: hogehoge
             result.procfile_path.unwrap(),
             PathBuf::from("./tmp/Procfile")
         );
-        assert_eq!(result.port.unwrap(), "6000");
-        assert_eq!(result.timeout.unwrap(), "5000");
+        assert_eq!(result.port.unwrap(), 6000);
+        assert_eq!(result.timeout.unwrap(), 5000);
         assert_eq!(result.app.unwrap(), "app-for-runit");
         assert_eq!(
             result.log_path.unwrap(),
@@ -313,8 +313,8 @@ hoge: hogehoge
             formation: Some("app=2,web=2,server=2".to_string()),
             env_path: Some(PathBuf::from("./test/.env")),
             procfile_path: Some(PathBuf::from("./test/Procfile")),
-            port: Some("9999".to_string()),
-            timeout: Some("9999".to_string()),
+            port: Some(9999),
+            timeout: Some(9999),
             app: Some("app".to_string()),
             log_path: Some(PathBuf::from("./test/log")),
             root_path: Some(PathBuf::from("./test/root")),
@@ -334,8 +334,8 @@ hoge: hogehoge
             result.procfile_path.unwrap(),
             PathBuf::from("./test/Procfile")
         );
-        assert_eq!(result.port.unwrap(), "9999");
-        assert_eq!(result.timeout.unwrap(), "9999");
+        assert_eq!(result.port.unwrap(), 9999);
+        assert_eq!(result.timeout.unwrap(), 9999);
         assert_eq!(result.app.unwrap(), "app");
         assert_eq!(result.log_path.unwrap(), PathBuf::from("./test/log"));
         assert_eq!(result.root_path.unwrap(), PathBuf::from("./test/root"));

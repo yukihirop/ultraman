@@ -26,11 +26,11 @@ pub struct StartOpts {
 
     /// Specify the amount of time (in seconds) processes have to shutdown gracefully before receiving a SIGTERM
     #[structopt(name = "TIMEOUT (sec)", short = "t", long = "timeout")]
-    pub timeout: Option<String>,
+    pub timeout: Option<u64>,
 
     /// Specify which port to use as the base for this application. Should be a multiple of 1000
     #[structopt(name = "PORT", short = "p", long = "port")]
-    pub port: Option<String>,
+    pub port: Option<u32>,
 
     /// Include timestamp in output
     #[structopt(name = "NOTIMESTAMP", short = "n", long = "no-timestamp")]
@@ -76,8 +76,8 @@ pub fn run(input_opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
 
             let exec_and_output_thread = process::build_exec_and_output_thread(move || {
                 let proc = Process::new(
-                    process_name,
-                    cmd,
+                    &process_name,
+                    &cmd,
                     env_path.unwrap(),
                     port,
                     n,
@@ -118,7 +118,7 @@ pub fn run(input_opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
     let procs = Arc::clone(&procs);
     proc_handles.push(signal::handle_signal_thread(
         procs,
-        opts.timeout.unwrap().parse::<u64>().unwrap(),
+        opts.timeout.unwrap(),
         display_opts,
     ));
 
@@ -144,16 +144,16 @@ fn merged_opts(input_opts: &StartOpts, dotconfig: Config) -> StartOpts {
             None => Some(dotconfig.procfile_path),
         },
         timeout: match &input_opts.timeout {
-            Some(r) => Some(r.to_string()),
-            None => Some(dotconfig.timeout.to_string()),
+            Some(r) => Some(*r),
+            None => Some(dotconfig.timeout),
         },
         is_no_timestamp: match &input_opts.is_no_timestamp {
             Some(r) => Some(r.clone()),
             None => Some(dotconfig.is_no_timestamp),
         },
         port: match &input_opts.port {
-            Some(r) => Some(r.to_string()),
-            None => dotconfig.port.map(|r| r.to_string()),
+            Some(r) => Some(*r),
+            None => dotconfig.port.map(|r| r as u32),
         },
     }
 }
@@ -215,8 +215,8 @@ hoge: hogehoge
         assert_eq!(result.formation.unwrap(), "app=1,web=2");
         assert_eq!(result.env_path.unwrap(), PathBuf::from(".env"));
         assert_eq!(result.procfile_path.unwrap(), PathBuf::from("./Procfile"));
-        assert_eq!(result.port.unwrap(), "6000");
-        assert_eq!(result.timeout.unwrap(), "5000");
+        assert_eq!(result.port.unwrap(), 6000);
+        assert_eq!(result.timeout.unwrap(), 5000);
         assert_eq!(result.is_no_timestamp.unwrap(), true);
 
         Ok(())
@@ -228,8 +228,8 @@ hoge: hogehoge
             formation: Some("app=2,web=2,server=2".to_string()),
             env_path: Some(PathBuf::from("./tmp/.env")),
             procfile_path: Some(PathBuf::from("./tmp/Procfile")),
-            port: Some("9999".to_string()),
-            timeout: Some("1".to_string()),
+            port: Some(9999),
+            timeout: Some(1),
             is_no_timestamp: Some(false),
         };
 
@@ -242,8 +242,8 @@ hoge: hogehoge
             result.procfile_path.unwrap(),
             PathBuf::from("./tmp/Procfile")
         );
-        assert_eq!(result.port.unwrap(), "9999");
-        assert_eq!(result.timeout.unwrap(), "1");
+        assert_eq!(result.port.unwrap(), 9999);
+        assert_eq!(result.timeout.unwrap(), 1);
         assert_eq!(result.is_no_timestamp.unwrap(), false);
 
         Ok(())
