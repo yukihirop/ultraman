@@ -1,3 +1,4 @@
+use crate::cmd::check::CheckOpts;
 use crate::cmd::export::ExportOpts;
 use crate::cmd::run::RunOpts;
 use crate::cmd::start::StartOpts;
@@ -17,6 +18,9 @@ pub struct Opt {
     about = "Ultraman is a manager for Procfile-based applications. Its aim is to abstract away the details of the Procfile format, and allow you to either run your application directly or export it to some other process management format."
 )]
 pub enum Ultraman {
+    #[structopt(name = "check", about = "Validate your application's Procfile")]
+    Check(CheckOpts),
+
     #[structopt(name = "start", about = "Start the application")]
     Start(StartOpts),
 

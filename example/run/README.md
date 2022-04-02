@@ -9,7 +9,7 @@ The following options control how the application is run:
 |short|long|default|description|
 |-----|----|-------|-----------|
 |<kbd>-e</kbd>|<kbd>--env</kbd>|`.env`|Specify an environment file to load|
-|<kbd>-f</kbd>|<kbd>--procfile</kbd>|`Procfile`|Specify an alternate Procfile to load, implies -d at the Procfile root|
+|<kbd>-f</kbd>|<kbd>--procfile</kbd>|`Procfile`|Specify an alternate Procfile to load|
 
 
 ## Example

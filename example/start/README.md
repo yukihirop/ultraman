@@ -8,7 +8,7 @@ The following options control how the application is run:
 |-----|----|-------|-----------|
 |<kbd>-m</kbd>|<kbd>--formation</kbd>|`all=1`|Specify the number of each process type to run. The value passed in should be in the format process=num,process=num|
 |<kbd>-e</kbd>|<kbd>--env</kbd>|`.env`|Specify an environment file to load|
-|<kbd>-f</kbd>|<kbd>--procfile</kbd>|`Procfile`|Specify an alternate Procfile to load, implies -d at the Procfile root|
+|<kbd>-f</kbd>|<kbd>--procfile</kbd>|`Procfile`|Specify an alternate Procfile to load|
 |<kbd>-p</kbd>|<kbd>--port</kbd>||Specify which port to use as the base for this application. Should be a multiple of 1000|
 |<kbd>-t</kbd>|<kbd>--timeout</kbd>|`5`|Specify the amount of time (in seconds) processes have to shutdown gracefully before receiving a SIGTERM|
 |<kbd>-n</kbd>|<kbd>--no-timestamp</kbd>|`false`|Include timestamp in output|
