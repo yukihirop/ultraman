@@ -86,6 +86,16 @@ impl Procfile {
         }
     }
 
+    pub fn check(&self) -> bool {
+        self.data.len() > 0
+    }
+
+    pub fn process_names(&self) -> String {
+        let mut names = self.data.keys().map(|s| &**s).collect::<Vec<_>>();
+        names.sort();
+        names.join(", ")
+    }
+
     fn parse_formation(&self, formation: &str) -> HashMap<String, usize> {
         let mut fm = formation.to_string();
         self.remove_whitespace(&mut fm);
@@ -230,6 +240,32 @@ mod tests {
         let formation = "hoge=1,fuga=2";
         let pf = create_procfile();
         pf.set_concurrency(formation);
+    }
+
+    #[test]
+    fn test_check_when_truethy() -> anyhow::Result<()> {
+        let pf = create_procfile();
+        assert_eq!(pf.check(), true);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_check_when_falsy() -> anyhow::Result<()> {
+        let pf = Procfile {
+            data: HashMap::new(),
+        };
+        assert_eq!(pf.check(), false);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_process_names() -> anyhow::Result<()> {
+        let pf = create_procfile();
+        assert_eq!(pf.process_names(), "app, web");
+
+        Ok(())
     }
 
     #[test]
