@@ -140,9 +140,7 @@ impl<'a> Exportable for Exporter<'a> {
             output_path,
         });
 
-        let mut index = 0;
         for (name, pe) in self.procfile.data.iter() {
-            index += 1;
             let con = pe.concurrency.get();
             let process_master_file = format!("{}-{}.conf", self.app(), &name);
             let output_path = self.output_path(&process_master_file);

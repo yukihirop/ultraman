@@ -74,14 +74,13 @@ impl<'a> Exporter<'a> {
         &self,
         pe: &ProcfileEntry,
         service_name: &str,
-        index: usize,
         con_index: usize,
     ) -> Map<String, Json> {
         let mut data = Map::new();
         let log_display = self.log_path().into_os_string().into_string().unwrap();
         let lp = LaunchdParams {
             label: service_name,
-            env: self.environment(index, con_index),
+            env: self.environment(con_index),
             command_args: self.command_args(pe),
             stdout_path: &format!("{}/{}.log", &log_display, &service_name),
             stderr_path: &format!("{}/{}.error.log", &log_display, &service_name),
@@ -101,7 +100,7 @@ impl<'a> Exporter<'a> {
         result
     }
 
-    fn environment(&self, index: usize, con_index: usize) -> Vec<EnvParameter> {
+    fn environment(&self, con_index: usize) -> Vec<EnvParameter> {
         let port = port_for(
             &self.opts.env_path.clone().unwrap(),
             self.opts.port.clone(),
@@ -126,21 +125,19 @@ impl<'a> Exportable for Exporter<'a> {
     fn export(&self) -> Result<(), Box<dyn std::error::Error>> {
         self.base_export().expect("failed execute base_export");
 
-        let mut index = 0;
         let mut clean_paths: Vec<PathBuf> = vec![];
         let mut tmpl_data: Vec<Template> = vec![];
 
         for (name, pe) in self.procfile.data.iter() {
             let con = pe.concurrency.get();
             for n in 0..con {
-                index += 1;
                 let service_name = format!("{}-{}-{}", self.app(), &name, n + 1);
                 let output_path = self.opts.location.join(&service_name);
 
                 clean_paths.push(output_path.clone());
                 tmpl_data.push(Template {
                     template_path: self.launchd_tmpl_path(),
-                    data: self.make_launchd_data(pe, &service_name, index, n),
+                    data: self.make_launchd_data(pe, &service_name, n),
                     output_path,
                 });
             }
