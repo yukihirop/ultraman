@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## v0.3.1
+
+- [Breaking] fix `port_for` logic.
+  - Ports may be specified explicitly, so I stopped adjusting them automatically with `app_index`.
+
+```rs
+// before
+pub fn port_for(env_path: &PathBuf, port: Option<u32>, app_index: usize, concurrency_index: usize) -> u32 { 
+  base_port(env_path, port) + (app_index * 100 + concurrency_index) as u32 
+} 
+
+// after
+pub fn port_for(env_path: &PathBuf, port: Option<u32>, concurrency_index: usize) -> u32 { 
+  base_port(env_path, port) + concurrency_index
+} 
+```
+
 ## v0.1.2
 
 - Refactor All
