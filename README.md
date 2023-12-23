@@ -138,8 +138,8 @@ $ ultraman start
 
 ## 🌎 Environment
 
-- rustc 1.59.0 (9d1b2106e 2022-02-23)
-- cargo 1.59.0 (49d8809dc 2022-02-10)
+- rustc 1.74.0 (79e9716c9 2023-11-13) (Homebrew)
+- cargo 1.74.0
 
 ## ⚾️ Example
 

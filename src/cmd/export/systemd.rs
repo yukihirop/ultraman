@@ -99,7 +99,6 @@ impl<'a> Exporter<'a> {
         &self,
         pe: &ProcfileEntry,
         process_name: &str,
-        index: usize,
         con_index: usize,
     ) -> Map<String, Json> {
         let mut data = Map::new();
@@ -110,8 +109,7 @@ impl<'a> Exporter<'a> {
             port: &port_for(
                 &self.opts.env_path.clone().unwrap(),
                 self.opts.port,
-                index,
-                con_index + 1,
+                con_index,
             ),
             process_name,
             process_command: &pe.command,
@@ -127,19 +125,17 @@ impl<'a> Exportable for Exporter<'a> {
     fn export(&self) -> Result<(), Box<dyn std::error::Error>> {
         self.base_export().expect("failed execute base_export");
 
-        let mut index = 0;
         let mut service_names = vec![];
         let mut clean_paths: Vec<PathBuf> = vec![];
         let mut tmpl_data: Vec<Template> = vec![];
 
         for (name, pe) in self.procfile.data.iter() {
-            index += 1;
             let con = pe.concurrency.get();
             for n in 0..con {
                 let process_name = format!("{}.{}", &name, n);
                 let service_filename = format!("{}-{}.service", &name, &process_name);
                 let output_path = self.output_path(&service_filename);
-                let data = self.make_process_service_data(pe, &process_name, index, n);
+                let data = self.make_process_service_data(pe, &process_name, n);
 
                 clean_paths.push(output_path.clone());
                 tmpl_data.push(Template {

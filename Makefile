@@ -24,6 +24,7 @@ install_man: create_man
 test:
 	cargo test --locked
 	cargo test --locked -- --ignored
+	cargo test --locked -- --nocapture
 
 test-no-default-features:
 	cargo test --locked --no-default-features

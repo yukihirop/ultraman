@@ -9,11 +9,11 @@ jobs:
 
     strategy:
       matrix:
-        # os: [ubuntu-18.04, macOS-latest, windows-latest]
-        os: [ubuntu-18.04, macOS-latest]
+        os: [ubuntu-latest, macOS-latest]
         rust: [stable]
 
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     if: contains(github.event.head_commit.message, '[skip ci]') == false
 
     steps:

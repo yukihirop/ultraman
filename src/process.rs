@@ -27,21 +27,21 @@ impl Process {
         cmd: &str,
         env_path: PathBuf,
         port: Option<u32>,
-        instance_index: usize,
-        index: usize,
+        concurrency_index: usize,
+        app_index: usize,
         opts: Option<DisplayOpts>,
     ) -> Self {
         let mut read_env = read_env(env_path.clone()).expect("failed read .env");
         read_env.insert(
             String::from("PORT"),
-            port_for(&env_path, port, index, instance_index).to_string(),
+            port_for(&env_path, port, concurrency_index).to_string(),
         );
-        read_env.insert(String::from("PS"), ps_for(process_name, instance_index + 1));
+        read_env.insert(String::from("PS"), ps_for(process_name, concurrency_index + 1));
         let shell = os_env::var("SHELL").expect("$SHELL is not set");
 
         Process {
-            index,
-            name: ps_for(process_name, instance_index + 1),
+            index: app_index,
+            name: ps_for(process_name, concurrency_index + 1),
             child: Command::new(shell)
                 .arg("-c")
                 .arg(cmd)
@@ -145,12 +145,12 @@ pub fn check_for_child_termination(
     };
 }
 
-fn ps_for(process_name: &str, instance_index: usize) -> String {
-    format!("{}.{}", process_name, instance_index)
+fn ps_for(process_name: &str, concurrency_index: usize) -> String {
+    format!("{}.{}", process_name, concurrency_index)
 }
 
-pub fn port_for(env_path: &PathBuf, port: Option<u32>, index: usize, instance_index: usize) -> u32 {
-    base_port(env_path, port) + (index * 100 + instance_index) as u32
+pub fn port_for(env_path: &PathBuf, port: Option<u32>, concurrency_index: usize) -> u32 {
+    base_port(env_path, port) + concurrency_index as u32
 }
 
 fn base_port(env_path: &PathBuf, port: Option<u32>) -> u32 {
@@ -205,5 +205,15 @@ mod tests {
         )
         .join()
         .expect("exit 0");
+    }
+
+    #[test]
+    fn test_port_for() {
+        let env_path = PathBuf::from("./test/fixtures/.env");
+        let port = Some(6000);
+
+        assert_eq!(port_for(&env_path, port, 0 /* concurrency_index */), 6000);
+        assert_eq!(port_for(&env_path, port, 1 /* concurrency_index */), 6001);
+        assert_eq!(port_for(&env_path, port, 2 /* concurrency_index */), 6002);
     }
 }

@@ -109,13 +109,12 @@ impl<'a> Exporter<'a> {
         data
     }
 
-    fn write_env(&self, output_dir_path: &PathBuf, index: usize, con_index: usize) {
+    fn write_env(&self, output_dir_path: &PathBuf, con_index: usize) {
         let mut env = read_env(self.opts.env_path.clone().unwrap()).expect("failed read .env");
         let port = port_for(
             &self.opts.env_path.clone().unwrap(),
             self.opts.port.clone(),
-            index,
-            con_index + 1,
+            con_index,
         );
         env.insert("PORT".to_string(), port.to_string());
 
@@ -133,7 +132,6 @@ impl<'a> Exporter<'a> {
 
 struct EnvTemplate<'a> {
     template_path: PathBuf,
-    index: usize,
     con_index: usize,
     _marker: PhantomData<&'a ()>,
 }
@@ -142,7 +140,6 @@ impl<'a> Exportable for Exporter<'a> {
     fn export(&self) -> Result<(), Box<dyn std::error::Error>> {
         self.base_export().expect("failed execute base_export");
 
-        let mut index = 0;
         let mut clean_paths: Vec<PathBuf> = vec![];
         let mut create_recursive_dir_paths: Vec<PathBuf> = vec![];
         let mut tmpl_data: Vec<Template> = vec![];
@@ -151,7 +148,6 @@ impl<'a> Exportable for Exporter<'a> {
         for (name, pe) in self.procfile.data.iter() {
             let con = pe.concurrency.get();
             for n in 0..con {
-                index += 1;
                 let process_name = format!("{}-{}", &name, n + 1);
                 let service_name = format!("{}-{}-{}", self.app(), &name, n + 1);
                 let mut path_for_run = self.opts.location.clone();
@@ -189,7 +185,6 @@ impl<'a> Exportable for Exporter<'a> {
                 });
                 env_data.push(EnvTemplate {
                     template_path: path_for_env.clone(),
-                    index,
                     con_index: n,
                     _marker: PhantomData,
                 });
@@ -209,7 +204,7 @@ impl<'a> Exportable for Exporter<'a> {
         }
 
         for e in env_data {
-            self.write_env(&e.template_path, e.index, e.con_index);
+            self.write_env(&e.template_path, e.con_index);
         }
 
         Ok(())

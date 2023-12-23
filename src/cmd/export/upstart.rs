@@ -75,7 +75,6 @@ impl<'a> Exporter<'a> {
         &self,
         pe: &ProcfileEntry,
         app_name: &str,
-        index: usize,
         con_index: usize,
     ) -> Map<String, Json> {
         let mut data = Map::new();
@@ -86,8 +85,7 @@ impl<'a> Exporter<'a> {
             port: &port_for(
                 &self.opts.env_path.clone().unwrap(),
                 self.opts.port.clone(),
-                index,
-                con_index + 1,
+                con_index,
             ),
             env_without_port: self.env_without_port(),
             setuid: self.username(),
@@ -142,9 +140,7 @@ impl<'a> Exportable for Exporter<'a> {
             output_path,
         });
 
-        let mut index = 0;
         for (name, pe) in self.procfile.data.iter() {
-            index += 1;
             let con = pe.concurrency.get();
             let process_master_file = format!("{}-{}.conf", self.app(), &name);
             let output_path = self.output_path(&process_master_file);
@@ -163,7 +159,7 @@ impl<'a> Exportable for Exporter<'a> {
                 clean_paths.push(output_path.clone());
                 tmpl_data.push(Template {
                     template_path: self.process_tmpl_path(),
-                    data: self.make_process_data(pe, &name, index, n),
+                    data: self.make_process_data(pe, &name, n),
                     output_path,
                 });
             }

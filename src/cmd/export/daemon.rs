@@ -113,13 +113,12 @@ impl<'a> Exporter<'a> {
         &self,
         pe: &ProcfileEntry,
         service_name: &str,
-        index: usize,
         con_index: usize,
     ) -> Map<String, Json> {
         let mut data = Map::new();
         let pp = ProcessParams {
             service_name: service_name,
-            env: self.environment(index, con_index),
+            env: self.environment(con_index),
             user: self.username(),
             work_dir: &self.root_path().into_os_string().into_string().unwrap(),
             pid_path: &self
@@ -159,12 +158,11 @@ impl<'a> Exporter<'a> {
         result
     }
 
-    fn environment(&self, index: usize, con_index: usize) -> Vec<EnvParameter> {
+    fn environment(&self, con_index: usize) -> Vec<EnvParameter> {
         let port = port_for(
             &self.opts.env_path.clone().unwrap(),
             self.opts.port.clone(),
-            index,
-            con_index + 1,
+            con_index,
         );
         let mut env = read_env(self.opts.env_path.clone().unwrap()).expect("failed read .env");
         env.insert("PORT".to_string(), port.to_string());
@@ -197,7 +195,6 @@ impl<'a> Exportable for Exporter<'a> {
             output_path,
         });
 
-        let mut index = 0;
         for (name, pe) in self.procfile.data.iter() {
             let con = pe.concurrency.get();
             let service_name = format!("{}-{}", self.app(), &name);
@@ -214,14 +211,13 @@ impl<'a> Exportable for Exporter<'a> {
             });
 
             for n in 0..con {
-                index += 1;
                 let process_name = format!("{}-{}-{}.conf", self.app(), &name, n + 1);
                 let output_path = self.opts.location.join(&process_name);
 
                 clean_paths.push(output_path.clone());
                 tmpl_data.push(Template {
                     template_path: self.process_tmpl_path(),
-                    data: self.make_process_data(pe, &service_name, index, n),
+                    data: self.make_process_data(pe, &service_name, n),
                     output_path,
                 });
             }
