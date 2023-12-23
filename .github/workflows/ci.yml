@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - 'fix*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - name: Run tests (standard)
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+
+    - name: Run tests (ignored)
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: -- --ignored
+    
+    - name: Run tests (nocapture)
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: -- --nocapture
