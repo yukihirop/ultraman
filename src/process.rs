@@ -34,7 +34,7 @@ impl Process {
         let mut read_env = read_env(env_path.clone()).expect("failed read .env");
         read_env.insert(
             String::from("PORT"),
-            port_for(&env_path, port, app_index, concurrency_index).to_string(),
+            port_for(&env_path, port, concurrency_index).to_string(),
         );
         read_env.insert(String::from("PS"), ps_for(process_name, concurrency_index + 1));
         let shell = os_env::var("SHELL").expect("$SHELL is not set");
@@ -149,8 +149,8 @@ fn ps_for(process_name: &str, concurrency_index: usize) -> String {
     format!("{}.{}", process_name, concurrency_index)
 }
 
-pub fn port_for(env_path: &PathBuf, port: Option<u32>, app_index: usize, concurrency_index: usize) -> u32 {
-    base_port(env_path, port) + concurrency_index as u32 + app_index as u32 * 100u32
+pub fn port_for(env_path: &PathBuf, port: Option<u32>, concurrency_index: usize) -> u32 {
+    base_port(env_path, port) + concurrency_index as u32
 }
 
 fn base_port(env_path: &PathBuf, port: Option<u32>) -> u32 {
@@ -212,11 +212,8 @@ mod tests {
         let env_path = PathBuf::from("./test/fixtures/.env");
         let port = Some(6000);
 
-        assert_eq!(port_for(&env_path, port, 0 /* app_index */, 0 /* concurrency_index */), 6000);
-        assert_eq!(port_for(&env_path, port, 0 /* app_index */, 1 /* concurrency_index */), 6001);
-        assert_eq!(port_for(&env_path, port, 1 /* app_index */, 0 /* concurrency_index */), 6100);
-        assert_eq!(port_for(&env_path, port, 1 /* app_index */, 1 /* concurrency_index */), 6101);
-        assert_eq!(port_for(&env_path, port, 1 /* app_index */, 2 /* concurrency_index */), 6102);
-        assert_eq!(port_for(&env_path, port, 2 /* app_index */, 2 /* concurrency_index */), 6202);
+        assert_eq!(port_for(&env_path, port, 0 /* concurrency_index */), 6000);
+        assert_eq!(port_for(&env_path, port, 1 /* concurrency_index */), 6001);
+        assert_eq!(port_for(&env_path, port, 2 /* concurrency_index */), 6002);
     }
 }

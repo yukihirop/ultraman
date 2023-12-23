@@ -100,12 +100,11 @@ impl<'a> Exporter<'a> {
         tmpldata
     }
 
-    fn environment(&self, index: usize, con_index: usize) -> String {
+    fn environment(&self, con_index: usize) -> String {
         let port = port_for(
             &self.opts.env_path.clone().unwrap(),
             self.opts.port.clone(),
-            index,
-            con_index + 1,
+            con_index,
         );
         let mut env = read_env(self.opts.env_path.clone().unwrap()).expect("failed read .env");
         env.insert("PORT".to_string(), port.to_string());
@@ -130,16 +129,14 @@ impl<'a> Exportable for Exporter<'a> {
     fn export(&self) -> Result<(), Box<dyn std::error::Error>> {
         self.base_export().expect("failed execute base_export");
 
-        let mut index = 0;
         let mut service_names = vec![];
         let mut data: Vec<AppConfDataParams> = vec![];
         for (name, pe) in self.procfile.data.iter() {
-            index += 1;
             let con = pe.concurrency.get();
             for n in 0..con {
                 let program = format!("{}-{}-{}", self.app(), &name, n + 1);
                 let process_command = self.replace_env_for_supervisord(&pe.command);
-                let environment = self.environment(index, n);
+                let environment = self.environment(n);
                 let display_log = self.log_path().into_os_string().into_string().unwrap();
                 let stdout_logfile = format!("{}/{}-{}.log", &display_log, &name, n + 1);
                 let stderr_logfile = format!("{}/{}-{}.error.log", &display_log, &name, n + 1);

@@ -114,8 +114,7 @@ impl<'a> Exporter<'a> {
         let port = port_for(
             &self.opts.env_path.clone().unwrap(),
             self.opts.port.clone(),
-            index,
-            con_index + 1,
+            con_index,
         );
         env.insert("PORT".to_string(), port.to_string());
 
