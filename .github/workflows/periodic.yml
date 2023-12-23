@@ -15,6 +15,7 @@ jobs:
         rust: [stable, beta, nightly]
 
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
 
     steps:
     - name: Setup Rust
