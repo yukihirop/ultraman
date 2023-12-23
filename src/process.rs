@@ -27,21 +27,21 @@ impl Process {
         cmd: &str,
         env_path: PathBuf,
         port: Option<u32>,
-        instance_index: usize,
-        index: usize,
+        concurrency_index: usize,
+        app_index: usize,
         opts: Option<DisplayOpts>,
     ) -> Self {
         let mut read_env = read_env(env_path.clone()).expect("failed read .env");
         read_env.insert(
             String::from("PORT"),
-            port_for(&env_path, port, index, instance_index).to_string(),
+            port_for(&env_path, port, app_index, concurrency_index).to_string(),
         );
-        read_env.insert(String::from("PS"), ps_for(process_name, instance_index + 1));
+        read_env.insert(String::from("PS"), ps_for(process_name, concurrency_index + 1));
         let shell = os_env::var("SHELL").expect("$SHELL is not set");
 
         Process {
-            index,
-            name: ps_for(process_name, instance_index + 1),
+            index: app_index,
+            name: ps_for(process_name, concurrency_index + 1),
             child: Command::new(shell)
                 .arg("-c")
                 .arg(cmd)

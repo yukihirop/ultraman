@@ -60,8 +60,8 @@ pub fn run(input_opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
 
     for (name, pe) in procfile.data.iter() {
         let con = pe.concurrency.get();
-        let index = total;
-        let output = Arc::new(output::Output::new(index, display_opts.clone()));
+        let app_index = total;
+        let output = Arc::new(output::Output::new(app_index, display_opts.clone()));
         total += 1;
 
         for n in 0..con {
@@ -81,7 +81,7 @@ pub fn run(input_opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
                     env_path.unwrap(),
                     port,
                     n,
-                    index,
+                    app_index,
                     Some(opts),
                 );
                 let proc2 = Arc::new(Mutex::new(proc));
