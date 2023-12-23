@@ -35,6 +35,10 @@ pub struct StartOpts {
     /// Include timestamp in output
     #[structopt(name = "NOTIMESTAMP", short = "n", long = "no-timestamp")]
     pub is_no_timestamp: Option<bool>,
+
+    /// Automatic Adjust Port number
+    #[structopt(name = "AUTO_PORT", short = "a", long = "auto-port")]
+    pub is_auto_adjust_port: Option<bool>,
 }
 
 pub fn run(input_opts: StartOpts) -> Result<(), Box<dyn std::error::Error>> {
@@ -155,6 +159,10 @@ fn merged_opts(input_opts: &StartOpts, dotconfig: Config) -> StartOpts {
             Some(r) => Some(*r),
             None => dotconfig.port.map(|r| r as u32),
         },
+        is_auto_adjust_port: match &input_opts.is_auto_adjust_port {
+            Some(r) => Some(r.clone()),
+            None => Some(dotconfig.is_auto_adjust_port),
+        },
     }
 }
 
@@ -188,6 +196,7 @@ run: /tmp/pids/ultraman.pid
 template: ../../src/cmd/export/templates/supervisord
 user: root
 root: /home/app
+auto-port: true
 
 hoge: hogehoge
       "#
@@ -207,6 +216,7 @@ hoge: hogehoge
             port: None,
             timeout: None,
             is_no_timestamp: None,
+            is_auto_adjust_port: None,
         };
 
         let dotconfig = prepare_dotconfig();
@@ -218,6 +228,7 @@ hoge: hogehoge
         assert_eq!(result.port.unwrap(), 6000);
         assert_eq!(result.timeout.unwrap(), 5000);
         assert_eq!(result.is_no_timestamp.unwrap(), true);
+        assert_eq!(result.is_auto_adjust_port.unwrap(), true);
 
         Ok(())
     }
@@ -231,6 +242,7 @@ hoge: hogehoge
             port: Some(9999),
             timeout: Some(1),
             is_no_timestamp: Some(false),
+            is_auto_adjust_port: Some(false),
         };
 
         let dotconfig = prepare_dotconfig();

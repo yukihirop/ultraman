@@ -8,6 +8,7 @@ const DEFAULT_ENV: &'static str = ".env";
 const DEFAULT_PROCFILE: &'static str = "Procfile";
 const DEFAULT_TIMEOUT: u64 = 5;
 const DEFAULT_NO_TIMESTAMP: bool = false;
+const DEFAULT_AUTO_PORT: bool = false;
 
 #[derive(Debug)]
 pub struct Config {
@@ -23,6 +24,7 @@ pub struct Config {
     pub template_path: Option<PathBuf>,
     pub user: Option<String>,
     pub root_path: Option<PathBuf>,
+    pub is_auto_adjust_port: bool
 }
 
 // Ultraman settings read and parse .ultraman written in yaml
@@ -43,6 +45,7 @@ pub fn read_config(filepath: PathBuf) -> Result<Config, Box<dyn std::error::Erro
             template_path: None,
             user: None,
             root_path: None,
+            is_auto_adjust_port: DEFAULT_AUTO_PORT
         }
     } else {
         let filepath_str = filepath.to_str().unwrap();
@@ -97,6 +100,9 @@ pub fn read_config(filepath: PathBuf) -> Result<Config, Box<dyn std::error::Erro
                 Some(r) => Some(PathBuf::from(r)),
                 None => None,
             },
+            is_auto_adjust_port: doc["auto-port"]
+                .as_bool()
+                .unwrap_or(DEFAULT_AUTO_PORT)
         };
     }
     Ok(config)
