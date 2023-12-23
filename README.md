@@ -1,13 +1,14 @@
 # Ultraman (Rust Foreman)
 
 ![Release](https://github.com/yukihirop/ultraman/workflows/Release/badge.svg)
+
 ![Periodic](https://github.com/yukihirop/ultraman/workflows/Periodic/badge.svg)
+
 ![Regression](https://github.com/yukihirop/ultraman/workflows/Regression/badge.svg)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/yukihirop/ultraman/main/LICENSE)
 
 Manage Procfile-based applications.
 
-This is a [foreman](https://github.com/ddollar/foreman) rust implementation made with ruby.  
+This is a [foreman](https://github.com/ddollar/foreman) rust implementation made with ruby.\
 So the specifications are exactly the same as ruby ​​`foreman`.
 
 ## 🚉 Platform
@@ -83,9 +84,7 @@ Then execute the following command
 ultraman start
 ```
 
-![image](https://user-images.githubusercontent.com/11146767/101663968-a3a1f780-3a8e-11eb-9446-108d4eaa7652.png)
-
-<details>
+![image](https://user-images.githubusercontent.com/11146767/101663968-a3a1f780-3a8e-11eb-9446-108d4eaa7652.png)&lt;details&gt;
 
 ```bash
 $ ultraman start
@@ -106,13 +105,11 @@ $ ultraman start
 02:22:39 loop.1    | terminated by SIGTERM
 ```
 
-</details>
+&lt;/details&gt;
 
-If <kbd>ctrl-c</kbd> is detected within 5 seconds, `SIGTERM` will be sent to all child processes and the process will be killed.
+If &lt;kbd&gt;ctrl-c&lt;/kbd&gt; is detected within 5 seconds, `SIGTERM` will be sent to all child processes and the process will be killed.
 
-![image](https://user-images.githubusercontent.com/11146767/101664175-dc41d100-3a8e-11eb-8b99-12862d9c91b1.png)
-
-<details>
+![image](https://user-images.githubusercontent.com/11146767/101664175-dc41d100-3a8e-11eb-8b99-12862d9c91b1.png)&lt;details&gt;
 
 ```
 $ ultraman start
@@ -132,23 +129,21 @@ $ ultraman start
 02:24:01 loop.1    | terminated by SIGTERM
 ```
 
-</details>
+&lt;/details&gt;
 
-![](./docs/ctrl_c.drawio.png)
+![](./docs/ctrl_c.drawio.png)## 🌎 Environment
 
-## 🌎 Environment
-
-- rustc 1.59.0 (9d1b2106e 2022-02-23)
-- cargo 1.59.0 (49d8809dc 2022-02-10)
+- rustc 1.72.1 (d5c2e9c34 2023-09-13) (Homebrew)
+- cargo 1.72.1
 
 ## ⚾️ Example
 
-|command|link|
-|-------|----|
-|`ultraman start`|[README.md](./example/start/README.md)|
-|`ultraman run`|[README.md](./example/run/README.md)|
-|`ultraman export`|[README.md](./example/export/README.md)|
-|`ultraman check`|[README.md](./example/check/README.md)|
+| command | link |
+| --- | --- |
+| `ultraman start` | [README.md](./example/start/README.md) |
+| `ultraman run` | [README.md](./example/run/README.md) |
+| `ultraman export` | [README.md](./example/export/README.md) |
+| `ultraman check` | [README.md](./example/check/README.md) |
 
 ## 💪 Development
 
@@ -158,8 +153,7 @@ cargo run run <app>
 cargo run export <format> <location>
 ```
 
-If you want to see help
-In that case, you can check with the following command
+If you want to see help In that case, you can check with the following command
 
 ```bash
 cargo run -- --help

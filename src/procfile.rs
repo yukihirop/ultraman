@@ -70,7 +70,7 @@ impl Procfile {
         let formation_apps = formation_data.keys().clone().collect::<Vec<_>>();
         let valid_formation = formation_apps
             .iter()
-            .all(|key| self.data.contains_key(key.clone()));
+            .all(|key| self.data.contains_key(*key));
 
         if valid_formation == false {
             panic!("Do not support formation: {}", formation);
