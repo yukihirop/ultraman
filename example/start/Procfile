@@ -2,3 +2,5 @@ exit_0: ./fixtures/exit_0.sh
 exit_1: ./fixtures/exit_1.sh
 loop: ./fixtures/loop.sh $MESSAGE
 web: bundle exec puma -p $PORT -C ./config/puma.rb
+early_out: seq 100
+sleep: sleep 20
