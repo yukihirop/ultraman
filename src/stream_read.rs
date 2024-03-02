@@ -37,11 +37,17 @@ impl PipeStreamReader {
                             }
                             Ok(_) => {
                                 if byte[0] == 0x0A {
-                                    tx.send(match String::from_utf8(buf.clone()) {
+                                    match tx.send(match String::from_utf8(buf.clone()) {
                                         Ok(line) => Ok(PipedLine::Line(line)),
                                         Err(err) => Err(PipeError::NotUtf8(err)),
-                                    })
-                                    .unwrap();
+                                    }) {
+                                        Ok(_) => {}
+                                        Err(e) => {
+                                            println!("Failed to send message: {}", e);
+                                            break;
+                                        }
+                                    }
+
                                     buf.clear()
                                 } else {
                                     buf.push(byte[0])
