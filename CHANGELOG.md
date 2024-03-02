@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.3.2
+
+- fix #55
+
 ## v0.3.1
 
 - [Breaking] fix `port_for` logic.
