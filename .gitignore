@@ -1,8 +1,2 @@
-/target
-/Procfile
-/.env
-tmp
-supervisord.log
-/containers/registry
-.ultraman
-**/vendor/bundle
+result
+.direnv/
