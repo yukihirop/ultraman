@@ -42,8 +42,7 @@ impl PipeStreamReader {
                                         Err(err) => Err(PipeError::NotUtf8(err)),
                                     }) {
                                         Ok(_) => {}
-                                        Err(e) => {
-                                            println!("Failed to send message: {}", e);
+                                        Err(_) => {
                                             break;
                                         }
                                     }
@@ -54,7 +53,9 @@ impl PipeStreamReader {
                                 }
                             }
                             Err(error) => {
-                                tx.send(Err(PipeError::IO(error))).unwrap();
+                                if let Err(_) = tx.send(Err(PipeError::IO(error))) {
+                                    break;
+                                }
                             }
                         }
                     }
