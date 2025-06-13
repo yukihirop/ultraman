@@ -96,4 +96,69 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn test_early_process_termination() -> anyhow::Result<()> {
+        let mut child = Command::new("seq")
+            .arg("3")
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("failed execute command");
+        let stream = Box::new(child.stdout.take().unwrap());
+        let reader = PipeStreamReader::new(stream);
+
+        let mut lines_received = 0;
+        loop {
+            match reader.lines.recv() {
+                Ok(Ok(PipedLine::Line(_))) => {
+                    lines_received += 1;
+                }
+                Ok(Ok(PipedLine::EOF)) => {
+                    break;
+                }
+                Ok(Err(_)) => {
+                    break;
+                }
+                Err(_) => {
+                    break;
+                }
+            }
+        }
+
+        assert!(lines_received <= 3);
+        Ok(())
+    }
+
+    #[test]
+    fn test_graceful_channel_disconnection() -> anyhow::Result<()> {
+        use std::sync::Arc;
+        use std::thread;
+        use std::time::Duration;
+
+        let mut child = Command::new("yes")
+            .stdout(Stdio::piped())
+            .spawn()
+            .expect("failed execute command");
+        let stream = Box::new(child.stdout.take().unwrap());
+        let reader = Arc::new(PipeStreamReader::new(stream));
+
+        let reader_clone = Arc::clone(&reader);
+        let handle = thread::spawn(move || {
+            let mut count = 0;
+            while count < 5 {
+                match reader_clone.lines.recv() {
+                    Ok(Ok(PipedLine::Line(_))) => count += 1,
+                    Ok(Ok(PipedLine::EOF)) => break,
+                    Ok(Err(_)) => break,
+                    Err(_) => break,
+                }
+            }
+        });
+
+        thread::sleep(Duration::from_millis(100));
+        child.kill().expect("failed to kill child");
+        
+        handle.join().expect("thread panicked");
+        Ok(())
+    }
 }
