@@ -44,6 +44,12 @@ brew tap yukihirop/homebrew-tap
 brew install ultraman
 ```
 
+### cargo-binstall
+
+```bash
+cargo binstall ultraman
+```
+
 ## 💻 Command
 
 ```
