@@ -1,0 +1,79 @@
+name: Update Homebrew Formula
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-homebrew:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Extract version from tag
+      id: version
+      run: |
+        TAG=${GITHUB_REF#refs/tags/v}
+        echo "version=$TAG" >> $GITHUB_OUTPUT
+
+    - name: Update Homebrew Formula
+      env:
+        HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        # Wait for release assets to be available
+        sleep 30
+        
+        # Download release files to calculate SHA256
+        MAC_URL="https://github.com/yukihirop/ultraman/releases/download/v${VERSION}/ultraman-v${VERSION}-x86_64-mac.zip"
+        LINUX_URL="https://github.com/yukihirop/ultraman/releases/download/v${VERSION}/ultraman-v${VERSION}-x86_64-linux.zip"
+        
+        echo "Downloading and calculating SHA256 for Mac..."
+        MAC_SHA256=$(curl -sL "$MAC_URL" | shasum -a 256 | cut -d' ' -f1)
+        
+        echo "Downloading and calculating SHA256 for Linux..."
+        LINUX_SHA256=$(curl -sL "$LINUX_URL" | shasum -a 256 | cut -d' ' -f1)
+        
+        echo "Mac SHA256: $MAC_SHA256"
+        echo "Linux SHA256: $LINUX_SHA256"
+        
+        # Clone homebrew tap repository
+        git clone https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/yukihirop/homebrew-tap.git
+        cd homebrew-tap
+        
+        # Update formula
+        cat > Formula/ultraman.rb << EOF
+        # https://qiita.com/dalance/items/b07bee6cadfd4dd19756
+        class Ultraman < Formula
+          version '${VERSION}'
+          desc "Manage Procfile-based applications. (Rust Foreman)"
+          homepage "https://github.com/yukihirop/ultraman"
+
+          depends_on "rust" => :build
+          
+          if OS.mac?
+            url "https://github.com/yukihirop/ultraman/releases/download/v${VERSION}/ultraman-v${VERSION}-x86_64-mac.zip"
+            sha256 '${MAC_SHA256}'
+          end
+
+          if OS.linux?
+            url "https://github.com/yukihirop/ultraman/releases/download/v${VERSION}/ultraman-v${VERSION}-x86_64-linux.zip"
+            sha256 '${LINUX_SHA256}'
+          end
+
+          head 'https://github.com/yukihirop/ultraman.git'
+
+          def install
+            man1.install 'ultraman.1'
+            bin.install 'ultraman'
+          end
+        end
+        EOF
+        
+        # Commit and push changes
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add Formula/ultraman.rb
+        git commit -m "Update ultraman to v${VERSION}"
+        git push origin main
