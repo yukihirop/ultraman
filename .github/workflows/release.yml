@@ -22,9 +22,9 @@ jobs:
           - os: macOS-latest
             target: aarch64-apple-darwin
             make_cmd: release_mac_arm
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            make_cmd: release_win
+          # - os: windows-latest
+          #   target: x86_64-pc-windows-msvc
+          #   make_cmd: release_win
 
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
