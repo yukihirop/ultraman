@@ -12,6 +12,16 @@ description = "Manage Procfile-based applications"
 exclude = ["example/*", "man/*"]
 default-run="ultraman"
 
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/{ name }-v{ version }-{ target }.zip"
+pkg-fmt = "zip"
+
+[package.metadata.binstall.overrides]
+x86_64-apple-darwin = { pkg-url = "{ repo }/releases/download/v{ version }/{ name }-v{ version }-x86_64-mac.zip" }
+aarch64-apple-darwin = { pkg-url = "{ repo }/releases/download/v{ version }/{ name }-v{ version }-aarch64-mac.zip" }
+x86_64-unknown-linux-gnu = { pkg-url = "{ repo }/releases/download/v{ version }/{ name }-v{ version }-x86_64-linux.zip" }
+x86_64-unknown-linux-musl = { pkg-url = "{ repo }/releases/download/v{ version }/{ name }-v{ version }-x86_64-linux.zip" }
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [badges]
