@@ -68,6 +68,26 @@ make release_win                 # Build for x86_64-pc-windows-msvc
 - Use `cargo test -- --ignored` to run signal tests specifically
 - Docker environment available for Linux testing on macOS: `docker-compose up -d`
 
+## Release Process
+
+Ultraman uses automated GitHub Actions to build and release pre-compiled binaries:
+
+1. **Automated Releases**: When a new version tag (e.g., `v0.3.3`) is pushed, GitHub Actions automatically:
+   - Builds binaries for Linux (x86_64), macOS (x86_64 and ARM64), and Windows (x86_64)
+   - Uploads the binaries to GitHub Releases
+   - Automatically updates the Homebrew formula with new version and SHA256 hashes
+
+2. **Manual Release**: Create and push a new tag:
+   ```bash
+   git tag v0.3.3
+   git push origin v0.3.3
+   ```
+
+3. **Pre-built Binaries**: Users can now install without compilation:
+   - **Homebrew**: `brew install yukihirop/tap/ultraman` (uses pre-built binaries)
+   - **Direct Download**: Download from GitHub Releases page
+   - **Cargo**: `cargo install ultraman` (still compiles from source)
+
 ## Key Dependencies
 
 - `structopt`: CLI argument parsing

@@ -36,9 +36,13 @@ release_linux: create_man
 
 release_win: create_man
 	cargo build --locked --release --target=x86_64-pc-windows-msvc
-	7z a ${BIN_NAME}-v${VERSION}-x86_64-win.zip target/x86_64-pc-windows-msvc/release/${BIN_NAME}.exe $(strip $(BASE_RELEASE_FILES))
+	powershell Compress-Archive -Path target/x86_64-pc-windows-msvc/release/${BIN_NAME}.exe,$(strip $(BASE_RELEASE_FILES)) -DestinationPath ${BIN_NAME}-v${VERSION}-x86_64-win.zip -Force
 
 release_mac: create_man
 	cargo build --locked --release --target=x86_64-apple-darwin
 	zip -j ${BIN_NAME}-v${VERSION}-x86_64-mac.zip target/x86_64-apple-darwin/release/${BIN_NAME} $(strip $(BASE_RELEASE_FILES))
+
+release_mac_arm: create_man
+	cargo build --locked --release --target=aarch64-apple-darwin
+	zip -j ${BIN_NAME}-v${VERSION}-aarch64-mac.zip target/aarch64-apple-darwin/release/${BIN_NAME} $(strip $(BASE_RELEASE_FILES))
 
