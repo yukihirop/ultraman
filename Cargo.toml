@@ -38,6 +38,13 @@ crossbeam = "0.8.1"
 [features]
 man = [ "roff" ]
 
+[profile.release]
+opt-level = 'z'     # Optimize for size
+lto = true          # Enable Link Time Optimization
+codegen-units = 1   # Reduce number of codegen units to increase optimizations
+panic = 'abort'     # Abort on panic rather than unwinding
+strip = true        # Strip symbols from binary
+
 [dev-dependencies]
 anyhow = "1.0.56"
 libc = "0.2.121"
