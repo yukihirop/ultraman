@@ -1,4 +1,5 @@
 use crate::cmd::check::CheckOpts;
+use crate::cmd::completion::CompletionOpts;
 use crate::cmd::export::ExportOpts;
 use crate::cmd::run::RunOpts;
 use crate::cmd::start::StartOpts;
@@ -20,6 +21,9 @@ pub struct Opt {
 pub enum Ultraman {
     #[structopt(name = "check", about = "Validate your application's Procfile")]
     Check(CheckOpts),
+
+    #[structopt(name = "completion", about = "Generate shell completion scripts")]
+    Completion(CompletionOpts),
 
     #[structopt(name = "start", about = "Start the application")]
     Start(StartOpts),

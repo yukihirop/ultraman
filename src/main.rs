@@ -18,6 +18,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(subcommand) = opt.subcommands {
         match subcommand {
             Ultraman::Check(opts) => cmd::check::run(opts),
+            Ultraman::Completion(opts) => cmd::completion::run(opts).expect("failed ultraman completion"),
             Ultraman::Start(opts) => cmd::start::run(opts).expect("failed ultraman start"),
             Ultraman::Run(opts) => cmd::run::run(opts),
             Ultraman::Export(opts) => cmd::export::run(opts).expect("failed ultraman export"),
