@@ -1,10 +1,11 @@
 use crate::opt::Opt;
 use std::io;
 use structopt::clap::Shell;
-use structopt::StructOpt;
+use structopt::{clap, StructOpt};
 
 #[derive(StructOpt, Debug)]
 #[structopt(about = "Generate shell completion scripts")]
+#[structopt(setting(clap::AppSettings::ColoredHelp))]
 pub struct CompletionOpts {
     #[structopt(
         help = "Shell to generate completions for",
