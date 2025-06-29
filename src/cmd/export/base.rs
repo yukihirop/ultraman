@@ -2,7 +2,6 @@ use crate::cmd::export::ExportOpts;
 use crate::env::read_env;
 
 use handlebars::Handlebars;
-use nix::unistd::{chown, User};
 use serde_derive::Serialize;
 use serde_json::value::{Map, Value as Json};
 use std::env;
@@ -70,15 +69,6 @@ pub trait Exportable {
             .root_path
             .clone()
             .unwrap_or_else(|| env::current_dir().unwrap())
-    }
-
-    fn chown(&self, username: &str, dir: &PathBuf) {
-        let display = dir.clone().into_os_string().into_string().unwrap();
-        let user = User::from_name(username)
-            .expect(&format!("Could not get user from {}", username))
-            .expect(&format!("Could not exists user: {}", username));
-        chown(dir.as_path(), Some(user.uid), None)
-            .expect(&format!("Could not chown {} to {}", display, username))
     }
 
     fn clean(&self, filepath: &PathBuf) {
