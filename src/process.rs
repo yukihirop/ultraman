@@ -18,6 +18,7 @@ pub struct Process {
     pub index: usize,
     pub name: String,
     pub child: Child,
+    #[allow(dead_code)]
     pub opts: Option<DisplayOpts>,
 }
 
